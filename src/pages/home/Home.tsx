@@ -29,10 +29,6 @@ function Home() {
   const { data: imagesData, error: imagesError } = useFetch(imagesUrl);
   const { data: searchData, error: searchError } = useFetch(searchUrl);
 
-  useEffect(() => {
-    console.log(searchUrl, tvData);
-  }, [tvData]);
-
   return (
     <div className="test">
       <div className="tv section">
@@ -48,6 +44,7 @@ function Home() {
             );
           })}
       </div>
+
       <div className="movies section">
         {movieData &&
           movieData.results.map((movie: any) => {
@@ -61,6 +58,7 @@ function Home() {
             );
           })}
       </div>
+
       <div className="specials section">
         {specialsData &&
           specialsData.results.map((special: any) => {
