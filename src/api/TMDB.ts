@@ -1,21 +1,50 @@
 const API_KEY = import.meta.env.VITE_API_KEY;
+const STANDUP_KEYWORD = 9716;
 
-export const fetchTest = () => {
-  const personId = "109708"; // bill burr
-  const movieId = "823754";
-  const keyword = "9716";
+//
+// api url assembly functions
+//
 
-  const discoverPersonFilter = `&with_people=${personId}`;
-  const discoverKeyWordFilter = `&with_keywords=${keyword}`;
+interface TMDBDiscoverRequest {
+  keywords?: number | undefined;
+  without_keywords?: number | undefined;
+  person?: number | undefined;
+}
 
-  const getKeywordsForFilm = `https://api.themoviedb.org/3/movie/${movieId}/keywords?api_key=${API_KEY}`;
-  const getPersonImages = `https://api.themoviedb.org/3/person/${personId}/images?api_key=${API_KEY}`;
-  const getStandupSpecials = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc${discoverPersonFilter}${discoverKeyWordFilter}`;
+//
+// tmdb's /discover/ api
+//
 
-  const url = getStandupSpecials;
+export const tmdbDiscoverURL = ({
+  keywords,
+  without_keywords,
+  person,
+}: TMDBDiscoverRequest): string => {
+  let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}`;
+  if (keywords) url += `&with_keywords=${keywords}`;
+  if (without_keywords) url += `&without_keywords=${without_keywords}`;
+  if (person) url += `&with_cast=${person}`;
+  return url;
+};
 
-  return fetch(url)
-    .then((response) => response.text())
-    .then((text) => JSON.parse(text))
-    .then((parsed) => parsed.results);
+export const getAllSpecialsForPersonURL = (personId: number): string => {
+  return tmdbDiscoverURL({
+    person: personId,
+    keywords: STANDUP_KEYWORD,
+  });
+};
+
+export const getMoviesForPersonURL = (personId: number): string => {
+  return tmdbDiscoverURL({
+    person: personId,
+    without_keywords: STANDUP_KEYWORD,
+  });
+};
+
+//
+// tmdb's /person/ api
+//
+
+export const getTVShowsForPersonURL = (personId: number): string => {
+  return `https://api.themoviedb.org/3/person/${personId}/tv_credits?api_key=${API_KEY}`;
 };
