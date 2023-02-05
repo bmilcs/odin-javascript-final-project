@@ -2,11 +2,9 @@
 
 Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment](https://www.theodinproject.com/lessons/node-path-javascript-javascript-final-project) within the Odin Project curriculum. The goal of this repo is to practice the following skill sets:
 
-- Vite
-  - React
-  - TypeScript + SWC
-- React Router DOM
-- Firebase (BaaS)
+- [**Whiteboarding**](src/README.md): project planning
+- **Vite**: React, TypeScript + SWC
+- **Firebase** (BaaS)
 - SASS
 
 ## Links
