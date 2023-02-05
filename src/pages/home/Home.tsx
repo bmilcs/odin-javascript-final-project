@@ -22,12 +22,12 @@ function Home() {
   const imagesUrl = getPersonImagesURL(tomSeguraId);
   const searchUrl = searchAllURL("Tom Segura");
 
-  const { data: specialsData, specialsError } = useFetch(specialsUrl);
-  const { data: tvData, tvError } = useFetch(tvUrl);
-  const { data: movieData, movieError } = useFetch(movieUrl);
-  const { data: personalData, personalError } = useFetch(personalUrl);
-  const { data: imagesData, imagesError } = useFetch(imagesUrl);
-  const { data: searchData, searchError } = useFetch(searchUrl);
+  const { data: specialsData, error: specialsError } = useFetch(specialsUrl);
+  const { data: tvData, error: tvError } = useFetch(tvUrl);
+  const { data: movieData, error: movieError } = useFetch(movieUrl);
+  const { data: personalData, error: personalError } = useFetch(personalUrl);
+  const { data: imagesData, error: imagesError } = useFetch(imagesUrl);
+  const { data: searchData, error: searchError } = useFetch(searchUrl);
 
   useEffect(() => {
     console.log(searchUrl, tvData);
@@ -37,7 +37,7 @@ function Home() {
     <div className="test">
       <div className="tv section">
         {tvData &&
-          tvData.cast.map((tv) => {
+          tvData.cast.map((tv: any) => {
             return (
               <div>
                 <h2>{tv.name}</h2>
@@ -50,7 +50,7 @@ function Home() {
       </div>
       <div className="movies section">
         {movieData &&
-          movieData.results.map((movie) => {
+          movieData.results.map((movie: any) => {
             return (
               <div>
                 <h2>{movie.title}</h2>
@@ -63,7 +63,7 @@ function Home() {
       </div>
       <div className="specials section">
         {specialsData &&
-          specialsData.results.map((special) => {
+          specialsData.results.map((special: any) => {
             return (
               <div>
                 <h2>{special.title}</h2>
