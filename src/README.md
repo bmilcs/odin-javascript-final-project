@@ -37,6 +37,7 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
 ### Home: generic comedy stuff
 
 - Advertise benefits of signing up: custom tailored news & notifications
+- Recommended Comedians Section (new comedy fans)
 - Feed of standup special releases
 - Feed of other media: Movies/TV Shows that have comedians in them
 

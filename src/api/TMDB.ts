@@ -1,25 +1,25 @@
-const API_KEY = import.meta.env.VITE_API_KEY;
-const STANDUP_KEYWORD = 9716;
-
 //
 // api url assembly functions
 //
 
-interface TMDBDiscoverRequest {
-  keywords?: number | undefined;
-  without_keywords?: number | undefined;
-  person?: number | undefined;
-}
+const API_KEY = import.meta.env.VITE_API_KEY;
+const STANDUP_KEYWORD = 9716;
 
 //
 // tmdb's /discover/ api
 //
 
+interface TMDBPersonRequest {
+  keywords?: number | undefined;
+  without_keywords?: number | undefined;
+  personId?: number | undefined;
+}
+
 export const tmdbDiscoverURL = ({
   keywords,
   without_keywords,
-  person,
-}: TMDBDiscoverRequest): string => {
+  personId: person,
+}: TMDBPersonRequest): string => {
   let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}`;
   if (keywords) url += `&with_keywords=${keywords}`;
   if (without_keywords) url += `&without_keywords=${without_keywords}`;
@@ -29,14 +29,14 @@ export const tmdbDiscoverURL = ({
 
 export const getAllSpecialsForPersonURL = (personId: number): string => {
   return tmdbDiscoverURL({
-    person: personId,
+    personId: personId,
     keywords: STANDUP_KEYWORD,
   });
 };
 
 export const getMoviesForPersonURL = (personId: number): string => {
   return tmdbDiscoverURL({
-    person: personId,
+    personId: personId,
     without_keywords: STANDUP_KEYWORD,
   });
 };
@@ -45,6 +45,76 @@ export const getMoviesForPersonURL = (personId: number): string => {
 // tmdb's /person/ api
 //
 
+interface TMDBPersonRequest {
+  requestType?: string | undefined;
+  keywords?: number | undefined;
+  without_keywords?: number | undefined;
+  personId?: number | undefined;
+}
+
+export const tmdbPersonURL = ({
+  requestType,
+  keywords,
+  without_keywords,
+  personId,
+}: TMDBPersonRequest): string => {
+  let url = `https://api.themoviedb.org/3/person/${personId}`;
+  requestType
+    ? (url += `/${requestType}?api_key=${API_KEY}`)
+    : (url += `?api_key=${API_KEY}`);
+  if (keywords) url += `&with_keywords=${keywords}`;
+  if (without_keywords) url += `&without_keywords=${without_keywords}`;
+  return url;
+};
+
 export const getTVShowsForPersonURL = (personId: number): string => {
-  return `https://api.themoviedb.org/3/person/${personId}/tv_credits?api_key=${API_KEY}`;
+  return tmdbPersonURL({ personId: personId, requestType: "tv_credits" });
+};
+
+export const getPersonDetailsURL = (personId: number): string => {
+  return tmdbPersonURL({ personId: personId });
+};
+
+export const getPersonExternalIdsURL = (personId: number): string => {
+  return tmdbPersonURL({ personId: personId, requestType: "external_ids" });
+};
+
+export const getPersonImagesURL = (personId: number): string => {
+  return tmdbPersonURL({ personId: personId, requestType: "images" });
+};
+
+//
+// search apis
+//
+
+interface TMDBSearchRequest {
+  query: string;
+  requestType: string | undefined;
+}
+
+export const tmdbSearchUrl = ({
+  query,
+  requestType,
+}: TMDBSearchRequest): string => {
+  const parsedQuery = parseSearchQuery(query);
+  let url = `https://api.themoviedb.org/3/search/${requestType}?api_key=${API_KEY}`;
+  url += `&query=${query}`;
+  return url;
+};
+
+const parseSearchQuery = (string: string): string => {
+  return string === undefined
+    ? ""
+    : string
+        .replace(/[^a-z0-9_]+/gi, "-")
+        .replace(/^-|-$/g, "")
+        .toLowerCase();
+};
+
+export const searchForPersonURL = (name: string): string => {
+  return tmdbSearchUrl({ query: name, requestType: "person" });
+};
+
+export const searchAllURL = (name: string): string => {
+  return tmdbSearchUrl({ query: name, requestType: "multi" });
 };

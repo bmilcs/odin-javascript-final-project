@@ -1,10 +1,10 @@
-import { fetchTest } from "@/api/TMDB";
+import Home from "@/pages/home/Home";
 
 function App() {
-  const results = fetchTest().then((res) => console.log(res));
   return (
     <div className="App">
       <h1>headliners</h1>
+      <Home />
     </div>
   );
 }
