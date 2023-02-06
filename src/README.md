@@ -1,5 +1,7 @@
 # Whiteboard
 
+## High Level Breakdown
+
 Goal: Content-centric IMDB-like site focused on standup comedy. Users should be able to:
 
 1. Get the latest content in the standup world:
@@ -69,3 +71,76 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
 - Podcast Releases:
   - Pull from RSS feeds?
   - Pull from YouTube channels?
+
+## Strategy
+
+### State Management
+
+Global state needed everywhere:
+
+- Login status
+- Heart status for all content (array)
+  - As content is generated, it needs to check if it `.includes()` a user favorite
+  - Content grabbed from API needs to be classified by type: person, movie, special, tv to reference appropriate array in user db
+
+### Database
+
+Global data:
+
+- top comedians for recommendations
+  - manual list of people id's
+  - wishlist: as people subscribe to comedians, those with a higher like count should rise to the top
+
+User data:
+
+- heart status
+  - array of: personId's
+  - array of: movieId's
+  - array of: specialId's
+- comments/reviews
+
+Content data:
+
+- tie user comments/reviews to comedian/media pages
+
+<!-- TODO FINISH DATA STRUCTURE -->
+
+WORK IN PROGRESS:
+
+users (collection)
+..userId (document)
+....name (field)
+....email (field)
+....people (field > map)
+......favorite (array) _ contentIds
+......comment (array) _ contentIds
+....movie (field > map)
+......favorite (array) _ contentIds
+......comment (array) _ contentIds
+....standup (field > map)
+......favorite (array) _ contentIds
+......comment (array) _ contentIds
+
+content (collection)
+..person (document)
+....contentId (field)
+....favoriteCount (field)
+....comments (field > map)
+...... comment data
+..movie (document)
+....contentId (field)
+....favoriteCount (field)
+....comments (field > map)
+...... comment data
+..tv (document)
+....contentId (field)
+....favoriteCount (field)
+....comments (field > map)
+...... comment data
+
+comments (collection)
+..commentId (document)
+....userId (field)
+....contentId (field)
+....text (field)
+....timestamp (field)
