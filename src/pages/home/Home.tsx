@@ -34,6 +34,7 @@ function Home() {
       <div className="tv section">
         {tvData &&
           tvData.cast.map((tv: any) => {
+            console.log("tv:", tv);
             return (
               <div>
                 <h2>{tv.name}</h2>
@@ -48,6 +49,7 @@ function Home() {
       <div className="movies section">
         {movieData &&
           movieData.results.map((movie: any) => {
+            console.log("movie:", movie);
             return (
               <div>
                 <h2>{movie.title}</h2>
@@ -62,6 +64,7 @@ function Home() {
       <div className="specials section">
         {specialsData &&
           specialsData.results.map((special: any) => {
+            console.log("special:", special);
             return (
               <div>
                 <h2>{special.title}</h2>

@@ -83,9 +83,11 @@ All content will be fetched from the TMDB API, and references to those API endpo
 Global state needed everywhere:
 
 - Login status
-- Heart status for all content (array)
-  - As content is generated, it needs to check if it `.includes()` a user favorite
-  - Content grabbed from API needs to be classified by type: person/special to access TMDB endpoints
+- List of all favorites: people-APIid, standup-APIid (array)
+  - As content is fetched, it needs to be:
+    - classified by type: person/special(aka movie)
+    - check if favorites `.includes()` a user favorite
+    - tied to the DOM via data-attribute
 
 ### Database Essential Info
 
@@ -108,7 +110,7 @@ User data:
     - name (field, string)
     - email (field, string)
     - favorites (field, array)
-      - category-id (field, string)... ie: person-tmdbAPIid
+      - category-id (field, string): "person-tmdbAPIid", "standup-tmdbAPIid"
 
 - **person (collection)**
 
