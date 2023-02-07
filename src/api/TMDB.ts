@@ -42,10 +42,18 @@ export const getMoviesForPersonURL = (personId: number): string => {
 };
 
 //
+// tmdb's /movie/ api
+//
+
+export const getMovieDetailsURL = (movieId: number): string => {
+  return `https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=en-US`;
+};
+
+//
 // tmdb's /person/ api
 //
 
-interface TMDBPersonRequest {
+https: interface TMDBPersonRequest {
   requestType?: string | undefined;
   keywords?: number | undefined;
   without_keywords?: number | undefined;
