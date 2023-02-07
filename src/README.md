@@ -13,6 +13,8 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
      - Notification page
      - Via email
 
+All content will be fetched from the TMDB API, and references to those API endpoints (stored in a Firebase Firestore database) will determine what's displayed on the web site.
+
 ## Pages
 
 ### All Pages: Header, Footer
