@@ -6,14 +6,12 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
 
 1. Get the latest content in the standup world:
    - Standup Specials
-   - Movies/TV appearances
    - _Podcasts_ - if time permits
 2. Subscribe to their favorite comics
    - Notifications on new releases
      - Dropdown
      - Notification page
      - Via email
-3. Submit reviews & openly discuss everything
 
 ## Pages
 
@@ -25,7 +23,7 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
     - If logged in, show username & logout
   - Search Input:
     - Comedian names
-    - Content: movies/tv/specials
+    - Content: specials
   - Notification Icon
     - Dropdown showing releases w/ links to their page
     - On notification icon click: open notification page
@@ -41,7 +39,6 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
 - Advertise benefits of signing up: custom tailored news & notifications
 - Recommended Comedians Section (new comedy fans)
 - Feed of standup special releases
-- Feed of other media: Movies/TV Shows that have comedians in them
 
 ### My Feed: favorite comedian news
 
@@ -54,23 +51,28 @@ Goal: Content-centric IMDB-like site focused on standup comedy. Users should be 
 
 - Headshot
 - Bio
-- Their work: specials, tv, movies
-- Reviews/discussion
+- Specials
 
-### Standup specials/Movies/TV Show pages
+### Standup specials
 
 - Image
 - Name
 - Date
 - Description
 - Where it's available
-- Reviews/discussion
 
-### Wishlist:
+### Wishlist: Beyond Scope of this Project
 
+- Automated TMDB List Creation for Radarr use based on user favorites
 - Podcast Releases:
   - Pull from RSS feeds?
   - Pull from YouTube channels?
+- User interaction
+  - Reviews/discussion
+  - Messaging
+- Comedian pages: TV/Movie Credits
+- Home: Movies/TV Shows that have comedians in them
+- As people subscribe to comedians, comedians with a higher like count should rise to the top
 
 ## Strategy
 
@@ -81,66 +83,50 @@ Global state needed everywhere:
 - Login status
 - Heart status for all content (array)
   - As content is generated, it needs to check if it `.includes()` a user favorite
-  - Content grabbed from API needs to be classified by type: person, movie, special, tv to reference appropriate array in user db
+  - Content grabbed from API needs to be classified by type: person/special to access TMDB endpoints
 
-### Database
+### Database Essential Info
 
 Global data:
 
-- top comedians for recommendations
-  - manual list of people id's
-  - wishlist: as people subscribe to comedians, those with a higher like count should rise to the top
+- comedian data (api id, favorite count/info)
+- special data (api id, favorite count/info)
 
 User data:
 
-- heart status
-  - array of: personId's
-  - array of: movieId's
-  - array of: specialId's
-- comments/reviews
+- name
+- array of favorites
 
-Content data:
+### Database Structure
 
-- tie user comments/reviews to comedian/media pages
+- **users (collection)**
 
-<!-- TODO FINISH DATA STRUCTURE -->
+  - userId (document)
+    - userId (field, string)
+    - name (field, string)
+    - email (field, string)
+    - favorites (field, array)
+      - category-id (field, string)... ie: person-tmdbAPIid
 
-WORK IN PROGRESS:
+- **person (collection)**
 
-users (collection)
-..userId (document)
-....name (field)
-....email (field)
-....people (field > map)
-......favorite (array) _ contentIds
-......comment (array) _ contentIds
-....movie (field > map)
-......favorite (array) _ contentIds
-......comment (array) _ contentIds
-....standup (field > map)
-......favorite (array) _ contentIds
-......comment (array) _ contentIds
+  - apiID (document)
+    - name (field, string)
+    - favoriteCount (field, number)
 
-content (collection)
-..person (document)
-....contentId (field)
-....favoriteCount (field)
-....comments (field > map)
-...... comment data
-..movie (document)
-....contentId (field)
-....favoriteCount (field)
-....comments (field > map)
-...... comment data
-..tv (document)
-....contentId (field)
-....favoriteCount (field)
-....comments (field > map)
-...... comment data
+- **specials (collection)**
 
-comments (collection)
-..commentId (document)
-....userId (field)
-....contentId (field)
-....text (field)
-....timestamp (field)
+  - apiID (document)
+    - name (field, string)
+    - favoriteCount (field, number)
+
+### API Data vs. Database Data
+
+Goal: Limit read/writes/amount of data in the Firestore database
+
+- Store API keys (references to where the data lives on TMDB), making clients responsible for fetching the bulk of the data from TMDB
+  - May have poor performance & API limit issues
+- Adding new comedians & specials to the database should occur:
+  - On user favoriting them
+  - Start off with my personal favorites
+- Otherwise, generic/home content should be generated from a static list of predetermined comedians/specials
