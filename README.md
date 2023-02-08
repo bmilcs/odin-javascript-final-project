@@ -6,8 +6,10 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 - **Vite**: React, TypeScript + SWC
 - **Firebase** (BaaS)
 - npm packages:
+  - `react-redux` (`@types/react-redux`)
   - `@reduxjs/toolkit` (`@types/react-redux`)
   - `react-router-dom` (`@types/react-router-dom`)
+  - `uuid`
   - `sass`
   - `gh-pages`
 
