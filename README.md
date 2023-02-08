@@ -5,7 +5,10 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 - [**Whiteboarding**](src/README.md): project planning
 - **Vite**: React, TypeScript + SWC
 - **Firebase** (BaaS)
-- SASS
+- npm packages:
+  - `gh-pages`
+  - `react-router-dom`
+  - `sass`
 
 ## Links
 
