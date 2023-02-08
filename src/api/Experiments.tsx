@@ -13,7 +13,7 @@ import {
 import { useEffect } from "react";
 import "./Experiments.scss";
 
-function Home() {
+function Experiments() {
   const tomSeguraId = 1238012;
 
   const specialsUrl = getAllSpecialsForPersonURL(tomSeguraId);
@@ -112,4 +112,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Experiments;

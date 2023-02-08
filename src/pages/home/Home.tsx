@@ -1,5 +1,12 @@
+import Experiments from "@/api/Experiments";
+
 function Home() {
-  return <div>Home</div>;
+  return (
+    <>
+      Home
+      <Experiments />
+    </>
+  );
 }
 
 export default Home;
