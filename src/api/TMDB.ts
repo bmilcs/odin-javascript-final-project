@@ -53,7 +53,7 @@ export const getMovieDetailsURL = (movieId: number): string => {
 // tmdb's /person/ api
 //
 
-https: interface TMDBPersonRequest {
+interface TMDBPersonRequest {
   requestType?: string | undefined;
   keywords?: number | undefined;
   without_keywords?: number | undefined;
