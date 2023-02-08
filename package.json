@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.2",
+    "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
     "gh-pages": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
     "react-router-dom": "^6.8.1",
     "sass": "^1.58.0"
   },
