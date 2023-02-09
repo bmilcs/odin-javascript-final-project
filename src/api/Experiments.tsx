@@ -12,6 +12,7 @@ import {
 } from "@/api/TMDB";
 import { useEffect } from "react";
 import "./Experiments.scss";
+import { Link } from "react-router-dom";
 
 function Experiments() {
   const tomSeguraId = 1238012;
@@ -42,18 +43,21 @@ function Experiments() {
     <div className="test">
       <div className="person">
         <p>.name: {personalData && personalData.name}</p>
-        <p>.id: {personalData && personalData.id}</p>
+        {/* <p>.id: {personalData && personalData.id}</p>
         <p>.birthday: {personalData && personalData.birthday}</p>
         <p>.biography: {personalData && personalData.biography}</p>
-        <p>{personalData && personalData.imdb_id}</p>
+        <p>{personalData && personalData.imdb_id}</p> */}
         {personalData && (
-          <img
-            src={`https://image.tmdb.org/t/p/original/${personalData.profile_path}`}
-            alt=""
-          ></img>
+          <Link to={`/comedians/${personalData.id}`}>
+            <img
+              className="headshot"
+              src={`https://image.tmdb.org/t/p/original/${personalData.profile_path}`}
+              alt=""
+            ></img>
+          </Link>
         )}
       </div>
-
+      {/* 
       <div className="specials section">
         {specialsData &&
           specialsData.results.map((special: any) => {
@@ -107,7 +111,7 @@ function Experiments() {
               </div>
             );
           })}
-      </div>
+      </div>*/}
     </div>
   );
 }
