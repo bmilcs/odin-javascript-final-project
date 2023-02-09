@@ -22,6 +22,14 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 
 In progress...
 
+## Challenges Overcame
+
+### 404 Error: Manually typing in URL & Refreshing Pages
+
+Previous projects utilizing `react-router-dom` caused 404 errors when any path (other than the base path) was refreshed or manually entered in the address bar. After some research, I came across this [article](https://medium.com/@itspaulolimahimself/deploying-a-react-js-spa-app-to-github-pages-58ddaa2897a3), containing instructions from the [rafgraph/spa-github-pages](https://github.com/rafgraph/spa-github-pages) repo.
+
+The fix required adding a custom 404 page (`public/404.html`) and a script to my index.html (`src/index.html`).
+
 ## Screenshots
 
 In progress...

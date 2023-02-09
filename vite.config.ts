@@ -6,6 +6,8 @@ import * as path from "path";
 export default defineConfig({
   plugins: [react()],
   base: "/odin-javascript-final-project/",
+
+  // "@" becomes the default path for src
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
   },
