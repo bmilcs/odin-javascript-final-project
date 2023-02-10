@@ -1,4 +1,4 @@
-import "./index.scss";
+import "./Card.scss";
 
 function MediaCard() {
   return <div>MediaCard</div>;
