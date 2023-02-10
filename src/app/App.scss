@@ -82,11 +82,22 @@ body {
   color: var(--clr-neutral-100);
 }
 
-// wrapper for all content: centered with max width
-.column {
-  max-width: 1920px;
-  margin-inline: auto;
-  padding-inline: 2rem;
+.app {
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  min-height: 100vh;
+
+  // wrapper for all content: centered with max width
+  .column {
+    max-width: 1920px;
+    margin-inline: auto;
+    padding-inline: 2rem;
+  }
+
+  // maintain consistent spacing of main content
+  main {
+    padding-block: 2rem;
+  }
 }
 
 h1 {
@@ -127,4 +138,27 @@ a:active {
   text-decoration: none;
   font: inherit;
   color: inherit;
+}
+
+//
+// scrollbar
+//
+/* width */
+::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--clr-neutral-800);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--clr-neutral-700);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-primary-100);
 }
