@@ -64,8 +64,10 @@ h6 {
   --clr-neutral-900: #1a1b26;
   --clr-neutral-800: #24283b;
   --clr-neutral-700: #414868;
-  --clr-neutral-200: #bb9af7;
-  --clr-neutral-100: #a9b1d6;
+  --clr-neutral-200: #d4d6e0;
+  --clr-neutral-100: #f1f2f7;
+  --clr-primary-200: #bb9af7;
+  --clr-primary-100: #a9b1d6;
   --clr-accent-100: #9ece6a;
   --clr-accent-200: #73daca;
   --transition-100: all 0.2s ease-in-out;
@@ -80,6 +82,49 @@ body {
   color: var(--clr-neutral-100);
 }
 
+// wrapper for all content: centered with max width
+.column {
+  max-width: 1920px;
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
 h1 {
   font-family: var(--ff-accent);
+}
+
+input {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-100);
+
+  font-weight: bold;
+
+  color: var(--clr-neutral-900);
+  background: var(--clr-neutral-900);
+
+  border: 0;
+  outline: 0;
+
+  transition: var(--transition-100);
+
+  &::placeholder {
+    color: var(--clr-neutral-700);
+    font-weight: normal;
+    font-style: italic;
+    text-transform: lowercase;
+  }
+
+  &:hover {
+    background: var(--clr-neutral-700);
+    color: var(--clr-neutral-100);
+  }
+}
+
+a,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+  font: inherit;
+  color: inherit;
 }

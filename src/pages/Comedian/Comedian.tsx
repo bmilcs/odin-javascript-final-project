@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import "./Comedian.scss";
 
+// TODO validate incoming api ID
+
 function Comedian() {
   const { personId } = useParams();
   const id = personId ? Number(personId) : 0;
@@ -21,7 +23,7 @@ function Comedian() {
   } = useFetch(specialsURL);
 
   return (
-    <>
+    <div className="column">
       <div className="person">
         {personalData && (
           <>
@@ -64,7 +66,7 @@ function Comedian() {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

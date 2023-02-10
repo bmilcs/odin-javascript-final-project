@@ -1,0 +1,31 @@
+.header {
+  background: var(--clr-neutral-800);
+  padding-block: 1rem;
+
+  .column {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+
+    line-height: 1.2;
+    color: var(--clr-accent-100);
+
+    &__text {
+      font-size: 1.75rem;
+    }
+
+    &__icon {
+      size: 2em;
+    }
+  }
+
+  .search {
+    display: flex;
+  }
+}
