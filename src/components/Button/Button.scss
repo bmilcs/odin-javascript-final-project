@@ -1,0 +1,30 @@
+.button {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-100);
+
+  text-transform: uppercase;
+  font-weight: bold;
+
+  border: 0;
+  outline: 0;
+
+  transition: var(--transition-100);
+
+  &__standard {
+    color: var(--clr-neutral-900);
+    background: var(--clr-primary-200);
+
+    &:hover {
+      background: var(--clr-accent-100);
+    }
+  }
+
+  &__icon {
+    background: none;
+    color: var(--clr-primary-100);
+
+    &:hover {
+      color: var(--clr-accent-200);
+    }
+  }
+}
