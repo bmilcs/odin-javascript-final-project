@@ -13,7 +13,7 @@ export const imageURL = (path: string) => {
 // tmdb's /discover/ api
 //
 
-https: interface TMDBPersonRequest {
+interface TMDBPersonRequest {
   keywords?: number | undefined;
   without_keywords?: number | undefined;
   personId?: number | undefined;
