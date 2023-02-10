@@ -9,7 +9,8 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
   - `react-redux` (`@types/react-redux`)
   - `@reduxjs/toolkit` (`@types/react-redux`)
   - `react-router-dom` (`@types/react-router-dom`)
-  - `uuid`
+  - `react-icons` (`@types/react-icons`)
+  - `uuid` (`@types/uuid`)
   - `sass`
   - `gh-pages`
 
