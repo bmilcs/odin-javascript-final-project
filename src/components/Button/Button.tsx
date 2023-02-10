@@ -11,9 +11,9 @@ function Button({ children, className, onClick, type = "standard" }: Props) {
   return (
     <button
       onClick={onClick}
-      className={`${className} button ${
+      className={`button ${
         type === "standard" ? "button__standard" : "button__icon"
-      }`}
+      }${className ? ` ${className}` : ""}`}
     >
       {children}
     </button>

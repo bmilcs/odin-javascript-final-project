@@ -1,11 +1,16 @@
-import Experiments from "@/api/Experiments";
-import Header from "@/components/Header/Header";
+import ComedianCard from "@/components/ComedianCard/ComedianCard";
+import { COMEDIAN_DATA } from "@/data/comedians";
+import "./Home.scss";
 
 function Home() {
   return (
-    <>
-      <Experiments />
-    </>
+    <div className="column">
+      <section className="comedian__list">
+        {COMEDIAN_DATA.map((comedian) => {
+          return <ComedianCard id={comedian.id} key={comedian.id} />;
+        })}
+      </section>
+    </div>
   );
 }
 

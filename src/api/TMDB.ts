@@ -5,11 +5,15 @@
 const API_KEY = import.meta.env.VITE_API_KEY;
 const STANDUP_KEYWORD = 9716;
 
+export const imageURL = (path: string) => {
+  return `https://image.tmdb.org/t/p/original/${path}`;
+};
+
 //
 // tmdb's /discover/ api
 //
 
-interface TMDBPersonRequest {
+https: interface TMDBPersonRequest {
   keywords?: number | undefined;
   without_keywords?: number | undefined;
   personId?: number | undefined;

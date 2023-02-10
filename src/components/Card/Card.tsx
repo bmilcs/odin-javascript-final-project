@@ -1,7 +1,21 @@
 import "./Card.scss";
 
-function MediaCard() {
-  return <div>MediaCard</div>;
+interface Props {
+  children: React.ReactNode;
+  className?: string;
+  type?: "comedian" | "special";
 }
 
-export default MediaCard;
+function Card({ children, className, type = "comedian" }: Props) {
+  return (
+    <article
+      className={`card ${
+        type === "comedian" ? "comedian__card" : "standup__card"
+      }${className ? ` ${className}` : ""}`}
+    >
+      {children}
+    </article>
+  );
+}
+
+export default Card;
