@@ -5,12 +5,12 @@ import useFetch from "@/hooks/useFetch";
 import {
   getMovieDetailsURL,
   getTMDBImageURL,
-  TDiscoverMovieResult,
+  IDiscoverMovieResult,
 } from "@/api/TMDB";
 import Card from "../Card/Card";
 import "./SpecialCard.scss";
 
-function SpecialCard({ id }: TDiscoverMovieResult) {
+function SpecialCard({ id }: IDiscoverMovieResult) {
   const specialURL = getMovieDetailsURL(id);
   const { data, error } = useFetch(specialURL);
 

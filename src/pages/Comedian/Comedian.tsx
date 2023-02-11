@@ -3,7 +3,7 @@ import {
   getPersonDetailsURL,
   getTMDBImageURL,
   getIMDBURL,
-  TDiscoverMovieResult,
+  IDiscoverMovieResult,
 } from "@/api/TMDB";
 import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
@@ -42,7 +42,7 @@ function Comedian() {
       personalData.name
     ) {
       setSpecials(
-        specialsData.results.filter((special: TDiscoverMovieResult) => {
+        specialsData.results.filter((special: IDiscoverMovieResult) => {
           const specialTitle = special.title!.toString();
           const comedianName = personalData.name;
           const isSpecial = specialTitle.includes(comedianName);
@@ -54,7 +54,7 @@ function Comedian() {
         // .sort((a, b) => )
       );
       setAppearances(
-        specialsData.results.filter((appearance: TDiscoverMovieResult) => {
+        specialsData.results.filter((appearance: IDiscoverMovieResult) => {
           const appearanceTitle = appearance.title!.toString();
           const comedianName = personalData.name;
           const isAppearance =
@@ -106,7 +106,7 @@ function Comedian() {
         <h3 className="specials__header">Specials</h3>
         <div className="specials__grid">
           {specials &&
-            specials.map((special: TDiscoverMovieResult) => (
+            specials.map((special: IDiscoverMovieResult) => (
               <SpecialCard {...special} />
             ))}
         </div>
@@ -116,7 +116,7 @@ function Comedian() {
         <h3 className="appearances__header">Appearances & Credits</h3>
         <div className="appearances__grid">
           {appearances &&
-            appearances.map((appearance: TDiscoverMovieResult) => (
+            appearances.map((appearance: IDiscoverMovieResult) => (
               <SpecialCard {...appearance} />
             ))}
         </div>
