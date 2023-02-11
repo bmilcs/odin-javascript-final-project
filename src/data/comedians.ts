@@ -18,4 +18,6 @@ export const COMEDIAN_DATA: TComedian[] = [
   { id: 17835, name: "Ricky Gervais" },
   { id: 142516, name: "Jim Jefferies" },
   { id: 55638, name: "Kevin Hart" },
+  { id: 57692, name: "Neal Brennan" },
+  { id: 2142035, name: "Paul Virzi" },
 ];
