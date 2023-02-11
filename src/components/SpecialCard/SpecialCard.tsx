@@ -2,22 +2,17 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { MdOutlineFavoriteBorder, MdOutlineFavorite } from "react-icons/md";
 import useFetch from "@/hooks/useFetch";
-import { getMovieDetailsURL, getTMDBImageURL } from "@/api/TMDB";
+import {
+  getMovieDetailsURL,
+  getTMDBImageURL,
+  TDiscoverMovieResult,
+} from "@/api/TMDB";
 import Card from "../Card/Card";
 import "./SpecialCard.scss";
 
-interface Props {
-  id: number;
-}
-
-function SpecialCard({ id }: Props) {
+function SpecialCard({ id }: TDiscoverMovieResult) {
   const specialURL = getMovieDetailsURL(id);
-  console.log(specialURL);
   const { data, error } = useFetch(specialURL);
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   return (
     <Card className="special-card">

@@ -3,6 +3,7 @@ import {
   getPersonDetailsURL,
   getTMDBImageURL,
   getIMDBURL,
+  TDiscoverMovieResult,
 } from "@/api/TMDB";
 import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
@@ -27,8 +28,8 @@ function Comedian() {
     error: specialsError,
     isLoading: specialsIsLoading,
   } = useFetch(specialsURL);
-  const [specials, setSpecials] = useState(null);
-  const [appearances, setAppearances] = useState(null);
+  const [specials, setSpecials] = useState([] as any[]);
+  const [appearances, setAppearances] = useState([] as any[]);
 
   // separate comedy specials "Comedian Name: Special Title" from
   // appearances / other credits: "Comedian Name Presents:"
@@ -41,8 +42,8 @@ function Comedian() {
       personalData.name
     ) {
       setSpecials(
-        specialsData.results.filter((special) => {
-          const specialTitle = special.title.toString();
+        specialsData.results.filter((special: TDiscoverMovieResult) => {
+          const specialTitle = special.title!.toString();
           const comedianName = personalData.name;
           const isSpecial = specialTitle.includes(comedianName);
           const isNotAppearance = !specialTitle.includes(
@@ -53,8 +54,8 @@ function Comedian() {
         // .sort((a, b) => )
       );
       setAppearances(
-        specialsData.results.filter((appearance) => {
-          const appearanceTitle = appearance.title.toString();
+        specialsData.results.filter((appearance: TDiscoverMovieResult) => {
+          const appearanceTitle = appearance.title!.toString();
           const comedianName = personalData.name;
           const isAppearance =
             appearanceTitle.includes(`${comedianName} Presents`) ||
@@ -104,7 +105,10 @@ function Comedian() {
       <section className="specials">
         <h3 className="specials__header">Specials</h3>
         <div className="specials__grid">
-          {specials && specials.map((special) => <SpecialCard {...special} />)}
+          {specials &&
+            specials.map((special: TDiscoverMovieResult) => (
+              <SpecialCard {...special} />
+            ))}
         </div>
       </section>
 
@@ -112,7 +116,9 @@ function Comedian() {
         <h3 className="appearances__header">Appearances & Credits</h3>
         <div className="appearances__grid">
           {appearances &&
-            appearances.map((appearance) => <SpecialCard {...appearance} />)}
+            appearances.map((appearance: TDiscoverMovieResult) => (
+              <SpecialCard {...appearance} />
+            ))}
         </div>
       </section>
     </div>

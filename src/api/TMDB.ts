@@ -53,7 +53,7 @@ export const getMoviesForPersonURL = (personId: number): string => {
 // tmdb's /movie/ api
 //
 
-export const getMovieDetailsURL = (movieId: number): string => {
+export const getMovieDetailsURL = (movieId: number | undefined): string => {
   return `https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=en-US`;
 };
 
@@ -134,3 +134,24 @@ export const searchForPersonURL = (name: string): string => {
 export const searchAllURL = (name: string): string => {
   return tmdbSearchUrl({ query: name, requestType: "multi" });
 };
+
+//
+// typescript types
+//
+
+export interface TDiscoverMovieResult {
+  poster_path?: string | null;
+  adult?: boolean;
+  overview?: string;
+  release_date?: string;
+  genre_ids?: number[];
+  id?: number;
+  original_title?: string;
+  original_language?: string;
+  title?: string;
+  backdrop_path?: string | null;
+  popularity?: number;
+  vote_count?: number;
+  video?: boolean;
+  vote_average?: number;
+}
