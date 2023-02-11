@@ -82,8 +82,14 @@ function Comedian() {
                   Born: {personalData.birthday}
                 </p>
               )}
-              {personalData.biography && (
+              {personalData.biography ? (
                 <p className="comedian__biography">{personalData.biography}</p>
+              ) : (
+                <p className="comedian__biography">
+                  Unfortunately, {personalData.name} is missing a biography.
+                  Show them some love by visiting their themoviedb.org page and
+                  write one for them!
+                </p>
               )}
               {personalData.imdb_id && (
                 <p className="comedian__imdb">
