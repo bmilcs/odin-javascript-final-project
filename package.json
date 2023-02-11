@@ -13,9 +13,11 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.2",
+    "@types/date-fns": "^2.6.0",
     "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^9.0.0",
+    "date-fns": "^2.29.3",
     "gh-pages": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

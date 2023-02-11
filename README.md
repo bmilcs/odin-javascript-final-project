@@ -11,6 +11,7 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
   - `react-router-dom` (`@types/react-router-dom`)
   - `react-icons` (`@types/react-icons`)
   - `uuid` (`@types/uuid`)
+  - `date-fns` (`@types/date-fns`)
   - `sass`
   - `gh-pages`
 
