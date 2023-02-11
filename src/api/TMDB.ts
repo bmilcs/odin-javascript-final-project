@@ -5,8 +5,12 @@
 const API_KEY = import.meta.env.VITE_API_KEY;
 const STANDUP_KEYWORD = 9716;
 
-export const imageURL = (path: string) => {
+export const getTMDBImageURL = (path: string) => {
   return `https://image.tmdb.org/t/p/original/${path}`;
+};
+
+export const getIMDBURL = (id: string) => {
+  return `https://www.imdb.com/name/${id}`;
 };
 
 //
