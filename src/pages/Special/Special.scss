@@ -1,0 +1,12 @@
+.special {
+  display: flex;
+
+  &__overview {
+    line-height: 2;
+    margin-block: 1rem;
+  }
+
+  &__image {
+    width: 50%;
+  }
+}
