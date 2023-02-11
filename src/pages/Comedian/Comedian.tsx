@@ -1,6 +1,12 @@
-import { getAllSpecialsForPersonURL, getPersonDetailsURL } from "@/api/TMDB";
+import {
+  getAllSpecialsForPersonURL,
+  getPersonDetailsURL,
+  getTMDBImageURL,
+  getIMDBURL,
+} from "@/api/TMDB";
+import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./Comedian.scss";
 
@@ -21,51 +27,88 @@ function Comedian() {
     error: specialsError,
     isLoading: specialsIsLoading,
   } = useFetch(specialsURL);
+  const [specials, setSpecials] = useState(null);
+  const [appearances, setAppearances] = useState(null);
+
+  // separate comedy specials "Comedian Name: Special Title" from
+  // appearances / other credits: "Comedian Name Presents:"
+  // & titles without the comedians name
+  useEffect(() => {
+    if (
+      specialsData &&
+      specialsData.results &&
+      personalData &&
+      personalData.name
+    ) {
+      setSpecials(
+        specialsData.results.filter((special) => {
+          const specialTitle = special.title.toString();
+          const comedianName = personalData.name;
+          const isSpecial = specialTitle.includes(comedianName);
+          const isNotAppearance = !specialTitle.includes(
+            `${comedianName} Presents`
+          );
+          return isSpecial && isNotAppearance;
+        })
+        // .sort((a, b) => )
+      );
+      setAppearances(
+        specialsData.results.filter((appearance) => {
+          const appearanceTitle = appearance.title.toString();
+          const comedianName = personalData.name;
+          const isAppearance =
+            appearanceTitle.includes(`${comedianName} Presents`) ||
+            !appearanceTitle.includes(comedianName);
+          return isAppearance;
+        })
+      );
+    }
+  }, [specialsData, personalData]);
 
   return (
     <div className="column">
-      <div className="person">
+      <div className="comedian">
         {personalData && (
           <>
-            <p>{personalData.name}</p>
-            <p>{personalData.id}</p>
-            <p>{personalData.birthday}</p>
-            <p>{personalData.biography}</p>
-            <p>{personalData.imdb_id}</p>
             <img
-              className="headshot"
-              src={`https://image.tmdb.org/t/p/original/${personalData.profile_path}`}
+              className="comedian__headshot"
+              src={getTMDBImageURL(personalData.profile_path)}
               alt=""
             ></img>
+            <div className="comedian__details">
+              <h2 className="comedian__name">{personalData.name}</h2>
+              {personalData.birthday && (
+                <p className="comedian__birthday">
+                  Born: {personalData.birthday}
+                </p>
+              )}
+              {personalData.biography && (
+                <p className="comedian__biography">{personalData.biography}</p>
+              )}
+              {personalData.imdb_id && (
+                <p className="comedian__imdb">
+                  <a href={getIMDBURL(personalData.imdb_id)}></a>
+                </p>
+              )}
+            </div>
           </>
         )}
       </div>
 
-      <div className="specials">
-        {specialsData && (
-          <>
-            {specialsData.results.map((special: any) => {
-              return (
-                <div>
-                  <h2>.title: {special.title}</h2>
-                  <p>.id: {special.id}</p>
-                  <p>.release_date: {special.release_date}</p>
-                  <p>.vote_average: {special.vote_average}</p>
-                  <p>.overview: {special.overview}</p>
-                  .backdrop_path:
-                  <img
-                    src={`https://image.tmdb.org/t/p/original/${special.backdrop_path}`}
-                  />
-                  {/* .poster_path:
-                  <img
-                    src={`https://image.tmdb.org/t/p/original/${special.poster_path}`}
-                  /> */}
-                </div>
-              );
-            })}
-          </>
-        )}
-      </div>
+      <section className="specials">
+        <h3 className="specials__header">Specials</h3>
+        <div className="specials__grid">
+          {specials && specials.map((special) => <SpecialCard {...special} />)}
+        </div>
+      </section>
+
+      <section className="appearances">
+        <h3 className="appearances__header">Appearances & Credits</h3>
+        <div className="appearances__grid">
+          {appearances &&
+            appearances.map((appearance) => <SpecialCard {...appearance} />)}
+        </div>
+      </section>
     </div>
   );
 }

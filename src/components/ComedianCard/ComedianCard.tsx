@@ -1,10 +1,10 @@
-import { getPersonDetailsURL, imageURL } from "@/api/TMDB";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { MdOutlineFavoriteBorder, MdOutlineFavorite } from "react-icons/md";
+import useFetch from "@/hooks/useFetch";
+import { getPersonDetailsURL, getTMDBImageURL } from "@/api/TMDB";
 import Card from "../Card/Card";
 import "./ComedianCard.scss";
-import useFetch from "@/hooks/useFetch";
-import { useEffect } from "react";
 
 interface Props {
   id: number;
@@ -24,7 +24,11 @@ function ComedianCard({ id }: Props) {
         <>
           {data.profile_path && (
             <Link to={`/comedians/${data.id}`}>
-              <img src={imageURL(data.profile_path)} alt="" className="" />
+              <img
+                src={getTMDBImageURL(data.profile_path)}
+                alt=""
+                className=""
+              />
             </Link>
           )}
           <div className="content">
