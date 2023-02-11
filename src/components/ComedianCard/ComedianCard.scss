@@ -1,15 +1,20 @@
-.content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 1rem;
-}
-
-.card {
+.comedian-card {
   max-width: 300px;
-}
 
-img {
-  object-fit: contain;
+  &__image {
+    width: 100%;
+    object-fit: cover;
+  }
+
+  &__details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+
+  &__icons {
+    display: flex;
+    gap: 0.25rem;
+  }
 }

@@ -1,8 +1,11 @@
-.special {
+.special-card {
+  max-width: 300px;
+
   &__image {
-    max-height: 16rem;
+    max-height: 10rem;
     width: 100%;
     object-fit: cover;
+    // object-fit: contain;
   }
 
   &__content {
@@ -11,12 +14,4 @@
     justify-content: space-between;
     padding: 1rem;
   }
-}
-
-.card {
-  max-width: 300px;
-}
-
-img {
-  object-fit: contain;
 }

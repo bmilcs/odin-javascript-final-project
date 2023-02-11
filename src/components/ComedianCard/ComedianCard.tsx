@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { MdOutlineFavoriteBorder, MdOutlineFavorite } from "react-icons/md";
+import { FaImdb } from "react-icons/fa";
 import useFetch from "@/hooks/useFetch";
 import { getPersonDetailsURL, getTMDBImageURL } from "@/api/TMDB";
 import Card from "../Card/Card";
@@ -19,24 +20,24 @@ function ComedianCard({ id }: Props) {
   }, [data]);
 
   return (
-    <Card type="comedian">
+    <Card className="comedian-card">
       {data && (
         <>
           {data.profile_path && (
             <Link to={`/comedians/${data.id}`}>
               <img
                 src={getTMDBImageURL(data.profile_path)}
-                alt=""
-                className=""
+                alt={`${data.name} Headshot`}
+                className="comedian-card__image"
               />
             </Link>
           )}
-          <div className="content">
-            {data.name && <p className="comedian__birthday">{data.name}</p>}
-            {data.popularity && (
-              <p className="comedian__popularity">{data.popularity}</p>
-            )}
-            {data.imdb_id && <MdOutlineFavoriteBorder size={20} />}
+          <div className="comedian-card__details">
+            {data.name && <p className="comedian-card__name">{data.name}</p>}
+            <div className="comedian-card__icons">
+              {data.imdb_id && <FaImdb size={20} />}
+              <MdOutlineFavoriteBorder size={20} />
+            </div>
           </div>
         </>
       )}

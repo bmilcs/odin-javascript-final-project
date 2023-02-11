@@ -3,16 +3,11 @@ import "./Card.scss";
 interface Props {
   children: React.ReactNode;
   className?: string;
-  type?: "comedian" | "special";
 }
 
-function Card({ children, className, type = "comedian" }: Props) {
+function Card({ children, className }: Props) {
   return (
-    <article
-      className={`card ${
-        type === "comedian" ? "comedian__card" : "standup__card"
-      }${className ? ` ${className}` : ""}`}
-    >
+    <article className={`card ${className ? className : ""}`}>
       {children}
     </article>
   );
