@@ -19,6 +19,18 @@
     }
   }
 
+  &__outline {
+    color: var(--clr-neutral-200);
+    background: none;
+    outline: 3px solid var(--clr-neutral-700);
+
+    &:hover {
+      color: var(--clr-neutral-900);
+      background: var(--clr-primary-200);
+      outline: 3px solid var(--clr-neutral-700);
+    }
+  }
+
   &__icon {
     background: none;
     color: var(--clr-primary-100);
