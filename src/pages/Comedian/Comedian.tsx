@@ -5,9 +5,14 @@ import {
   getIMDBURL,
   IDiscoverMovieResult,
 } from "@/api/TMDB";
+import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
 import SpecialCard from "@/components/SpecialCard/SpecialCard";
+import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
 import useFetch from "@/hooks/useFetch";
-import { formatDateNumberOfYearsPassed } from "@/utils/date";
+import {
+  formatDateNumberOfYearsPassed,
+  isDateOneBeforeDateTwo,
+} from "@/utils/date";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./Comedian.scss";
@@ -32,9 +37,11 @@ function Comedian() {
   const [specials, setSpecials] = useState([] as any[]);
   const [appearances, setAppearances] = useState([] as any[]);
 
-  // separate comedy specials "Comedian Name: Special Title" from
-  // appearances / other credits: "Comedian Name Presents:"
-  // & titles without the comedians name
+  // separate comedy specials "Comedian Name: Special Title"
+  // from appearances / other credits:
+  // - "Comedian Name Presents:"
+  // - titles without the comedians name
+
   useEffect(() => {
     if (
       specialsData &&
@@ -43,26 +50,33 @@ function Comedian() {
       personalData.name
     ) {
       setSpecials(
-        specialsData.results.filter((special: IDiscoverMovieResult) => {
-          const specialTitle = special.title!.toString();
-          const comedianName = personalData.name;
-          const isSpecial = specialTitle.includes(comedianName);
-          const isNotAppearance = !specialTitle.includes(
-            `${comedianName} Presents`
-          );
-          return isSpecial && isNotAppearance;
-        })
-        // .sort((a, b) => )
+        specialsData.results
+          .filter((special: IDiscoverMovieResult) => {
+            const specialTitle = special.title!.toString();
+            const comedianName = personalData.name;
+            const isSpecial = specialTitle.includes(comedianName);
+            const isNotAppearance = !specialTitle.includes(
+              `${comedianName} Presents`
+            );
+            return isSpecial && isNotAppearance;
+          })
+          .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
+            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
+          )
       );
       setAppearances(
-        specialsData.results.filter((appearance: IDiscoverMovieResult) => {
-          const appearanceTitle = appearance.title!.toString();
-          const comedianName = personalData.name;
-          const isAppearance =
-            appearanceTitle.includes(`${comedianName} Presents`) ||
-            !appearanceTitle.includes(comedianName);
-          return isAppearance;
-        })
+        specialsData.results
+          .filter((appearance: IDiscoverMovieResult) => {
+            const appearanceTitle = appearance.title!.toString();
+            const comedianName = personalData.name;
+            const isAppearance =
+              appearanceTitle.includes(`${comedianName} Presents`) ||
+              !appearanceTitle.includes(comedianName);
+            return isAppearance;
+          })
+          .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
+            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
+          )
       );
     }
   }, [specialsData, personalData]);
@@ -109,25 +123,11 @@ function Comedian() {
         )}
       </div>
 
-      <section className="specials">
-        <h3 className="specials__header">Specials</h3>
-        <div className="specials__grid">
-          {specials &&
-            specials.map((special: IDiscoverMovieResult) => (
-              <SpecialCard {...special} />
-            ))}
-        </div>
-      </section>
+      {specials && specials.length > 0 && <SpecialsGrid data={specials} />}
 
-      <section className="appearances">
-        <h3 className="appearances__header">Appearances & Credits</h3>
-        <div className="appearances__grid">
-          {appearances &&
-            appearances.map((appearance: IDiscoverMovieResult) => (
-              <SpecialCard {...appearance} />
-            ))}
-        </div>
-      </section>
+      {appearances && appearances.length > 0 && (
+        <AppearancesGrid data={appearances} />
+      )}
     </div>
   );
 }

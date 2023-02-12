@@ -25,9 +25,9 @@ function SpecialCard({ id }: IDiscoverMovieResult) {
     }
   }, [data]);
 
-  useEffect(() => {
-    console.log("special", special);
-  }, [special]);
+  // useEffect(() => {
+  //   console.log("special", special);
+  // }, [special]);
 
   return (
     <Card className="special-card">
