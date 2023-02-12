@@ -4,6 +4,7 @@ import {
   IDiscoverMovieResult,
   getMovieDetailsURL,
 } from "@/api/TMDB";
+import MicrophoneSVG from "@/assets/MicrophoneSVG";
 import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
 import { formatDateNumberOfYearsPassed } from "@/utils/date";
@@ -29,9 +30,9 @@ function Comedian() {
     isLoading: specialIsLoading,
   } = useFetch(specialURL);
 
-  useEffect(() => {
-    console.log("specialdata: ", specialData);
-  }, [specialData]);
+  // useEffect(() => {
+  //   console.log("specialdata: ", specialData);
+  // }, [specialData]);
 
   return (
     <div className="column">
@@ -51,7 +52,7 @@ function Comedian() {
               alt={`${specialData.title}`}
             />
           ) : (
-            ""
+            <MicrophoneSVG className="special__image special__svg" />
           )}
 
           {/* information */}

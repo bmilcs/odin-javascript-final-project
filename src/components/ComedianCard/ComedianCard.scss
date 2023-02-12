@@ -6,6 +6,11 @@
     object-fit: cover;
   }
 
+  // missing image placeholder
+  &__svg {
+    padding: 1rem;
+  }
+
   &__details {
     display: flex;
     align-items: center;

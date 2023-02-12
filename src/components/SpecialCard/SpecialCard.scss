@@ -8,10 +8,17 @@
     // object-fit: contain;
   }
 
+  // missing image placeholder
+  &__svg {
+    padding: 1rem;
+  }
+
   &__content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
+
     padding: 1rem;
   }
 

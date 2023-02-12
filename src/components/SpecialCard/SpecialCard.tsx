@@ -10,6 +10,7 @@ import {
 import Card from "../Card/Card";
 import "./SpecialCard.scss";
 import { formatDateYearOnly } from "@/utils/date";
+import MicrophoneSVG from "@/assets/MicrophoneSVG";
 
 function SpecialCard({ id }: IDiscoverMovieResult) {
   const specialURL = getMovieDetailsURL(id);
@@ -49,7 +50,9 @@ function SpecialCard({ id }: IDiscoverMovieResult) {
               />
             </Link>
           ) : (
-            ""
+            <Link to={`/specials/${special.id}`}>
+              <MicrophoneSVG className="special-card__image special-card__svg" />
+            </Link>
           )}
           <div className="special-card__content">
             {special.title && (

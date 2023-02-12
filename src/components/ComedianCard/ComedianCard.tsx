@@ -6,6 +6,7 @@ import useFetch from "@/hooks/useFetch";
 import { getPersonDetailsURL, getTMDBImageURL } from "@/api/TMDB";
 import Card from "../Card/Card";
 import "./ComedianCard.scss";
+import MicrophoneSVG from "@/assets/MicrophoneSVG";
 
 interface Props {
   id: number;
@@ -23,7 +24,7 @@ function ComedianCard({ id }: Props) {
     <Card className="comedian-card">
       {data && (
         <>
-          {data.profile_path && (
+          {data.profile_path ? (
             <Link to={`/comedians/${data.id}`}>
               <img
                 src={getTMDBImageURL(data.profile_path)}
@@ -31,6 +32,8 @@ function ComedianCard({ id }: Props) {
                 className="comedian-card__image"
               />
             </Link>
+          ) : (
+            <MicrophoneSVG className="comedian-card__image comedian-card__svg" />
           )}
           <div className="comedian-card__details">
             {data.name && <p className="comedian-card__name">{data.name}</p>}

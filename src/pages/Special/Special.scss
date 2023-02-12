@@ -9,5 +9,8 @@
 
   &__image {
     width: 50%;
+    max-height: 50vh;
+    object-fit: cover;
+    border-radius: var(--border-radius-200);
   }
 }
