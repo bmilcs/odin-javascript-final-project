@@ -7,6 +7,7 @@ interface UserState {
   name: string;
   email: string;
   favorites: string[];
+  isSignedIn: boolean;
 }
 
 const initialState: UserState = {
@@ -14,6 +15,7 @@ const initialState: UserState = {
   name: "",
   email: "",
   favorites: [],
+  isSignedIn: false,
 };
 
 export const userSlice = createSlice({
@@ -38,6 +40,15 @@ export const userSlice = createSlice({
     setUserId: (state, { payload }) => {
       state.userId = payload;
     },
+    setUserAsSignedIn: (state, { payload }) => {
+      state.isSignedIn = true;
+      state.userId = payload;
+    },
+    setUserAsSignedOut: (state) => {
+      state.isSignedIn = false;
+      state.email = "";
+      state.name = "";
+    },
   },
 });
 
@@ -45,6 +56,7 @@ export const userId = (state: RootState) => state.user.userId;
 export const userName = (state: RootState) => state.user.name;
 export const userEmail = (state: RootState) => state.user.email;
 export const userFavorites = (state: RootState) => state.user.favorites;
+export const isUserSignedIn = (state: RootState) => state.user.isSignedIn;
 
 export const {
   addFavorite,
@@ -53,6 +65,8 @@ export const {
   setName,
   setEmail,
   setUserId,
+  setUserAsSignedIn,
+  setUserAsSignedOut,
 } = userSlice.actions;
 
 export default userSlice.reducer;
