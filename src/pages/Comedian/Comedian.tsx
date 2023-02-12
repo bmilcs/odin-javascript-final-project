@@ -7,6 +7,7 @@ import {
 } from "@/api/TMDB";
 import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
+import { formatDateNumberOfYearsPassed } from "@/utils/date";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./Comedian.scss";
@@ -79,9 +80,15 @@ function Comedian() {
             <div className="comedian__details">
               <h2 className="comedian__name">{personalData.name}</h2>
               {personalData.birthday && (
-                <p className="comedian__birthday">
-                  Born: {personalData.birthday}
-                </p>
+                <>
+                  <p className="comedian__birthday">
+                    Born: {personalData.birthday}
+                  </p>
+                  <p>
+                    {formatDateNumberOfYearsPassed(personalData.birthday)} Years
+                    Old
+                  </p>
+                </>
               )}
               {personalData.biography ? (
                 <p className="comedian__biography">{personalData.biography}</p>

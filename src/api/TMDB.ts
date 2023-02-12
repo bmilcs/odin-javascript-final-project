@@ -142,6 +142,7 @@ export const searchAllURL = (name: string): string => {
 export interface IDiscoverMovieResult {
   adult?: boolean;
   backdrop_path?: string | null;
+  card_title?: string;
   genre_ids?: number[];
   id?: number;
   original_language?: string;

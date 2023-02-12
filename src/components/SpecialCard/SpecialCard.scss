@@ -2,7 +2,7 @@
   max-width: 300px;
 
   &__image {
-    max-height: 10rem;
+    height: 10rem;
     width: 100%;
     object-fit: cover;
     // object-fit: contain;
@@ -13,5 +13,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
+  }
+
+  &__title {
+    font-weight: bold;
   }
 }
