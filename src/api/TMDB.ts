@@ -2,7 +2,7 @@
 // api url assembly functions
 //
 
-const API_KEY = import.meta.env.VITE_API_KEY;
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const STANDUP_KEYWORD = 9716;
 
 export const getTMDBImageURL = (path: string) => {
