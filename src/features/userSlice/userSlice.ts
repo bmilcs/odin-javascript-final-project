@@ -1,17 +1,16 @@
 import { RootState } from "@/app/store";
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuid } from "uuid";
 
-interface UserState {
-  userId: string;
+export type UserState = {
+  id: string;
   name: string;
   email: string;
   favorites: string[];
-  isSignedIn: boolean;
-}
+  isSignedIn?: boolean;
+};
 
 const initialState: UserState = {
-  userId: uuid(),
+  id: "",
   name: "",
   email: "",
   favorites: [],
@@ -22,48 +21,56 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    addFavorite: (state, { payload }) => {
+    addUserFavorite: (state, { payload }) => {
       state.favorites.push(payload);
     },
-    removeFavorite: (state, { payload }) => {
+    removeUserFavorite: (state, { payload }) => {
       state.favorites = state.favorites.filter((fav) => fav !== payload);
     },
-    setFavorites: (state, { payload }) => {
+    setUserFavorites: (state, { payload }) => {
       state.favorites = payload;
     },
-    setName: (state, { payload }) => {
+    setUserName: (state, { payload }) => {
       state.name = payload;
     },
-    setEmail: (state, { payload }) => {
+    setUserEmail: (state, { payload }) => {
       state.email = payload;
     },
     setUserId: (state, { payload }) => {
-      state.userId = payload;
+      state.id = payload;
     },
     setUserAsSignedIn: (state, { payload }) => {
       state.isSignedIn = true;
-      state.userId = payload;
+      state.id = payload;
     },
     setUserAsSignedOut: (state) => {
       state.isSignedIn = false;
       state.email = "";
       state.name = "";
     },
+    logUserData: (state) => {
+      console.log("name:", state.name);
+      console.log("id:", state.id);
+      console.log("email:", state.email);
+      console.log("favorites:", state.favorites);
+      console.log("isSignedIn:", state.isSignedIn);
+    },
   },
 });
 
-export const userId = (state: RootState) => state.user.userId;
+export const userId = (state: RootState) => state.user.id;
 export const userName = (state: RootState) => state.user.name;
 export const userEmail = (state: RootState) => state.user.email;
 export const userFavorites = (state: RootState) => state.user.favorites;
 export const isUserSignedIn = (state: RootState) => state.user.isSignedIn;
 
 export const {
-  addFavorite,
-  removeFavorite,
-  setFavorites,
-  setName,
-  setEmail,
+  addUserFavorite,
+  logUserData,
+  removeUserFavorite,
+  setUserFavorites,
+  setUserName,
+  setUserEmail,
   setUserId,
   setUserAsSignedIn,
   setUserAsSignedOut,

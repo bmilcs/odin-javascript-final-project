@@ -1,10 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
 import { store } from "@/app/store";
 import {
-  setEmail,
-  setName,
+  setUserEmail,
   setUserAsSignedIn,
   setUserAsSignedOut,
+  setUserName,
 } from "@/features/userSlice/userSlice";
 import {
   getAuth,
@@ -15,6 +15,7 @@ import {
   getAdditionalUserInfo,
 } from "firebase/auth";
 import { app } from "./config";
+import { connectDatabase } from "./database";
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
@@ -25,9 +26,10 @@ onAuthStateChanged(auth, (user) => {
   const isSignedIn = user;
   if (isSignedIn) {
     store.dispatch(setUserAsSignedIn(user.uid));
-    store.dispatch(setEmail(user.email));
-    store.dispatch(setName(user.displayName));
-    console.log(user.toJSON());
+    store.dispatch(setUserEmail(user.email));
+    store.dispatch(setUserName(user.displayName));
+    connectDatabase();
+    // console.log(user.toJSON());eEe
   } else {
     // user is signed out
     store.dispatch(setUserAsSignedOut());
