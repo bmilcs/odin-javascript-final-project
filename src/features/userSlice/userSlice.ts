@@ -1,4 +1,5 @@
-import { RootState } from "@/app/store";
+import { RootState, store } from "@/app/store";
+import { addFavoriteToDB, removeFavoriteFromDB } from "@/firebase/database";
 import { createSlice } from "@reduxjs/toolkit";
 
 export type UserState = {
@@ -23,12 +24,26 @@ export const userSlice = createSlice({
   reducers: {
     addUserFavorite: (state, { payload }) => {
       state.favorites.push(payload);
+      addFavoriteToDB(payload);
     },
     removeUserFavorite: (state, { payload }) => {
       state.favorites = state.favorites.filter((fav) => fav !== payload);
+      removeFavoriteFromDB(payload);
     },
     setUserFavorites: (state, { payload }) => {
       state.favorites = payload;
+    },
+    toggleUserFavorite: (state, { payload }) => {
+      const favorites = state.favorites;
+      const favoriteId = payload;
+
+      if (favorites.includes(favoriteId)) {
+        state.favorites = state.favorites.filter((fav) => fav !== favoriteId);
+        removeFavoriteFromDB(payload);
+      } else {
+        state.favorites.push(favoriteId);
+        addFavoriteToDB(payload);
+      }
     },
     setUserName: (state, { payload }) => {
       state.name = payload;
@@ -74,6 +89,7 @@ export const {
   setUserId,
   setUserAsSignedIn,
   setUserAsSignedOut,
+  toggleUserFavorite,
 } = userSlice.actions;
 
 export default userSlice.reducer;

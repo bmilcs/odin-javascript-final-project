@@ -11,6 +11,7 @@ import Card from "../Card/Card";
 import "./SpecialCard.scss";
 import { formatDateYearOnly } from "@/utils/date";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
+import FavoriteIcon from "../FavoriteIcon/FavoriteIcon";
 
 function SpecialCard({ id }: IDiscoverMovieResult) {
   const specialURL = getMovieDetailsURL(id);
@@ -30,46 +31,49 @@ function SpecialCard({ id }: IDiscoverMovieResult) {
   // }, [special]);
 
   return (
-    <Card className="special-card">
+    <>
       {special && (
-        <>
-          {special.backdrop_path ? (
+        <Card className="special-card" dataAttribute={`special-${special.id}`}>
+          <>
+            {/* image */}
             <Link to={`/specials/${special.id}`}>
-              <img
-                className="special-card__image"
-                src={getTMDBImageURL(special.backdrop_path)}
-                alt={`${special.title}`}
-              />
+              {special.backdrop_path ? (
+                <img
+                  className="special-card__image"
+                  src={getTMDBImageURL(special.backdrop_path)}
+                  alt={`${special.title}`}
+                />
+              ) : special.poster_path ? (
+                <img
+                  className="special-card__image"
+                  src={getTMDBImageURL(special.poster_path)}
+                  alt={`${special.title}`}
+                />
+              ) : (
+                <MicrophoneSVG className="special-card__image special-card__svg" />
+              )}
+              {special.release_date && (
+                <p className="special-card__year">
+                  {formatDateYearOnly(special.release_date)}
+                </p>
+              )}
             </Link>
-          ) : special.poster_path ? (
-            <Link to={`/specials/${special.id}`}>
-              <img
-                className="special-card__image"
-                src={getTMDBImageURL(special.poster_path)}
-                alt={`${special.title}`}
-              />
-            </Link>
-          ) : (
-            <Link to={`/specials/${special.id}`}>
-              <MicrophoneSVG className="special-card__image special-card__svg" />
-            </Link>
-          )}
-          <div className="special-card__content">
-            {special.title && (
-              <p className="special-card__title">{special.card_title}</p>
-            )}
-            {special.release_date && (
-              <p className="special-card__date">
-                {formatDateYearOnly(special.release_date)}
-              </p>
-            )}
-            {/* {special.vote_average && (
+
+            {/* text details */}
+            <div className="special-card__content">
+              {special.title && (
+                <p className="special-card__title">{special.card_title}</p>
+              )}
+
+              <FavoriteIcon favoriteId={`special-${special.id}`} />
+              {/* {special.vote_average && (
               <p className="special-card__vote">{special.vote_average}</p>
             )} */}
-          </div>
-        </>
+            </div>
+          </>
+        </Card>
       )}
-    </Card>
+    </>
   );
 }
 

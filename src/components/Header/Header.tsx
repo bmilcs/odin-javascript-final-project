@@ -35,15 +35,17 @@ function Header() {
           />
 
           <Button type="icon">
-            <MdSearch size={22} />
+            <MdSearch size={20} />
           </Button>
         </form>
 
-        {isSignedIn ? (
+        {isSignedIn && (
           <Button type="outline" onClick={() => signUserOutFromFirebase()}>
             logout
           </Button>
-        ) : (
+        )}
+
+        {!isSignedIn && (
           <Button onClick={() => signUserInWithGooglePopup()}>login</Button>
         )}
       </div>

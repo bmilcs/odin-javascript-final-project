@@ -1,13 +1,17 @@
 import "./Card.scss";
 
 interface Props {
+  dataAttribute: string;
   children: React.ReactNode;
   className?: string;
 }
 
-function Card({ children, className }: Props) {
+function Card({ dataAttribute, children, className }: Props) {
   return (
-    <article className={`card ${className ? className : ""}`}>
+    <article
+      data-tmdb-id={dataAttribute}
+      className={`card ${className ? className : ""}`}
+    >
       {children}
     </article>
   );
