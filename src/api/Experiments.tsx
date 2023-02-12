@@ -36,9 +36,9 @@ function Experiments() {
   const { data: movieDetailsData, error: movieDetailsError } =
     useFetch(movieDetailsURL);
 
-  useEffect(() => {
-    console.log(personalData);
-  }, [personalData]);
+  // useEffect(() => {
+  //   console.log(personalData);
+  // }, [personalData]);
 
   return (
     <div className="test">

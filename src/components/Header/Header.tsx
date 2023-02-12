@@ -14,10 +14,6 @@ import { isUserSignedIn } from "@/features/userSlice/userSlice";
 function Header() {
   const isSignedIn = useAppSelector(isUserSignedIn);
 
-  useEffect(() => {
-    console.log(isSignedIn);
-  }, [isSignedIn]);
-
   return (
     <header className="header">
       <div className="column">

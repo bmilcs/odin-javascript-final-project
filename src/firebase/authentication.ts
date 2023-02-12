@@ -44,7 +44,7 @@ export const signUserInWithGooglePopup = () =>
       const user = result.user;
       // IdP data available using getAdditionalUserInfo(result)
       const additionalInfo = getAdditionalUserInfo(result);
-      console.log(additionalInfo);
+      // console.log(additionalInfo);
     })
     .catch((error) => {
       // Handle Errors here.
