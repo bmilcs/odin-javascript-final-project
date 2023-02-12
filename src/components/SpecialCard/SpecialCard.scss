@@ -1,11 +1,27 @@
 .special-card {
   max-width: 300px;
+  position: relative;
 
   &__image {
     height: 10rem;
     width: 100%;
     object-fit: cover;
-    // object-fit: contain;
+    overflow: hidden;
+  }
+
+  &__year {
+    position: absolute;
+    top: 0.75rem;
+    left: 0;
+    padding: 0.2rem 0.6rem;
+
+    font-size: 0.9rem;
+    font-weight: bold;
+
+    border-radius: 0 var(--border-radius-100) var(--border-radius-100) 0;
+
+    background: var(--clr-neutral-700);
+    color: var(--clr-primary-100);
   }
 
   // missing image placeholder
@@ -14,10 +30,11 @@
   }
 
   &__content {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr max-content;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+
+    font-size: 0.9rem;
 
     padding: 1rem;
   }
