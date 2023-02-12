@@ -1,10 +1,16 @@
-import { differenceInYears, parse } from "date-fns";
+import { differenceInYears, isBefore, parse } from "date-fns";
 
 export const formatDateNumberOfYearsPassed = (dateString: string) => {
   const today = new Date();
   const parsedDate = parse(dateString, "yyyy-MM-dd", new Date());
   const age = differenceInYears(today, parsedDate);
   return age;
+};
+
+export const isDateOneBeforeDateTwo = (dateOne: string, dateTwo: string) => {
+  const parsedDateOne = parse(dateOne, "yyyy-MM-dd", new Date());
+  const parsedDateTwo = parse(dateTwo, "yyyy-MM-dd", new Date());
+  return isBefore(parsedDateOne, parsedDateTwo);
 };
 
 export const formatDateYearOnly = (date: string) => {
