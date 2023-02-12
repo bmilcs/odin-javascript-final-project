@@ -1,0 +1,15 @@
+.heart {
+  transition: var(--transition-100);
+
+  &__full {
+    color: var(--clr-accent-100);
+  }
+
+  &__empty {
+    color: var(--clr-primary-200);
+  }
+
+  &:hover {
+    scale: 1.1;
+  }
+}
