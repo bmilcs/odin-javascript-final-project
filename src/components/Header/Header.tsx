@@ -6,10 +6,11 @@ import {
   signUserInWithGooglePopup,
   signUserOutFromFirebase,
 } from "@/firebase/authentication";
-import Button from "../Button/Button";
-import "./Header.scss";
 import { useAppSelector } from "@/app/hooks";
 import { isUserSignedIn } from "@/features/userSlice/userSlice";
+import Button from "@/components/Button/Button";
+import NavBar from "@/components/NavBar/NavBar";
+import "./Header.scss";
 
 function Header() {
   const isSignedIn = useAppSelector(isUserSignedIn);
@@ -24,7 +25,7 @@ function Header() {
           </div>
         </Link>
 
-        <form className="search">
+        {/* <form className="search">
           <input
             type="text"
             id="search-input"
@@ -37,7 +38,9 @@ function Header() {
           <Button type="icon">
             <MdSearch size={20} />
           </Button>
-        </form>
+        </form> */}
+
+        <NavBar />
 
         {isSignedIn && (
           <Button type="outline" onClick={() => signUserOutFromFirebase()}>

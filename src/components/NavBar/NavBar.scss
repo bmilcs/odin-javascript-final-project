@@ -1,0 +1,26 @@
+.nav {
+  margin-left: auto;
+  padding-inline: 1.5rem;
+
+  display: flex;
+  align-items: center;
+
+  &__ul {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    text-transform: uppercase;
+  }
+
+  &__a,
+  &__a:visited {
+    color: var(--clr-neutral-200);
+    transition: var(--transition-100);
+
+    &:hover {
+      color: var(--clr-primary-200);
+    }
+  }
+}
