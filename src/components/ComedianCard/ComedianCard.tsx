@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaImdb } from "react-icons/fa";
-import useFetch from "@/hooks/useFetch";
 import { getPersonDetailsURL, getTMDBImageURL } from "@/api/TMDB";
-import Card from "../Card/Card";
-import "./ComedianCard.scss";
+import Card from "@/components/Card/Card";
+import FavoriteIcon from "@/components/FavoriteIcon/FavoriteIcon";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import FavoriteIcon from "../FavoriteIcon/FavoriteIcon";
+import useFetch from "@/hooks/useFetch";
+import "./ComedianCard.scss";
 
 interface Props {
   id: number;

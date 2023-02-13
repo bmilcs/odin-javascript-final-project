@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MdOutlineFavoriteBorder, MdOutlineFavorite } from "react-icons/md";
 import useFetch from "@/hooks/useFetch";
+import { formatDateYearOnly } from "@/utils/date";
 import {
   getMovieDetailsURL,
   getTMDBImageURL,
   IDiscoverMovieResult,
 } from "@/api/TMDB";
-import Card from "../Card/Card";
-import "./SpecialCard.scss";
-import { formatDateYearOnly } from "@/utils/date";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import FavoriteIcon from "../FavoriteIcon/FavoriteIcon";
+import FavoriteIcon from "@/components/FavoriteIcon/FavoriteIcon";
+import Card from "@/components/Card/Card";
+import "./SpecialCard.scss";
 
 function SpecialCard({ id }: IDiscoverMovieResult) {
   const specialURL = getMovieDetailsURL(id);

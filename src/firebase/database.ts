@@ -22,15 +22,18 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import { COMEDIAN_DATA } from "@/data/comedians";
 
 const db = getFirestore(app);
-const usersCollectionRef = collection(db, "users");
+const allUsersCollectionRef = collection(db, "users");
+
 let userDocRef: any;
 let userDocSnap: any;
 
-export const connectDatabase = async () => {
+// invoked on auth state change, when a user logs in
+export const connectUserToDB = async () => {
   const uid = userId(store.getState());
-  userDocRef = doc(usersCollectionRef, uid);
+  userDocRef = doc(allUsersCollectionRef, uid);
   userDocSnap = await getDoc(userDocRef);
   const isNewUser = !userDocSnap.exists();
 

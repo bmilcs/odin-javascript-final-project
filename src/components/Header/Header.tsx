@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import { GiMicrophone } from "react-icons/gi";
 import { MdSearch } from "react-icons/md";
 import { Link } from "react-router-dom";

@@ -1,5 +1,5 @@
 import { IDiscoverMovieResult } from "@/api/TMDB";
-import SpecialCard from "../SpecialCard/SpecialCard";
+import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import "./AppearancesGrid.scss";
 
 type Props = {

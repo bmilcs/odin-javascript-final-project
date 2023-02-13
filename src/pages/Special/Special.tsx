@@ -1,14 +1,7 @@
-import {
-  getTMDBImageURL,
-  getIMDBURL,
-  IDiscoverMovieResult,
-  getMovieDetailsURL,
-} from "@/api/TMDB";
+import { getTMDBImageURL, getMovieDetailsURL } from "@/api/TMDB";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import useFetch from "@/hooks/useFetch";
 import { formatDateNumberOfYearsPassed } from "@/utils/date";
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./Special.scss";
 

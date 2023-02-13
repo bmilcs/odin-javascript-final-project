@@ -14,7 +14,7 @@ import {
   getAdditionalUserInfo,
 } from "firebase/auth";
 import { app } from "./config";
-import { connectDatabase } from "./database";
+import { connectUserToDB } from "./database";
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
@@ -27,7 +27,7 @@ onAuthStateChanged(auth, (user) => {
     store.dispatch(setUserAsSignedIn(user.uid));
     store.dispatch(setUserEmail(user.email));
     store.dispatch(setUserName(user.displayName));
-    connectDatabase();
+    connectUserToDB();
     // console.log(user.toJSON());eEe
   } else {
     // user is signed out
