@@ -17,21 +17,21 @@ export const getIMDBURL = (id: string) => {
 // tmdb's /discover/ api
 //
 
-interface TMDBPersonRequest {
+type TMDBDicoverRequest = {
   keywords?: number | undefined;
   without_keywords?: number | undefined;
   personId?: number | undefined;
-}
+};
 
 export const tmdbDiscoverURL = ({
   keywords,
   without_keywords,
-  personId: person,
-}: TMDBPersonRequest): string => {
+  personId,
+}: TMDBDicoverRequest): string => {
   let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}`;
   if (keywords) url += `&with_keywords=${keywords}`;
   if (without_keywords) url += `&without_keywords=${without_keywords}`;
-  if (person) url += `&with_cast=${person}`;
+  if (personId) url += `&with_cast=${personId}`;
   return url;
 };
 
@@ -61,12 +61,12 @@ export const getMovieDetailsURL = (movieId: number | undefined): string => {
 // tmdb's /person/ api
 //
 
-interface TMDBPersonRequest {
+type TMDBPersonRequest = {
   requestType?: string;
   keywords?: number | undefined;
   without_keywords?: number | undefined;
   personId?: number | undefined;
-}
+};
 
 export const tmdbPersonURL = ({
   requestType,
