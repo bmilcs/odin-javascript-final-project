@@ -6,7 +6,6 @@ import {
   IDiscoverMovieResult,
 } from "@/api/TMDB";
 import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
-import SpecialCard from "@/components/SpecialCard/SpecialCard";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
 import useFetch from "@/hooks/useFetch";
 import {

@@ -1,4 +1,4 @@
-import { RootState, store } from "@/app/store";
+import { RootState } from "@/app/store";
 import { addFavoriteToDB, removeFavoriteFromDB } from "@/firebase/database";
 import { createSlice } from "@reduxjs/toolkit";
 

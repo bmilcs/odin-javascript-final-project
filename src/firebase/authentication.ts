@@ -1,4 +1,3 @@
-import { useAppSelector } from "@/app/hooks";
 import { store } from "@/app/store";
 import {
   setUserEmail,
