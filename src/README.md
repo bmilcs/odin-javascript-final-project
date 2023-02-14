@@ -112,16 +112,20 @@ User data:
     - favorites (field, array)
       - category-id (field, string): "person-tmdbAPIid", "standup-tmdbAPIid"
 
-- **person (collection)**
+- **comedian (collection)**
 
-  - apiID (document)
+  - id: tmdb person api id (document)
+    - id ^ (field, number)
     - name (field, string)
     - favoriteCount (field, number)
 
 - **specials (collection)**
 
-  - apiID (document)
-    - name (field, string)
+  - id: tmdb movie api id (document)
+    - id ^ (field, number)
+    - title (field, string)
+    - comedian (field, string)
+    - comedianId (field, number)
     - favoriteCount (field, number)
 
 ### API Data vs. Database Data

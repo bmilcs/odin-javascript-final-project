@@ -28,9 +28,9 @@ onAuthStateChanged(auth, (user) => {
     store.dispatch(setUserEmail(user.email));
     store.dispatch(setUserName(user.displayName));
     connectUserToDB();
-    // console.log(user.toJSON());eEe
+    // console.log(user.toJSON());
   } else {
-    // user is signed out
+    // user signed out
     store.dispatch(setUserAsSignedOut());
   }
 });

@@ -7,6 +7,7 @@ import {
 } from "@/api/TMDB";
 import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
+import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
 import useFetch from "@/hooks/useFetch";
 import {
   formatDateNumberOfYearsPassed,
@@ -20,9 +21,9 @@ import "./Comedian.scss";
 
 function Comedian() {
   const { personId } = useParams();
-  const id = personId ? Number(personId) : 0;
-  const comedianURL = getPersonDetailsURL(id);
-  const specialsURL = getAllSpecialsForPersonURL(id);
+  const comedianId = personId ? Number(personId) : 0;
+  const comedianURL = getPersonDetailsURL(comedianId);
+  const specialsURL = getAllSpecialsForPersonURL(comedianId);
   const {
     data: personalData,
     error: personalError,
@@ -79,6 +80,23 @@ function Comedian() {
       );
     }
   }, [specialsData, personalData]);
+
+  // special/appearance data is set once a comedian's info & their content has been fetched
+  useEffect(() => {
+    if (specials)
+      specials.forEach(async (spec) => {
+        if (!doesSpecialExistInDB(spec.id)) {
+          addSpecialToDB(spec, comedianId, personalData.name);
+        }
+      });
+
+    if (appearances)
+      appearances.forEach(async (spec) => {
+        if (!doesSpecialExistInDB(spec.id)) {
+          addSpecialToDB(spec, comedianId, personalData.name);
+        }
+      });
+  }, [specials, appearances]);
 
   return (
     <div className="column">

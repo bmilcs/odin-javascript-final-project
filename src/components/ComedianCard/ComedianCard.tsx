@@ -17,7 +17,7 @@ function ComedianCard({ id }: Props) {
   const { data, error } = useFetch(personalUrl);
 
   useEffect(() => {
-    console.log("data", data);
+    // console.log("data", data);
   }, [data]);
 
   return (

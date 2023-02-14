@@ -33,6 +33,10 @@ Previous projects utilizing `react-router-dom` caused 404 errors when any path (
 
 The fix required adding a custom 404 page (`public/404.html`) and a script to my index.html (`src/index.html`).
 
+### "Specials" API Responses: Missing Comedian ID
+
+When directly visiting `/specials/{tmdbId}`, the id of the special is retrieved from the url via `useParams()` and then used to fetch the data from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work in a "View this comedian's other work" section.
+
 ## Screenshots
 
 In progress...
