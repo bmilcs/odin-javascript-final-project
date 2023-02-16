@@ -1,0 +1,40 @@
+.search {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+
+  margin-inline: 1rem;
+
+  &__form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 40px;
+  left: 0;
+
+  background: var(--clr-neutral-700);
+  padding: 0.5rem;
+
+  border-radius: var(--border-radius-200);
+}
+
+.result {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 1rem;
+  align-items: center;
+
+  &__photo {
+    width: 60px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+
+    border-radius: var(--border-radius-200);
+  }
+}

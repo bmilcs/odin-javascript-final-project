@@ -66,6 +66,7 @@ h6 {
   --clr-neutral-900: #1a1b26;
   --clr-neutral-800: #24283b;
   --clr-neutral-700: #414868;
+  --clr-neutral-300: #848692;
   --clr-neutral-200: #d4d6e0;
   --clr-neutral-100: #f1f2f7;
   --clr-primary-200: #bb9af7;
@@ -129,7 +130,7 @@ input {
   font-weight: bold;
 
   color: var(--clr-neutral-900);
-  background: var(--clr-neutral-900);
+  background: var(--clr-neutral-800);
 
   border: 0;
   outline: 0;
@@ -137,7 +138,7 @@ input {
   transition: var(--transition-100);
 
   &::placeholder {
-    color: var(--clr-neutral-700);
+    color: var(--clr-neutral-300);
     font-weight: normal;
     font-style: italic;
     text-transform: lowercase;

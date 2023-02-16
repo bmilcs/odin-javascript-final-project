@@ -10,6 +10,7 @@ import { isUserSignedIn } from "@/features/userSlice/userSlice";
 import Button from "@/components/Button/Button";
 import NavBar from "@/components/NavBar/NavBar";
 import "./Header.scss";
+import SearchBar from "@/components/SearchBar/SearchBar";
 
 function Header() {
   const isSignedIn = useAppSelector(isUserSignedIn);
@@ -24,30 +25,15 @@ function Header() {
           </div>
         </Link>
 
-        {/* <form className="search">
-          <input
-            type="text"
-            id="search-input"
-            className="search-input"
-            placeholder="tom segura ball hog"
-            minLength={4}
-            maxLength={64}
-          />
-
-          <Button type="icon">
-            <MdSearch size={20} />
-          </Button>
-        </form> */}
+        <SearchBar />
 
         <NavBar />
 
-        {isSignedIn && (
+        {isSignedIn ? (
           <Button type="outline" onClick={() => signUserOutFromFirebase()}>
             logout
           </Button>
-        )}
-
-        {!isSignedIn && (
+        ) : (
           <Button onClick={() => signUserInWithGooglePopup()}>login</Button>
         )}
       </div>
