@@ -1,9 +1,11 @@
-//
 // api url assembly functions
-//
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const STANDUP_KEYWORD = 9716;
+
+//
+// misc urls
+//
 
 export const getTMDBImageURL = (path: string) => {
   return `https://image.tmdb.org/t/p/original/${path}`;
@@ -118,7 +120,7 @@ export const tmdbSearchUrl = ({
   return url;
 };
 
-const parseSearchQuery = (string: string): string => {
+export const parseSearchQuery = (string: string): string => {
   return string === undefined
     ? ""
     : string
