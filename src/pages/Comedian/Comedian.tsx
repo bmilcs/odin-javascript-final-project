@@ -81,7 +81,8 @@ function Comedian() {
     }
   }, [specialsData, personalData]);
 
-  // special/appearance data is set once a comedian's info & their content has been fetched
+  // special/appearance data is set after a comedian's info & their content
+  // has been fetched. once fetched, add the comedian's specials to the db.
   useEffect(() => {
     if (specials)
       specials.forEach(async (spec) => {
