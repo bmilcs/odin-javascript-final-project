@@ -6,9 +6,11 @@ export type TApiResponse = {
   data: any;
   error: any;
   isLoading: Boolean;
+  setUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
-function useFetch(url: string): TApiResponse {
+function useFetch(initialUrl: string): TApiResponse {
+  const [url, setUrl] = useState<string>(initialUrl);
   const [status, setStatus] = useState<Number>(0);
   const [statusText, setStatusText] = useState<String>("");
   const [data, setData] = useState<any>();
@@ -17,13 +19,6 @@ function useFetch(url: string): TApiResponse {
 
   const getData = async () => {
     setIsLoading(true);
-
-    // prevent empty urls
-    if (!url) {
-      setError("Missing URL");
-      setIsLoading(false);
-      return;
-    }
 
     // allow cleanup on unmount
     const controller = new AbortController();
@@ -49,10 +44,17 @@ function useFetch(url: string): TApiResponse {
 
   // execute fetch on initial render & url change
   useEffect(() => {
-    getData();
-  }, []);
+    // prevent empty urls
+    if (!url) {
+      setError("Missing URL");
+      setIsLoading(false);
+      return;
+    }
 
-  return { data, error, status, statusText, isLoading };
+    getData();
+  }, [url]);
+
+  return { data, error, status, statusText, isLoading, setUrl };
 }
 
 export default useFetch;
