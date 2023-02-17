@@ -138,3 +138,15 @@ Goal: Limit read/writes/amount of data in the Firestore database
   - On user favoriting them
   - Start off with my personal favorites
 - Otherwise, generic/home content should be generated from a static list of predetermined comedians/specials
+
+## Search Feature
+
+- To reduce calls to the db, retrieve & store comedian TMDB api id's data on initial page load
+- SearchBar component should search our site's database
+  - At the bottom of the autocomplete dropdown, add a "Can't find someone? Add a comedian here" page link
+- Add Comedian Page:
+  - Utilize TMDB's person search API
+  - Can't directly restrict results to comedians/keywords
+  - Instead, allow the user to load the `/comedians/{tmdbApi}` page
+  - The '/comedians/{tmdbApi}' performs the discover api search by default
+    - If standup special keyword exists for person, allow user to officially add them to the db via a large button
