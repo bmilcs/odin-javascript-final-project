@@ -71,7 +71,7 @@ const loadUserData = async () => {
   store.dispatch(setUserName(name));
   store.dispatch(setUserFavorites(favorites));
   store.dispatch(setUserEmail(email));
-  store.dispatch(logUserData());
+  // store.dispatch(logUserData());
 };
 
 export const addFavoriteToDB = async (favorite: string) => {

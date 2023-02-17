@@ -44,6 +44,12 @@ function useFetch(initialUrl: string): TApiResponse {
 
   // execute fetch on initial render & url change
   useEffect(() => {
+    // clear previous results
+    setData("");
+    setError("");
+    setStatus(0);
+    setStatusText("");
+
     // prevent empty urls
     if (!url) {
       setError("Missing URL");

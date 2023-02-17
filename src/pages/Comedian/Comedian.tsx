@@ -28,14 +28,21 @@ function Comedian() {
     data: personalData,
     error: personalError,
     isLoading: personalIsLoading,
+    setUrl: setPersonalUrl,
   } = useFetch(comedianURL);
   const {
     data: specialsData,
     error: specialsError,
     isLoading: specialsIsLoading,
+    setUrl: setSpecialsUrl,
   } = useFetch(specialsURL);
   const [specials, setSpecials] = useState([] as any[]);
   const [appearances, setAppearances] = useState([] as any[]);
+
+  useEffect(() => {
+    setPersonalUrl(comedianURL);
+    setSpecialsUrl(specialsURL);
+  }, [comedianId]);
 
   // separate comedy specials "Comedian Name: Special Title"
   // from appearances / other credits:
@@ -49,6 +56,9 @@ function Comedian() {
       personalData &&
       personalData.name
     ) {
+      setSpecials([]);
+      setAppearances([]);
+
       setSpecials(
         specialsData.results
           .filter((special: IDiscoverMovieResult) => {
