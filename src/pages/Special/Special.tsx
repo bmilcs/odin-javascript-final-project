@@ -5,18 +5,17 @@ import { formatDateNumberOfYearsPassed } from "@/utils/date";
 import { useParams } from "react-router-dom";
 import "./Special.scss";
 
-// TODO validate incoming api ID
+// http://localhost:5173/odin-javascript-final-project/specials/1065890
+// TODO improve GUI, add Comedian info & other specials
+// TODO separate name (small) from special title (large)
+// TODO handle specials that haven't been released yet
+// TODO ^ red banner, add to coming soon section on homepage
+// TODO Hide "Years Ago" if 0
 
 function Comedian() {
   const { specialId } = useParams();
   const id = specialId ? Number(specialId) : 0;
   const specialURL = getMovieDetailsURL(id);
-  // const comedianURL = getPersonDetailsURL(id);
-  // const {
-  //   data: personalData,
-  //   error: personalError,
-  //   isLoading: personalIsLoading,
-  // } = useFetch(comedianURL);
   const {
     data: specialData,
     error: specialError,
@@ -53,9 +52,7 @@ function Comedian() {
             {specialData.title && (
               <h2 className="special__title">{specialData.title}</h2>
             )}
-            {specialData.homepage && (
-              <p className="special__homepage">{specialData.homepage}</p>
-            )}
+
             {specialData.release_date && (
               <>
                 <p className="special__years_ago">
@@ -67,19 +64,29 @@ function Comedian() {
                 </p>
               </>
             )}
+
             {specialData.vote_average && (
               <p className="special__vote_average">
                 {specialData.vote_average}/10
               </p>
             )}
+
             {specialData.runtime && (
               <p className="special__runtime">{specialData.runtime} minutes</p>
             )}
+
             {specialData.status && specialData.status !== "Released" && (
               <p className="special__status">{specialData.status}</p>
             )}
+
             {specialData.overview && (
               <p className="special__overview">{specialData.overview}</p>
+            )}
+
+            {specialData.homepage && (
+              <a className="special__homepage" href={specialData.homepage}>
+                Watch It Now
+              </a>
             )}
           </div>
         </div>
