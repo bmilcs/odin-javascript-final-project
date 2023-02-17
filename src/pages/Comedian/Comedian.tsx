@@ -44,7 +44,7 @@ function Comedian() {
     setSpecialsUrl(specialsURL);
   }, [comedianId]);
 
-  // separate comedy specials "Comedian Name: Special Title"
+  // separate comedy specials: "Comedian Name: Special Title"
   // from appearances / other credits:
   // - "Comedian Name Presents:"
   // - titles without the comedians name
@@ -61,27 +61,36 @@ function Comedian() {
 
       setSpecials(
         specialsData.results
-          .filter((special: IDiscoverMovieResult) => {
-            const specialTitle = special.title!.toString();
-            const comedianName = personalData.name;
-            const isSpecial = specialTitle.includes(comedianName);
-            const isNotAppearance = !specialTitle.includes(
-              `${comedianName} Presents`
-            );
+          .filter((movie: IDiscoverMovieResult) => {
+            const title = movie.title!.toString();
+            const [firstName, lastName] = personalData.name.split(" ");
+            const titlePrefix = title.split(":")[0];
+
+            const isSpecial =
+              title.includes(firstName) && title.includes(lastName);
+            const isNotAppearance = !titlePrefix.includes("Presents");
+
             return isSpecial && isNotAppearance;
           })
           .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
             isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
           )
       );
+
       setAppearances(
         specialsData.results
-          .filter((appearance: IDiscoverMovieResult) => {
-            const appearanceTitle = appearance.title!.toString();
-            const comedianName = personalData.name;
+          .filter((movie: IDiscoverMovieResult) => {
+            const title = movie.title!.toString();
+            const [firstName, lastName] = personalData.name.split(" ");
+            const titlePrefix = title.split(":")[0];
+
             const isAppearance =
-              appearanceTitle.includes(`${comedianName} Presents`) ||
-              !appearanceTitle.includes(comedianName);
+              titlePrefix.includes("Presents") ||
+              !(
+                titlePrefix.includes(firstName) &&
+                titlePrefix.includes(lastName)
+              );
+
             return isAppearance;
           })
           .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
