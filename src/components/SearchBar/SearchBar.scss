@@ -4,19 +4,21 @@
   display: grid;
   place-items: center;
 
-  margin-inline: 1rem;
-
   &__form {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr max-content;
+    place-items: center;
+    gap: 0.25rem;
   }
 }
 
 .dropdown {
   position: absolute;
-  top: 40px;
+  top: calc(100% + 0.35rem);
   left: 0;
+
+  display: grid;
+  gap: 0.35rem;
 
   background: var(--clr-neutral-700);
   padding: 0.5rem;
@@ -27,14 +29,28 @@
 .result {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 1rem;
   align-items: center;
+  gap: 0.35rem;
+  padding-block: 0.1rem;
+
+  border-radius: var(--border-radius-200);
+
+  &:hover {
+    background: var(--clr-neutral-800);
+  }
 
   &__photo {
-    width: 60px;
+    pointer-events: none;
+
+    width: 35px;
     aspect-ratio: 1/1;
     object-fit: cover;
 
     border-radius: var(--border-radius-200);
+  }
+
+  &__name {
+    pointer-events: none;
+    padding-right: 0.5rem;
   }
 }

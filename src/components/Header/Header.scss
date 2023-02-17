@@ -1,12 +1,14 @@
 .header {
   position: sticky;
 
-  // background: var(--clr-neutral-800);
   padding-block: 1rem;
 
   .column {
-    display: flex;
+    display: grid;
+    grid-template-columns: max-content max-content max-content min-content;
     justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
   }
 
   .title {
@@ -16,13 +18,18 @@
     gap: 0.25rem;
 
     line-height: 1.2;
-    color: var(--clr-accent-100);
+    color: var(--clr-primary-200);
 
     &__text {
       font-size: 1.75rem;
+
+      &__db {
+        color: var(--clr-neutral-700);
+      }
     }
 
     &__icon {
+      color: var(--clr-neutral-700);
       size: 2em;
     }
   }

@@ -20,8 +20,10 @@ function Header() {
       <div className="column">
         <Link to="/">
           <div className="title">
-            <GiMicrophone size={30} className="title__icon" />
-            <h1 className="title__text">the comedy db</h1>
+            {/* <GiMicrophone size={28} className="title__icon" /> */}
+            <h1 className="title__text">
+              comedy<span className="title__text__db">db</span>
+            </h1>
           </div>
         </Link>
 
