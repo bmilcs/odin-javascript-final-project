@@ -199,3 +199,10 @@ export interface IMovieDetails {
   vote_average?: number;
   vote_count?: number;
 }
+
+export interface IPersonSearchResult {
+  profile_path?: string | null;
+  id: number;
+  name: string;
+  popularity: number;
+}
