@@ -2,6 +2,9 @@
   padding: 0.25rem 0.75rem;
   border-radius: var(--border-radius-100);
 
+  display: grid;
+  place-items: center;
+
   text-transform: uppercase;
   font-weight: bold;
 
@@ -34,6 +37,7 @@
   &__icon {
     background: none;
     color: var(--clr-primary-100);
+    padding: 0.25rem;
 
     &:hover {
       color: var(--clr-accent-200);
