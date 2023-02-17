@@ -129,7 +129,7 @@ input {
 
   font-weight: bold;
 
-  color: var(--clr-neutral-900);
+  color: var(--clr-neutral-100);
   background: var(--clr-neutral-800);
 
   border: 0;
@@ -144,9 +144,10 @@ input {
     text-transform: lowercase;
   }
 
-  &:hover {
-    background: var(--clr-neutral-700);
+  &:hover,
+  &:focus {
     color: var(--clr-neutral-100);
+    outline: 3px solid var(--clr-neutral-700);
   }
 }
 
