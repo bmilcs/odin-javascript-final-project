@@ -150,3 +150,17 @@ Goal: Limit read/writes/amount of data in the Firestore database
   - Instead, allow the user to load the `/comedians/{tmdbApi}` page
   - The '/comedians/{tmdbApi}' performs the discover api search by default
     - If standup special keyword exists for person, allow user to officially add them to the db via a large button
+- Convert links to buttons for tab navigation
+- Fix tab order
+
+## Navigation
+
+- Add hamburger menu for small screens
+- Expand on larger screens
+- Animate page transitions
+
+## Firestore: /comedians/ & /specials/
+
+- Store comedian id once added through "Add new comedian" feature
+  - Add comedian favoriteCount variable: increment when user likes a comedian
+  - Add 'most liked' comedian spotlight carousel on homepage
