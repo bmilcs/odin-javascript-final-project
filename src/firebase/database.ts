@@ -16,6 +16,7 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
+  connectFirestoreEmulator,
   doc,
   getDoc,
   getDocs,
@@ -27,11 +28,23 @@ import { COMEDIAN_DATA } from "@/data/comedians";
 import { IDiscoverMovieResult } from "@/api/TMDB";
 
 const db = getFirestore(app);
-const allUsersCollectionRef = collection(db, "users");
+
+//
+// run mode
+//
+
+const mode = import.meta.env.VITE_MODE as "dev" | "prod";
+
+if (mode === "dev") {
+  console.log("dev mode: connecting firestore emulator");
+  connectFirestoreEmulator(db, "localhost", 8080);
+}
 
 //
 // user-related functions
 //
+
+const allUsersCollectionRef = collection(db, "users");
 
 let userDocRef: any;
 let userDocSnap: any;
