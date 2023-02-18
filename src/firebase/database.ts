@@ -100,24 +100,27 @@ export const removeFavoriteFromDB = async (favorite: string) => {
 };
 
 //
-// content-related functions
+// specials related functions
 //
 
 // TODO: save locally > persist through refresh
-const allSpecials: number[] = [];
 
+const allSpecials: number[] = [];
 const allSpecialsDocRef = doc(db, "specials", "all");
 
 // retrieve a list of all docs in the standup db collection
 // occurs once on initial page load
 export const getAllSpecialsFromDB = async () => {
-  const querySnapshot = await getDoc(allSpecialsDocRef);
-  const data = await querySnapshot.data();
-  console.log(data);
-  // querySnapshot.forEach((doc) => {
-  //   const tmdbId = Number.parseInt(doc.id);
-  //   if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
-  // });
+  const docSnap = await getDoc(allSpecialsDocRef);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+
+    for (const specialId of Object.keys(data)) {
+      const tmdbId = Number.parseInt(specialId);
+      if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
+    }
+  }
 };
 
 // on opening a comedian's page, all specials for that comedian are saved
@@ -155,3 +158,9 @@ export const addSpecialToDB = async (
 export const doesSpecialExistInDB = (specialId: number) => {
   return allSpecials.includes(specialId) ? true : false;
 };
+
+//
+// comedian related functions
+//
+
+const allComediansDocRef = doc(db, "comedians", "all");
