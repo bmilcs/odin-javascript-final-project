@@ -106,41 +106,50 @@ export const removeFavoriteFromDB = async (favorite: string) => {
 // TODO: save locally > persist through refresh
 const allSpecials: number[] = [];
 
-const specialsCollectionRef = collection(db, "specials");
+const allSpecialsDocRef = doc(db, "specials", "all");
 
 // retrieve a list of all docs in the standup db collection
 // occurs once on initial page load
 export const getAllSpecialsFromDB = async () => {
-  const querySnapshot = await getDocs(specialsCollectionRef);
-  querySnapshot.forEach((doc) => {
-    const tmdbId = Number.parseInt(doc.id);
-    if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
-  });
+  const querySnapshot = await getDoc(allSpecialsDocRef);
+  const data = await querySnapshot.data();
+  console.log(data);
+  // querySnapshot.forEach((doc) => {
+  //   const tmdbId = Number.parseInt(doc.id);
+  //   if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
+  // });
 };
 
 // on opening a comedian's page, all specials for that comedian are saved
 // to the db: /specials/{tmdbId} IF they don't already exist
 export const addSpecialToDB = async (
-  special: IDiscoverMovieResult,
+  specials: IDiscoverMovieResult[],
   comedianId: number,
   comedianName: string
 ) => {
-  const id = special.id;
-  const title = special.title;
+  if (!comedianId) return;
 
-  if (!comedianId || !id) return;
+  // convert array of specials to a single object for merging to the db
+  // reducing number of database writes
+  const specialData = specials.reduce((prev, special) => {
+    return {
+      ...prev,
+      [special.id!]: {
+        id: special.id,
+        title: special.title,
+        imageId: special.poster_path,
+        releaseDate: special.release_date,
+        comedian: comedianName,
+        comedianId: comedianId,
+      },
+    };
+  }, {});
 
-  const specialDocRef = doc(specialsCollectionRef, `${id}`);
-  await setDoc(specialDocRef, {
-    id: id,
-    title: title,
-    comedian: comedianName,
-    comedianId: comedianId,
-  }).then(() => {
+  await setDoc(allSpecialsDocRef, specialData, { merge: true }).then(() => {
     // add special to local variable allSpecials
-    if (!allSpecials.includes(id)) allSpecials.push(id);
+    for (const specialId of Object.keys(specialData))
+      allSpecials.push(Number(specialId));
   });
-  // userDocSnap = await getDoc(userDocRef);
 };
 
 export const doesSpecialExistInDB = (specialId: number) => {

@@ -100,22 +100,27 @@ function Comedian() {
     }
   }, [specialsData, personalData]);
 
-  // special/appearance data is set after a comedian's info & their content
-  // has been fetched. once fetched, add the comedian's specials to the db.
+  // after special/appearance data is fetched, add missing entries to the db
   useEffect(() => {
-    if (specials)
-      specials.forEach(async (spec) => {
+    const specialsToAddToDB: IDiscoverMovieResult[] = [];
+
+    if (specials) {
+      specials.forEach((spec) => {
         if (!doesSpecialExistInDB(spec.id)) {
-          addSpecialToDB(spec, comedianId, personalData.name);
+          specialsToAddToDB.push(spec);
         }
       });
+    }
 
     if (appearances)
       appearances.forEach(async (spec) => {
         if (!doesSpecialExistInDB(spec.id)) {
-          addSpecialToDB(spec, comedianId, personalData.name);
+          specialsToAddToDB.push(spec);
         }
       });
+
+    if (specialsToAddToDB.length > 0)
+      addSpecialToDB(specialsToAddToDB, comedianId, personalData.name);
   }, [specials, appearances]);
 
   return (
