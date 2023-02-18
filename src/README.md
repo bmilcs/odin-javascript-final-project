@@ -38,9 +38,12 @@ All content will be fetched from the TMDB API, and references to those API endpo
 
 ### Home: generic comedy stuff
 
-- Advertise benefits of signing up: custom tailored news & notifications
+- Recently released specials
+- Up & coming special releases
+- Recently added comedians
+- Advertise benefits of signing up:
+  - custom tailored news & notifications
 - Recommended Comedians Section (new comedy fans)
-- Feed of standup special releases
 
 ### My Feed: favorite comedian news
 
@@ -101,33 +104,6 @@ User data:
 - name
 - array of favorites
 
-### Database Structure
-
-- **users (collection)**
-
-  - userId (document)
-    - userId (field, string)
-    - name (field, string)
-    - email (field, string)
-    - favorites (field, array)
-      - category-id (field, string): "person-tmdbAPIid", "standup-tmdbAPIid"
-
-- **comedian (collection)**
-
-  - id: tmdb person api id (document)
-    - id ^ (field, number)
-    - name (field, string)
-    - favoriteCount (field, number)
-
-- **specials (collection)**
-
-  - id: tmdb movie api id (document)
-    - id ^ (field, number)
-    - title (field, string)
-    - comedian (field, string)
-    - comedianId (field, number)
-    - favoriteCount (field, number)
-
 ### API Data vs. Database Data
 
 Goal: Limit read/writes/amount of data in the Firestore database
@@ -135,9 +111,7 @@ Goal: Limit read/writes/amount of data in the Firestore database
 - Store API keys (references to where the data lives on TMDB), making clients responsible for fetching the bulk of the data from TMDB
   - May have poor performance & API limit issues
 - Adding new comedians & specials to the database should occur:
-  - On user favoriting them
-  - Start off with my personal favorites
-- Otherwise, generic/home content should be generated from a static list of predetermined comedians/specials
+  - Manually adding them to the site
 
 ## Search Feature
 
@@ -159,8 +133,190 @@ Goal: Limit read/writes/amount of data in the Firestore database
 - Expand on larger screens
 - Animate page transitions
 
-## Firestore: /comedians/ & /specials/
+## Firestore: Query Types Needed
 
 - Store comedian id once added through "Add new comedian" feature
   - Add comedian favoriteCount variable: increment when user likes a comedian
+  - Add image URL's to the db
   - Add 'most liked' comedian spotlight carousel on homepage
+
+### **All comedians**
+
+1. all comedians page
+2. search bar
+
+We don't want to overload the TMDB api or have to query 100's of documents in Firebase when retrieving the full list of comedian's id, name & image url.
+
+> Note: each document query counts towards billing
+
+- Firebase recommends documents w/ less than 100 fields
+- A master list of comedians (that people are aware of and following) should fall under 100
+
+**Collection**: /comedians/all/
+
+```js
+"id": {
+  name: "Tom Segura",
+  id: 123456,
+  // /src/api/ has utility function for recreating full url:
+  imageId: "09ujoidahfi2h3f0hadf.jpg",
+  dateAdded: timestamp,
+  favoriteCt: 5
+}
+```
+
+### Recently added comedians (new)
+
+1. Store the last 5 comedians added
+
+- Firebase function
+- Trigger: when new comedian is added
+
+  - add the new comedian
+  - sort by dateAdded
+  - remove the oldest in the list
+
+**Collection**: /comedians/new
+
+```js
+"id": {
+  name: "Tom Segura",
+  id: 123456,
+  // /src/api/ has utility function for recreating full url:
+  imageId: "09ujoidahfi2h3f0hadf.jpg",
+  dateAdded: timestamp,
+  // don't need favorite count here
+}
+```
+
+### Specials: Recently Released & Up and Coming
+
+1. Store the last 10 specials that were released
+2. Store all specials that aren't released yet
+
+**Collection #1**: /specials/new
+**Collection #2**: /specials/upcoming
+
+**Firebase function #1**
+
+_Trigger_: when changes are made to /specials/all/ list
+
+- first, check if release date > today
+  - if yes, add to up & coming section
+  - if no, continue:
+
+> utility function: used by function #2 below as well
+
+- get previous 10 latest specials: /specials/new/
+- sort by dateAdded
+- loop through new additions
+  - if release < last on list, skip iteration
+  - if release > last on list, splice special into the correct position
+- lastly, remove the last special
+
+**Firebase Function #2**
+
+_Trigger_: on a daily basis, ie: 3am eastern time
+
+- check up & coming specials list
+  - if release date = today,
+    - fire utility function above:
+      - move to recently released specials list
+      - remove oldest in the list
+
+**Collection**: /specials/new/ & /specials/upcoming example field:
+
+```js
+"id": {
+  title: "Ball Hog",
+  id: 123456,
+  comedianName: "Tom Segura",
+  imageId: "inasdnfoasndf.jpg",
+  releaseDate: timestamp,
+}
+```
+
+### Comedian & Special Likes: Top Favorites, Total Favorite Counts
+
+1. Store each user's list of favorites:
+2. Store all likes & keep a total count for all comedians/specials
+3. Store top 10 comedians, sorted by most likes
+4. Store top 10 specials, sorted by most likes
+
+**Collections**:
+
+- /users/{id}/ _favorites: []_
+- /comedians/favorites/
+- /specials/favorites/
+
+**Firebase Function:**
+
+_Trigger_: user adds or removes like status (special/comedian).
+
+- on add:
+  - push to /users/{id}/favorites array
+  - increment comedian/special favorite counts
+- on remove:
+  - remove from /users/{id}/favorites array
+  - decrement comedian/special favorite counts
+
+## Database Structure (Revised)
+
+```
+/users/
+  {id}/
+    email
+    name
+    id
+    favorites
+
+/comedians/
+  all/
+    "id": {
+      name:      "Tom Segura",
+      id:        123456,
+      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      dateAdded: timestamp,
+      favorites: 5
+    }
+  new/
+    "id": {
+      name:      "Tom Segura",
+      id:        123456,
+      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      dateAdded: timestamp,
+    }
+
+/specials/
+  all/
+    "id": {
+      title:      "Ball Hog",
+      id:         123456,
+      imageId:    "09ujoidahfi2h3f0hadf.jpg",
+      comedian:   "Tom Segura",
+      comedianId: 2093409234
+      favorites:  5
+    }
+  new/
+    "id": {
+      title:     "Ball Hog",
+      id:        123456,
+      releaseDate: "1/1/25",
+      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      comedian:  "Tom Segura",
+    }
+  upcoming/
+    "id": {
+      title:     "Ball Hog",
+      id:        123456,
+      releaseDate: "1/1/25",
+      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      comedian:  "Tom Segura",
+    }
+
+```
+
+### POSSIBLE FUTURE QUERIES:
+
+- Podcasts: image, url, releases
+- Comments: comedians/specials
