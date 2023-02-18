@@ -80,7 +80,7 @@ function SearchBar() {
           className="search-input"
           placeholder="Bill Burr"
           autoComplete="off"
-          minLength={4}
+          minLength={3}
           maxLength={64}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setDropdownVisible(true)}
