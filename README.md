@@ -35,7 +35,15 @@ The fix required adding a custom 404 page (`public/404.html`) and a script to my
 
 ### "Specials" API Responses: Missing Comedian ID
 
-When directly visiting `/specials/{tmdbId}`, the id of the special is retrieved from the url via `useParams()` and then used to fetch the data from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work in a "View this comedian's other work" section.
+When directly visiting `/specials/{tmdbId}`, the id of the special is retrieved from the url via `useParams()`, which is then used to fetch the data from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work in a "View this comedian's other work" section.
+
+> To be continued
+
+### Adding New Comedians & TMDB People Search API
+
+My goal for the search field on the site was to query TMDB for people who have media that contains the standup comedy keyword. Unfortunately, TMDB People Search API doesn't allow you to filter by anything other than the search query (person's name).
+
+> To be continued
 
 ## Screenshots
 
