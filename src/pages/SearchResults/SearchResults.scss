@@ -1,0 +1,58 @@
+.searchpage {
+  &__header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+    gap: 2rem;
+
+    min-height: 10rem;
+  }
+
+  &__title {
+    max-width: min-content;
+    margin-bottom: 0.25rem;
+  }
+
+  &__term {
+    font-weight: bold;
+    font-style: italic;
+    color: var(--clr-accent-100);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+  }
+
+  &__person {
+    position: relative;
+  }
+
+  &__headshot {
+    position: relative;
+    max-height: 30vh;
+
+    border-radius: var(--border-radius-200);
+  }
+
+  &__name {
+    position: absolute;
+    bottom: -0.5rem;
+    left: 1rem;
+
+    width: 90%;
+    padding: 0.25rem 1rem;
+    text-align: center;
+
+    font-family: var(--ff-main);
+    font-size: 1.15rem;
+    font-weight: 700;
+
+    color: var(--clr-neutral-200);
+    background: var(--clr-neutral-700);
+
+    border: 2px solid var(--clr-neutral-800);
+    border-radius: var(--border-radius-100);
+  }
+}
