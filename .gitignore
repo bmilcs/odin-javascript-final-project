@@ -1,8 +1,11 @@
 # Env
 .env
 
-# Firebase security
+# Firebase Security
 firestore.rules
+
+# Firebase Persistent Database Emulation
+db/
 
 # Logs
 logs
