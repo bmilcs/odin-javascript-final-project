@@ -1,6 +1,9 @@
 # Env
 .env
 
+# Firebase security
+firestore.rules
+
 # Logs
 logs
 *.log
