@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "odin-javascript-final-project"
-  }
+  "default": "odin-javascript-final-project",
+  },
+
 }

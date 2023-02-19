@@ -37,7 +37,7 @@ const mode = import.meta.env.VITE_MODE as "dev" | "prod";
 
 if (mode === "dev") {
   console.log("dev mode: connecting firestore emulator");
-  connectFirestoreEmulator(db, "localhost", 8080);
+  connectFirestoreEmulator(db, "localhost", 8880);
 }
 
 //
@@ -164,3 +164,8 @@ export const doesSpecialExistInDB = (specialId: number) => {
 //
 
 const allComediansDocRef = doc(db, "comedians", "all");
+const comediansToAddDocRef = doc(db, "comedians", "toAdd");
+
+export const addComedianToDB = async (personalId: number) => {
+  await setDoc(comediansToAddDocRef, { personalId }, { merge: true });
+};
