@@ -21,17 +21,17 @@
   ],
   "emulators": {
     "auth": {
-      "port": 9099
+      "port": 8882
     },
     "functions": {
-      "port": 5001
+      "port": 8881
     },
     "firestore": {
-      "port": 8080
+      "port": 8880
     },
     "ui": {
       "enabled": true,
-      "port": 1986
+      "port": 8888
     },
     "singleProjectMode": true
   }
