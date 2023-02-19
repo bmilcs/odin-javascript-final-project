@@ -1,5 +1,6 @@
 # tmdb api key
 .runtimeconfig.json
+.env*
 
 # Compiled JavaScript files
 lib/**/*.js
