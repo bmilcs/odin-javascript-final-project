@@ -19,13 +19,12 @@ import {
   connectFirestoreEmulator,
   doc,
   getDoc,
-  getDocs,
   getFirestore,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
 import { COMEDIAN_DATA } from "@/data/comedians";
-import { IDiscoverMovieResult } from "@/api/TMDB";
+import { IDiscoverMovieResult, IPersonDetailsResult } from "@/api/TMDB";
 
 const db = getFirestore(app);
 

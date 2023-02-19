@@ -1,19 +1,8 @@
-import {
-  getAllSpecialsForPersonURL,
-  getPersonDetailsURL,
-  getTMDBImageURL,
-  getIMDBURL,
-  IDiscoverMovieResult,
-} from "@/api/TMDB";
+import { getTMDBImageURL, getIMDBURL } from "@/api/TMDB";
 import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
-import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
-import useFetch from "@/hooks/useFetch";
-import {
-  formatDateNumberOfYearsPassed,
-  isDateOneBeforeDateTwo,
-} from "@/utils/date";
-import { useEffect, useState } from "react";
+import useFetchPersonalAndSpecialsData from "@/hooks/useFetchPersonalAndSpecialsData";
+import { formatDateNumberOfYearsPassed } from "@/utils/date";
 import { useParams } from "react-router-dom";
 import "./Comedian.scss";
 
@@ -21,107 +10,8 @@ import "./Comedian.scss";
 
 function Comedian() {
   const { personId } = useParams();
-  const comedianId = personId ? Number(personId) : 0;
-  const comedianURL = getPersonDetailsURL(comedianId);
-  const specialsURL = getAllSpecialsForPersonURL(comedianId);
-  const {
-    data: personalData,
-    error: personalError,
-    isLoading: personalIsLoading,
-    setUrl: setPersonalUrl,
-  } = useFetch(comedianURL);
-  const {
-    data: specialsData,
-    error: specialsError,
-    isLoading: specialsIsLoading,
-    setUrl: setSpecialsUrl,
-  } = useFetch(specialsURL);
-  const [specials, setSpecials] = useState([] as any[]);
-  const [appearances, setAppearances] = useState([] as any[]);
-
-  useEffect(() => {
-    setPersonalUrl(comedianURL);
-    setSpecialsUrl(specialsURL);
-  }, [comedianId]);
-
-  // separate comedy specials: "Comedian Name: Special Title"
-  // from appearances / other credits:
-  // - "Comedian Name Presents:"
-  // - titles without the comedians name
-
-  useEffect(() => {
-    if (
-      specialsData &&
-      specialsData.results &&
-      personalData &&
-      personalData.name
-    ) {
-      setSpecials([]);
-      setAppearances([]);
-
-      setSpecials(
-        specialsData.results
-          .filter((movie: IDiscoverMovieResult) => {
-            const title = movie.title!.toString();
-            const [firstName, lastName] = personalData.name.split(" ");
-            const titlePrefix = title.split(":")[0];
-
-            const isSpecial =
-              title.includes(firstName) && title.includes(lastName);
-            const isNotAppearance = !titlePrefix.includes("Presents");
-
-            return isSpecial && isNotAppearance;
-          })
-          .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
-            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
-          )
-      );
-
-      setAppearances(
-        specialsData.results
-          .filter((movie: IDiscoverMovieResult) => {
-            const title = movie.title!.toString();
-            const [firstName, lastName] = personalData.name.split(" ");
-            const titlePrefix = title.split(":")[0];
-
-            const isAppearance =
-              titlePrefix.includes("Presents") ||
-              !(
-                titlePrefix.includes(firstName) &&
-                titlePrefix.includes(lastName)
-              );
-
-            return isAppearance;
-          })
-          .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
-            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
-          )
-      );
-    }
-  }, [specialsData, personalData]);
-
-  // after special/appearance data is fetched, add missing entries to the db
-  useEffect(() => {
-    const specialsToAddToDB: IDiscoverMovieResult[] = [];
-
-    if (specials) {
-      specials.forEach((spec) => {
-        if (!doesSpecialExistInDB(spec.id)) {
-          specialsToAddToDB.push(spec);
-        }
-      });
-    }
-
-    if (appearances)
-      appearances.forEach(async (spec) => {
-        if (!doesSpecialExistInDB(spec.id)) {
-          specialsToAddToDB.push(spec);
-        }
-      });
-
-    if (specialsToAddToDB.length > 0)
-      addSpecialToDB(specialsToAddToDB, comedianId, personalData.name);
-  }, [specials, appearances]);
+  const { specials, appearances, personalData } =
+    useFetchPersonalAndSpecialsData(Number(personId));
 
   return (
     <div className="column">
