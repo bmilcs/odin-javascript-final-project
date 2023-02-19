@@ -1,20 +1,16 @@
-// The Cloud Functions for Firebase SDK to create Cloud Functions and set up triggers.
 const functions = require("firebase-functions");
-
-// The Firebase Admin SDK to access Firestore.
 const admin = require("firebase-admin");
+
 admin.initializeApp();
 
-// Take the text parameter passed to this HTTP endpoint and insert it into
-// Firestore under the path /messages/:documentId/original
-exports.addMessage = functions.https.onRequest(async (req, res) => {
-  // Grab the text parameter.
-  const original = req.query.text;
-  // Push the new message into Firestore using the Firebase Admin SDK.
-  const writeResult = await admin
-    .firestore()
-    .collection("messages")
-    .add({ original: original });
-  // Send back a message that we've successfully written the message
-  res.json({ result: `Message with ID: ${writeResult.id} added.` });
-});
+const tmdbApi = functions.config().tmdb.key;
+
+exports.addComedianAndSpecials = functions.firestore
+  .document("/comedians/toAdd")
+  .onUpdate((change, context) => {
+    // const original = change.before.data();
+    const { personalId } = change.after.data();
+    // if (tmdbApiKey) console.log("Yay key imported");
+    console.log(tmdbApi);
+    console.log("Firestore function triggered");
+  });
