@@ -1,0 +1,16 @@
+.specials {
+  &__ul {
+    list-style: none;
+  }
+
+  &__li {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+
+    &__bullet {
+      color: var(--clr-accent-100);
+    }
+  }
+}
