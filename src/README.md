@@ -1,5 +1,30 @@
 # Whiteboard
 
+## TODO
+
+**Specials Pages**
+
+1. improve GUI, add Comedian info & other specials
+1. separate name (small) from special title (large)
+1. handle specials that haven't been released yet
+1. ^ red banner, add to coming soon section on homepage
+1. Hide "Years Ago" if 0
+
+**Move from a static list of comedians to database entries**
+
+1.  Add mechanism for users to add comedians
+2.  Convert display functionality to use the database instead of `src/data/`
+
+**Refactor: getAllSpecialsFromDB and addSpecialToDB**
+
+Users shouldn't be pulling the full list of specials on each visit to determine if a special needs to be added to the database.
+
+- Convert to Cloud Function
+- When a user adds a new comedian, trigger a function to add the specials to the db
+- On a daily+ interval, run a scan on all comedians in the database
+  - Get all specials
+  - Add missing specials to the db
+
 ## High Level Breakdown
 
 Goal: Content-centric IMDB-like site focused on standup comedy. Users should be able to:
