@@ -206,3 +206,15 @@ export interface IPersonSearchResult {
   name: string;
   popularity: number;
 }
+
+export interface IPersonDetailsResult {
+  birthday: string | null;
+  deathday: string | null;
+  id: number;
+  name: string;
+  biography: string;
+  popularity: number;
+  profile_path: string | null;
+  imdb_id?: string;
+  homepage?: string;
+}
