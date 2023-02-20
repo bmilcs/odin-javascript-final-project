@@ -3,7 +3,7 @@ import {
   getPersonDetailsURL,
   IDiscoverMovieResult,
 } from "@/api/TMDB";
-import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
+// import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
 import useFetch from "@/hooks/useFetch";
 import { isDateOneBeforeDateTwo } from "@/utils/date";
 import { useEffect, useState } from "react";
@@ -90,29 +90,6 @@ function useFetchPersonalAndSpecialsData(personId: number) {
       );
     }
   }, [specialsData, personalData]);
-
-  // after special/appearance data is fetched
-  useEffect(() => {
-    const specialsToAddToDB: IDiscoverMovieResult[] = [];
-
-    if (specials && specials.length > 0) {
-      specials.forEach((spec) => {
-        if (!doesSpecialExistInDB(spec.id!)) {
-          specialsToAddToDB.push(spec);
-        }
-      });
-    }
-
-    if (appearances && appearances.length > 0)
-      appearances.forEach(async (spec) => {
-        if (!doesSpecialExistInDB(spec.id!)) {
-          specialsToAddToDB.push(spec);
-        }
-      });
-
-    if (specialsToAddToDB.length > 0)
-      addSpecialToDB(specialsToAddToDB, id, personalData.name);
-  }, [specials, appearances]);
 
   return { specials, appearances, personalData, changePerson };
 }
