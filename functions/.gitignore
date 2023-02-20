@@ -1,13 +1,4 @@
-# tmdb api key
-.runtimeconfig.json
-.env*
-
-# Compiled JavaScript files
-lib/**/*.js
-lib/**/*.js.map
-
-# TypeScript v1 declaration files
-typings/
-
-# Node.js dependency directory
 node_modules/
+
+# env vars
+.runtimeconfig.json
