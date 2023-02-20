@@ -99,7 +99,42 @@ export const removeFavoriteFromDB = async (favorite: string) => {
 };
 
 //
-// specials related functions
+// comedian related functions
+//
+
+export const allComedians: number[] = [];
+const allComediansDocRef = doc(db, "comedians", "all");
+
+export const getAllComediansFromDB = async () => {
+  const docSnap = await getDoc(allComediansDocRef);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+
+    for (const specialId of Object.keys(data)) {
+      const tmdbId = Number.parseInt(specialId);
+      if (!allComedians.includes(tmdbId)) allComedians.push(tmdbId);
+    }
+  }
+};
+
+export const getAllComedianIdsFromDB = async () => {
+  if (allComedians.length === 0) await getAllComediansFromDB();
+  return allComedians;
+};
+
+// adding comedians to the site:
+// when a user wants to add a comedian to the db, the tmdb id of the comedian
+// is written to the /comedians/toAdd document in firestore. a firebase cloud
+// function is triggered on write & adds the comedian and their specials to the db
+
+const comediansToAddDocRef = doc(db, "comedians", "toAdd");
+export const addComedianToDB = async (personalId: number) => {
+  await setDoc(comediansToAddDocRef, { personalId }, { merge: true });
+};
+
+//
+// standup specials related functions
 //
 
 // TODO: save locally > persist through refresh
@@ -107,8 +142,6 @@ export const removeFavoriteFromDB = async (favorite: string) => {
 const allSpecials: number[] = [];
 const allSpecialsDocRef = doc(db, "specials", "all");
 
-// retrieve a list of all docs in the standup db collection
-// occurs once on initial page load
 export const getAllSpecialsFromDB = async () => {
   const docSnap = await getDoc(allSpecialsDocRef);
 
@@ -120,51 +153,4 @@ export const getAllSpecialsFromDB = async () => {
       if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
     }
   }
-};
-
-// on opening a comedian's page, all specials for that comedian are saved
-// to the db: /specials/{tmdbId} IF they don't already exist
-export const addSpecialToDB = async (
-  specials: IDiscoverMovieResult[],
-  comedianId: number,
-  comedianName: string
-) => {
-  if (!comedianId) return;
-
-  // convert array of specials to a single object for merging to the db
-  // reducing number of database writes
-  const specialData = specials.reduce((prev, special) => {
-    return {
-      ...prev,
-      [special.id!]: {
-        id: special.id,
-        title: special.title,
-        imageId: special.poster_path,
-        releaseDate: special.release_date,
-        comedian: comedianName,
-        comedianId: comedianId,
-      },
-    };
-  }, {});
-
-  await setDoc(allSpecialsDocRef, specialData, { merge: true }).then(() => {
-    // add special to local variable allSpecials
-    for (const specialId of Object.keys(specialData))
-      allSpecials.push(Number(specialId));
-  });
-};
-
-export const doesSpecialExistInDB = (specialId: number) => {
-  return allSpecials.includes(specialId) ? true : false;
-};
-
-//
-// comedian related functions
-//
-
-const allComediansDocRef = doc(db, "comedians", "all");
-const comediansToAddDocRef = doc(db, "comedians", "toAdd");
-
-export const addComedianToDB = async (personalId: number) => {
-  await setDoc(comediansToAddDocRef, { personalId }, { merge: true });
 };
