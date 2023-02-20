@@ -1,8 +1,4 @@
-import {
-  IDiscoverMovieResult,
-  IPersonDetailsResult,
-  getTMDBImageURL,
-} from "@/api/TMDB";
+import { getTMDBImageURL } from "@/api/TMDB";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
 import Button from "@/components/Button/Button";
 import SpecialsList from "@/components/SpecialsList/SpecialsList";
@@ -14,11 +10,7 @@ function AddComedianModal({
   handleAddComedian,
 }: {
   personId: number;
-  handleAddComedian: (
-    personalData: IPersonDetailsResult,
-    specials: IDiscoverMovieResult,
-    appearances: IDiscoverMovieResult
-  ) => void;
+  handleAddComedian: (personalId: number) => void;
 }) {
   const { specials, appearances, personalData } =
     useFetchPersonalAndSpecialsData(personId);
@@ -27,7 +19,6 @@ function AddComedianModal({
     <div className="modal" onClick={(e) => e.stopPropagation()}>
       {personalData && (
         <div className="modal__personal">
-          {/* <Link to={`/comedians/${personalData.id}`}> */}
           {personalData.profile_path ? (
             <img
               src={getTMDBImageURL(personalData.profile_path)}
@@ -37,7 +28,6 @@ function AddComedianModal({
           ) : (
             <MicrophoneSVG className="modal__image modal__svg" />
           )}
-          {/* </Link> */}
 
           <h4 className="modal__name">{personalData.name}</h4>
         </div>
