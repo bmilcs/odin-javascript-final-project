@@ -37,7 +37,7 @@ function AddComedianModal({
       appearances &&
       personalData &&
       personalData.name &&
-      (appearances.length !== 0 || specials.length !== 0) ? (
+      specials.length !== 0 ? (
         // person has a special or appearance
         <>
           {specials.length > 0 && (
