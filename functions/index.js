@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { FieldValue } = require("firebase-admin/firestore");
+const { parseISO, isAfter } = require("date-fns");
 
 admin.initializeApp();
 
@@ -58,14 +59,43 @@ const API_KEY = functions.config().tmdb.key;
 //     }
 
 //
+// db retrieval functions
+//
+
+const getFirebaseDoc = async (collection, doc) => {
+  return admin
+    .firestore()
+    .collection(collection)
+    .doc(doc)
+    .get()
+    .then((doc) => {
+      if (!(doc && doc.exists)) return;
+      return doc.data();
+    })
+    .then((data) => {
+      return data;
+    });
+};
+
+// retrieve "specials/latest" doc
+const getLatestSpecialsData = async () => {
+  return getFirebaseDoc("specials", "latest");
+};
+
+// retrieve "/specials/latest" doc
+const getUpcomingSpecialsData = async () => {
+  return getFirebaseDoc("specials", "upcoming");
+};
+
+//
 // add comedian & their specials
 //
 
 exports.addComedianAndSpecials = functions.firestore
   .document("/comedians/toAdd")
   .onUpdate(async (change, context) => {
-    // const original = change.before.data();
     const data = change.after.data();
+
     const { personalId } = data;
     if (!personalId) return;
 
@@ -99,6 +129,43 @@ exports.addComedianAndSpecials = functions.firestore
       };
     }, {});
 
+    // check release date of specials to be added to the db:
+    // - if not released yet, add to /specials/upcoming
+    // - if newer than one of the latest 10, add to /specials/latest
+
+    let latestSpecials = await getLatestSpecialsData();
+    let upcomingSpecials = await getUpcomingSpecialsData();
+
+    for (const specialId in specials) {
+      const specialData = specials[specialId];
+
+      const isNotReleasedYet = isSpecialNotOutYet(specialData);
+      const isANewLatestRelease = isSpecialALatestRelease(
+        specialData,
+        latestSpecials
+      );
+
+      if (isNotReleasedYet) {
+        upcomingSpecials = {
+          ...upcomingSpecials,
+          [specialId]: specialData,
+        };
+      } else if (isANewLatestRelease) {
+        latestSpecials = {
+          ...latestSpecials,
+          [specialId]: specialData,
+        };
+      } else {
+        console.log("not upcoming or latest");
+      }
+    }
+
+    // finally, reduce latest specials to a final quantity
+    const latestSpecialsReduced = reduceLatestSpecialsCountToNum(
+      latestSpecials,
+      10
+    );
+
     admin
       .firestore()
       .collection("comedians")
@@ -109,15 +176,64 @@ exports.addComedianAndSpecials = functions.firestore
       .collection("specials")
       .doc("all")
       .set(specials, { merge: true });
+    admin
+      .firestore()
+      .collection("specials")
+      .doc("latest")
+      .set(latestSpecialsReduced);
+    admin
+      .firestore()
+      .collection("specials")
+      .doc("upcoming")
+      .set(upcomingSpecials);
     admin.firestore().collection("comedians").doc("toAdd").delete(data);
   });
 
-//
-//
-//
+const isSpecialNotOutYet = (special) => {
+  const specialDate = parseISO(special.releaseDate);
+  const today = new Date();
+  return isAfter(specialDate, today) ? true : false;
+};
+
+// compare a special object to the dates of latestSpecials
+const isSpecialALatestRelease = (special, latestSpecials) => {
+  const specialDate = parseISO(special.releaseDate);
+  let isALatestSpecial = false;
+
+  for (const existingSpecial in latestSpecials) {
+    const existingDate = parseISO(latestSpecials[existingSpecial].releaseDate);
+    const isMoreRecent = isAfter(specialDate, existingDate);
+
+    if (isMoreRecent) {
+      isALatestSpecial = true;
+      break;
+    }
+  }
+
+  return isALatestSpecial;
+};
+
+const reduceLatestSpecialsCountToNum = (specialsObj, num) => {
+  const array = [];
+
+  for (const special in specialsObj) {
+    array.push(specialsObj[special]);
+  }
+
+  return array
+    .sort((a, b) => {
+      const aDate = parseISO(a.releaseDate);
+      const bDate = parseISO(b.releaseDate);
+      return isAfter(aDate, bDate) ? -1 : 1;
+    })
+    .splice(0, num)
+    .reduce((prev, curr) => {
+      return { ...prev, [curr.id]: { ...curr } };
+    }, {});
+};
 
 //
-// tmdb functions
+// tmdb-related functions
 //
 
 const getAllSpecialsForPersonURL = function (personId) {
