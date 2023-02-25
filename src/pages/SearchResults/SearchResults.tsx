@@ -41,6 +41,7 @@ function SearchResults() {
   // remove comedians that already exist
   useEffect(() => {
     if (!data || comedianIdsInDb.length === 0) return;
+
     const results = [...data.results];
 
     const missing = results.filter((person) => {
