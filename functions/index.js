@@ -91,12 +91,14 @@ const getUpcomingSpecialsData = async () => {
 // add comedian & their specials
 //
 
+// clients push a tmdb id to /comedians/toAdd when requesting a
+// new comedian be added to the db
 exports.addComedianAndSpecials = functions.firestore
   .document("/comedians/toAdd")
   .onUpdate(async (change, context) => {
-    const data = change.after.data();
+    const toAddData = change.after.data();
 
-    const { personalId } = data;
+    const { personalId } = toAddData;
     if (!personalId) return;
 
     const comedianUrl = getPersonDetailsURL(personalId);
@@ -129,7 +131,7 @@ exports.addComedianAndSpecials = functions.firestore
       };
     }, {});
 
-    // check release date of specials to be added to the db:
+    // check release date of the specials to be added to the db:
     // - if not released yet, add to /specials/upcoming
     // - if newer than one of the latest 10, add to /specials/latest
 
@@ -140,32 +142,33 @@ exports.addComedianAndSpecials = functions.firestore
       const specialData = specials[specialId];
 
       const isNotReleasedYet = isSpecialNotOutYet(specialData);
-      const isANewLatestRelease = isSpecialALatestRelease(
-        specialData,
-        latestSpecials
-      );
-
       if (isNotReleasedYet) {
         upcomingSpecials = {
           ...upcomingSpecials,
           [specialId]: specialData,
         };
-      } else if (isANewLatestRelease) {
-        latestSpecials = {
-          ...latestSpecials,
-          [specialId]: specialData,
-        };
       } else {
-        console.log("not upcoming or latest");
+        const isALatestRelease = isSpecialALatestRelease(
+          specialData,
+          latestSpecials
+        );
+
+        if (isALatestRelease) {
+          latestSpecials = {
+            ...latestSpecials,
+            [specialId]: specialData,
+          };
+        }
       }
     }
 
     // finally, reduce latest specials to a final quantity
-    const latestSpecialsReduced = reduceLatestSpecialsCountToNum(
+    const latestTenSpecials = reduceLatestSpecialsCountToNum(
       latestSpecials,
       10
     );
 
+    // update the db
     admin
       .firestore()
       .collection("comedians")
@@ -180,13 +183,14 @@ exports.addComedianAndSpecials = functions.firestore
       .firestore()
       .collection("specials")
       .doc("latest")
-      .set(latestSpecialsReduced);
+      .set(latestTenSpecials);
     admin
       .firestore()
       .collection("specials")
       .doc("upcoming")
       .set(upcomingSpecials);
-    admin.firestore().collection("comedians").doc("toAdd").delete(data);
+
+    admin.firestore().collection("comedians").doc("toAdd").delete(toAddData);
   });
 
 const isSpecialNotOutYet = (special) => {
@@ -195,22 +199,22 @@ const isSpecialNotOutYet = (special) => {
   return isAfter(specialDate, today) ? true : false;
 };
 
-// compare a special object to the dates of latestSpecials
-const isSpecialALatestRelease = (special, latestSpecials) => {
+const isSpecialALatestRelease = (special, latestSpecialsObj) => {
   const specialDate = parseISO(special.releaseDate);
-  let isALatestSpecial = false;
 
-  for (const existingSpecial in latestSpecials) {
-    const existingDate = parseISO(latestSpecials[existingSpecial].releaseDate);
+  for (const existingSpecial in latestSpecialsObj) {
+    const existingDate = parseISO(
+      latestSpecialsObj[existingSpecial].releaseDate
+    );
     const isMoreRecent = isAfter(specialDate, existingDate);
 
     if (isMoreRecent) {
       isALatestSpecial = true;
-      break;
+      return true;
     }
   }
 
-  return isALatestSpecial;
+  return false;
 };
 
 const reduceLatestSpecialsCountToNum = (specialsObj, num) => {
