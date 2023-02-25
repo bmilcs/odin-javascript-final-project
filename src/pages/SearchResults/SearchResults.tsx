@@ -1,9 +1,6 @@
 import {
   getTMDBImageURL,
-  IDiscoverMovieResult,
-  IPersonDetailsResult,
   IPersonSearchResult,
-  parseSearchQuery,
   searchForPersonURL,
 } from "@/api/TMDB";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
@@ -12,17 +9,12 @@ import useFetch from "@/hooks/useFetch";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./SearchResults.scss";
-import {
-  addComedianToDB,
-  allComedians,
-  getAllComedianIdsFromDB,
-  getAllComediansFromDB,
-} from "@/firebase/database";
+import { addComedianToDB, getAllComedianIdsFromDB } from "@/firebase/database";
 import ComedianCard from "@/components/ComedianCard/ComedianCard";
 
 function SearchResults() {
   const { searchTerm } = useParams();
-  const term = parseSearchQuery(searchTerm!);
+  const term = encodeURIComponent(searchTerm!);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch(url);
   const [comedianIdsInDb, setComedianIdsInDb] = useState<number[]>([]);
@@ -65,11 +57,12 @@ function SearchResults() {
 
   const handleAddComedian = (personalId: number) => {
     addComedianToDB(personalId);
+    setShowModal(false);
   };
 
   // update the results if the search term is changed while on the page
   useEffect(() => {
-    const newUrl = searchForPersonURL(term);
+    const newUrl = searchForPersonURL(encodeURIComponent(term));
     setUrl(newUrl);
     setMissingComedians([]);
     setExistingComedians([]);
@@ -82,10 +75,14 @@ function SearchResults() {
           <h2 className="searchpage__title">Comedian Search</h2>
           <p className="searchpage__details">
             You searched for:{" "}
-            <span className="searchpage__term">" {term} "</span>
+            <span className="searchpage__term">
+              " {decodeURIComponent(term)} "
+            </span>
           </p>
         </div>
       </div>
+
+      {isLoading && <p>Loading...</p>}
 
       {existingComedians.length !== 0 && (
         <>

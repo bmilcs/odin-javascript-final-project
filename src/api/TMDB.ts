@@ -114,19 +114,10 @@ export const tmdbSearchUrl = ({
   query,
   requestType,
 }: TMDBSearchRequest): string => {
-  const parsedQuery = parseSearchQuery(query);
+  const parsedQuery = encodeURIComponent(query);
   let url = `https://api.themoviedb.org/3/search/${requestType}?api_key=${API_KEY}`;
   url += `&query=${query}`;
   return url;
-};
-
-export const parseSearchQuery = (string: string): string => {
-  return string === undefined
-    ? ""
-    : string
-        .replace(/[^a-z0-9_]+/gi, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase();
 };
 
 export const searchForPersonURL = (name: string): string => {
