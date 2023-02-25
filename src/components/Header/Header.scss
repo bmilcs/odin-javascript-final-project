@@ -1,10 +1,11 @@
 .header {
   position: sticky;
   top: 0;
+  z-index: 10;
 
   padding-block: 1rem;
-  background: var(--clr-neutral-800);
 
+  background: var(--clr-neutral-800);
   border-bottom: 2px solid var(--clr-neutral-700);
 
   .column {

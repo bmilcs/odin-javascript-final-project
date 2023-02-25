@@ -23,15 +23,8 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { COMEDIAN_DATA } from "@/data/comedians";
-import { IDiscoverMovieResult, IPersonDetailsResult } from "@/api/TMDB";
 
 const db = getFirestore(app);
-
-//
-// run mode
-//
-
 const mode = import.meta.env.VITE_MODE as "dev" | "prod";
 
 if (mode === "dev") {

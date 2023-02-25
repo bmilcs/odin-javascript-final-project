@@ -95,7 +95,7 @@ function SearchResults() {
           </div>
           <div className="searchpage__grid">
             {existingComedians.map((comedian) => (
-              <ComedianCard id={comedian.id} />
+              <ComedianCard id={comedian.id} key={comedian.id} />
             ))}
           </div>
         </>
