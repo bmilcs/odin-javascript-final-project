@@ -12,15 +12,15 @@
 
 **Move from a static list of comedians to database entries**
 
-1.  Add mechanism for users to add comedians
+1.  ~~Add mechanism for users to add comedians~~
 2.  Convert display functionality to use the database instead of `src/data/`
 
 **Refactor: getAllSpecialsFromDB and addSpecialToDB**
 
-Users shouldn't be pulling the full list of specials on each visit to determine if a special needs to be added to the database.
+~~Users shouldn't be pulling the full list of specials on each visit to determine if a special needs to be added to the database.~~
 
-- Convert to Cloud Function
-- When a user adds a new comedian, trigger a function to add the specials to the db
+- ~~Convert to Cloud Function~~
+- ~~When a user adds a new comedian, trigger a function to add the specials to the db~~
 - On a daily+ interval, run a scan on all comedians in the database
   - Get all specials
   - Add missing specials to the db
