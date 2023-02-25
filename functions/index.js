@@ -95,8 +95,8 @@ const getUpcomingSpecialsData = async () => {
 // new comedian be added to the db
 exports.addComedianAndSpecials = functions.firestore
   .document("/comedians/toAdd")
-  .onUpdate(async (change, context) => {
-    const toAddData = change.after.data();
+  .onCreate(async (change, context) => {
+    const toAddData = change.data();
 
     const { personalId } = toAddData;
     if (!personalId) return;
