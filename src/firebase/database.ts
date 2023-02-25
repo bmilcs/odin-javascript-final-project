@@ -103,9 +103,9 @@ export const removeFavoriteFromDB = async (favorite: string) => {
 //
 
 export const allComedians: number[] = [];
-const allComediansDocRef = doc(db, "comedians", "all");
 
 export const getAllComediansFromDB = async () => {
+  const allComediansDocRef = doc(db, "comedians", "all");
   const docSnap = await getDoc(allComediansDocRef);
 
   if (docSnap.exists()) {
@@ -131,6 +131,35 @@ export const getAllComedianIdsFromDB = async () => {
 const comediansToAddDocRef = doc(db, "comedians", "toAdd");
 export const addComedianToDB = async (personalId: number) => {
   await setDoc(comediansToAddDocRef, { personalId }, { merge: true });
+};
+
+//
+// specials related functions
+//
+
+export interface IComedySpecial {
+  comedian: string;
+  imageId: string;
+  comedianId: number;
+  releaseDate: string;
+  id: number;
+  title: string;
+}
+
+export interface ComedySpecialsList {
+  [id: string]: IComedySpecial;
+}
+
+export const getLatestSpecialsFromDB = async () => {
+  const latestSpecialsDocRef = doc(db, "specials", "latest");
+  const docSnap = await getDoc(latestSpecialsDocRef);
+  return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
+};
+
+export const getUpcomingSpecialsFromDB = async () => {
+  const upcomingSpecialsDocRef = doc(db, "specials", "upcoming");
+  const docSnap = await getDoc(upcomingSpecialsDocRef);
+  return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
 };
 
 //
