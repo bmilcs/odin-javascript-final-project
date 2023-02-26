@@ -9,6 +9,7 @@ import {
 } from "@/firebase/database";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
 import "./Home.scss";
+import ComedianGrid from "@/components/ComedianGrid/ComedianGrid";
 
 function Home() {
   const [latestSpecials, setLatestSpecials] = useState<IComedySpecial[]>([]);
@@ -67,10 +68,7 @@ function Home() {
         <SpecialsGrid title="Coming Soon" data={upcomingSpecials} />
       )}
 
-      {latestComedians &&
-        latestComedians.map((comedian) => (
-          <ComedianCard id={comedian.id} key={comedian.id} />
-        ))}
+      {latestComedians && <ComedianGrid data={latestComedians} />}
     </div>
   );
 }
