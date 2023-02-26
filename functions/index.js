@@ -87,6 +87,11 @@ const getUpcomingSpecialsData = async () => {
   return getFirebaseDoc("specials", "upcoming");
 };
 
+// retrieve "/comedians/latest" doc
+const getLatestComediansData = async () => {
+  return getFirebaseDoc("comedians", "latest");
+};
+
 //
 // add comedian & their specials
 //
@@ -97,13 +102,11 @@ exports.addComedianAndSpecials = functions.firestore
   .document("/comedians/toAdd")
   .onCreate(async (change, context) => {
     const toAddData = change.data();
-
     const { personalId } = toAddData;
     if (!personalId) return;
 
     const comedianUrl = getPersonDetailsURL(personalId);
     const specialsUrl = getAllSpecialsForPersonURL(personalId);
-
     const comedianData = await fetchData(comedianUrl);
     const { results: specialsData } = await fetchData(specialsUrl);
 
@@ -131,17 +134,19 @@ exports.addComedianAndSpecials = functions.firestore
       };
     }, {});
 
+    // add comedian to db: "/comedians/latest"
     // check release date of the specials to be added to the db:
     // - if not released yet, add to /specials/upcoming
     // - if newer than one of the latest 10, add to /specials/latest
 
+    let latestComedians = await getLatestComediansData();
     let latestSpecials = await getLatestSpecialsData();
     let upcomingSpecials = await getUpcomingSpecialsData();
 
     for (const specialId in specials) {
       const specialData = specials[specialId];
-
       const isNotReleasedYet = isSpecialNotOutYet(specialData);
+
       if (isNotReleasedYet) {
         upcomingSpecials = {
           ...upcomingSpecials,
@@ -162,9 +167,16 @@ exports.addComedianAndSpecials = functions.firestore
       }
     }
 
-    // finally, reduce latest specials to a final quantity
+    latestComedians = { ...latestComedians, ...comedian };
+
+    // finally, reduce latest specials & comedians to a final quantity
     const latestTenSpecials = reduceLatestSpecialsCountToNum(
       latestSpecials,
+      10
+    );
+
+    const latestTenComedians = reduceLatestComediansCountToNum(
+      latestComedians,
       10
     );
 
@@ -174,6 +186,11 @@ exports.addComedianAndSpecials = functions.firestore
       .collection("comedians")
       .doc("all")
       .set(comedian, { merge: true });
+    admin
+      .firestore()
+      .collection("comedians")
+      .doc("latest")
+      .set(latestTenComedians);
     admin
       .firestore()
       .collection("specials")
@@ -201,33 +218,45 @@ const isSpecialNotOutYet = (special) => {
 
 const isSpecialALatestRelease = (special, latestSpecialsObj) => {
   const specialDate = parseISO(special.releaseDate);
-
   for (const existingSpecial in latestSpecialsObj) {
     const existingDate = parseISO(
       latestSpecialsObj[existingSpecial].releaseDate
     );
     const isMoreRecent = isAfter(specialDate, existingDate);
-
     if (isMoreRecent) {
       isALatestSpecial = true;
       return true;
     }
   }
-
   return false;
 };
 
 const reduceLatestSpecialsCountToNum = (specialsObj, num) => {
   const array = [];
-
   for (const special in specialsObj) {
     array.push(specialsObj[special]);
   }
-
   return array
     .sort((a, b) => {
       const aDate = parseISO(a.releaseDate);
       const bDate = parseISO(b.releaseDate);
+      return isAfter(aDate, bDate) ? -1 : 1;
+    })
+    .splice(0, num)
+    .reduce((prev, curr) => {
+      return { ...prev, [curr.id]: { ...curr } };
+    }, {});
+};
+
+const reduceLatestComediansCountToNum = (comediansObj, num) => {
+  const array = [];
+  for (const comedian in comediansObj) {
+    array.push(comediansObj[comedian]);
+  }
+  return array
+    .sort((a, b) => {
+      const aDate = parseISO(a.dateAdded);
+      const bDate = parseISO(b.dateAdded);
       return isAfter(aDate, bDate) ? -1 : 1;
     })
     .splice(0, num)
