@@ -8,7 +8,7 @@ import MicrophoneSVG from "@/assets/MicrophoneSVG";
 import AddComedianModal from "@/components/AddComedianModal/AddComedianModal";
 import useFetch from "@/hooks/useFetch";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./SearchResults.scss";
 import { getAllComedianIdsFromDB } from "@/firebase/database";
 import { addComedianToDB } from "@/firebase/functions";
@@ -28,6 +28,11 @@ function SearchResults() {
   >([]);
   const [showModal, setShowModal] = useState(false);
   const [modalPersonId, setModalPersonId] = useState<number>();
+  const [addComedianPending, setAddComedianPending] = useState<boolean | null>(
+    null
+  );
+  const [showError, setShowError] = useState(false);
+  const navigate = useNavigate();
 
   // on first page load, get list of all comedians currently on the site
   useEffect(() => {
@@ -56,17 +61,20 @@ function SearchResults() {
   }, [data, comedianIdsInDb]);
 
   const handleAddComedian = async (personalId: number) => {
+    setAddComedianPending(true);
     setShowModal(false);
-    addComedianToDB({ personalId })
+
+    addComedianToDB({ id: personalId })
       .then(() => {
+        setAddComedianPending(false);
         console.log("success: added comedian");
+        navigate(`/comedians/${personalId}`);
       })
       .catch((error) => {
-        // const message = error.message;
-        // const details = error.details;
-        // const code = error.code;
+        setAddComedianPending(false);
+        setShowError(true);
         console.log("error: unable to add comedian.");
-        console.log(error);
+        console.log(error.message);
       });
   };
 
@@ -92,63 +100,78 @@ function SearchResults() {
 
       {isLoading && <p>Loading...</p>}
 
-      {existingComedians.length !== 0 && (
+      {showError && (
+        <p>
+          Sorry. Something went wrong and we're unable to add comedians at this
+          time. Please contact us if the issue doesn't resolve itself in a day
+          or two.
+        </p>
+      )}
+
+      {/* display results of the search */}
+      {!addComedianPending && !showError && (
         <>
-          <div className="result__header">
-            <h3 className="result__header__h3">Existing Comedians</h3>
-            <p className="result__header__p">
-              The following comedians already exist in the database.
-            </p>
-          </div>
-          <div className="searchpage__grid">
-            {existingComedians.map((comedian) => (
-              <ComedianCard id={comedian.id} key={comedian.id} />
-            ))}
-          </div>
+          {existingComedians.length !== 0 && (
+            <>
+              <div className="result__header">
+                <h3 className="result__header__h3">Existing Comedians</h3>
+                <p className="result__header__p">
+                  The following comedians already exist in the database.
+                </p>
+              </div>
+              <div className="searchpage__grid">
+                {existingComedians.map((comedian) => (
+                  <ComedianCard id={comedian.id} key={comedian.id} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {missingComedians.length !== 0 && (
+            // allow the user to add new comedians to the site
+            <>
+              <div className="result__header">
+                <h3 className="result__header__h3">Add New Comedians</h3>
+                <p className="result__header__p">
+                  The following results are potential comedians that you can add
+                  to the site.
+                </p>
+              </div>
+              <div className="searchpage__grid">
+                {missingComedians
+                  // sort by popularity
+                  .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
+                    return a.popularity > b.popularity ? -1 : 1;
+                  })
+                  // create clickable cards each person
+                  .map((person: IPersonSearchResult) => (
+                    <div
+                      className="searchpage__person"
+                      key={person.id}
+                      onClick={() => {
+                        setShowModal(true);
+                        setModalPersonId(person.id);
+                      }}
+                    >
+                      {person.profile_path ? (
+                        <img
+                          src={getTMDBImageURL(person.profile_path)}
+                          alt={`${person.name} Headshot`}
+                          className="searchpage__headshot"
+                        />
+                      ) : (
+                        <MicrophoneSVG className="comedian-card__image comedian-card__svg" />
+                      )}
+                      <h3 className="searchpage__name">{person.name}</h3>
+                    </div>
+                  ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
-      {missingComedians.length !== 0 && (
-        // allow the user to add new comedians to the site
-        <>
-          <div className="result__header">
-            <h3 className="result__header__h3">Add New Comedians</h3>
-            <p className="result__header__p">
-              The following results are potential comedians that you can add to
-              the site.
-            </p>
-          </div>
-          <div className="searchpage__grid">
-            {missingComedians
-              // sort by popularity
-              .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
-                return a.popularity > b.popularity ? -1 : 1;
-              })
-              // create clickable cards each person
-              .map((person: IPersonSearchResult) => (
-                <div
-                  className="searchpage__person"
-                  key={person.id}
-                  onClick={() => {
-                    setShowModal(true);
-                    setModalPersonId(person.id);
-                  }}
-                >
-                  {person.profile_path ? (
-                    <img
-                      src={getTMDBImageURL(person.profile_path)}
-                      alt={`${person.name} Headshot`}
-                      className="searchpage__headshot"
-                    />
-                  ) : (
-                    <MicrophoneSVG className="comedian-card__image comedian-card__svg" />
-                  )}
-                  <h3 className="searchpage__name">{person.name}</h3>
-                </div>
-              ))}
-          </div>
-        </>
-      )}
+      {addComedianPending && <h4>Adding your comedian... Please wait!</h4>}
 
       {showModal && modalPersonId && (
         <div className="overlay" onClick={(e) => setShowModal(false)}>

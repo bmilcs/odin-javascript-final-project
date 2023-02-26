@@ -73,7 +73,7 @@ const getFirebaseDoc = async (collection, doc) => {
       return doc.data();
     })
     .then((data) => {
-      return data;
+      return { ...data };
     });
 };
 
@@ -95,11 +95,11 @@ const getLatestComediansData = async () => {
 // add comedian & their specials to the db.
 exports.addComedianAndSpecials = functions.https.onCall(
   async (data, context) => {
-    const { personalId } = data;
-    if (!personalId) return;
+    const { id } = data;
+    if (!id) return;
 
-    const comedianUrl = getPersonDetailsURL(personalId);
-    const specialsUrl = getAllSpecialsForPersonURL(personalId);
+    const comedianUrl = getPersonDetailsURL(id);
+    const specialsUrl = getAllSpecialsForPersonURL(id);
     const comedianData = await fetchData(comedianUrl);
     const { results: specialsData } = await fetchData(specialsUrl);
 
@@ -193,7 +193,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
       .doc("all")
       .set(comedian, { merge: true })
       .then(() => {
-        console.log(`Added ${comedianData.name} to /comedians/all`);
+        console.log(`- Added ${comedianData.name} to /comedians/all`);
         admin
           .firestore()
           .collection("comedians")
@@ -201,7 +201,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
           .set(latestTenComedians);
       })
       .then(() => {
-        console.log(`Added ${comedianData.name} to /comedians/latest`);
+        console.log(`- Added ${comedianData.name} to /comedians/latest`);
         admin
           .firestore()
           .collection("specials")
@@ -209,7 +209,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
           .set(specials, { merge: true });
       })
       .then(() => {
-        console.log(`Added ${comedianData.name}'s specials to /specials/all`);
+        console.log(`- Added ${comedianData.name}'s specials to /specials/all`);
         admin
           .firestore()
           .collection("specials")
@@ -218,7 +218,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
       })
       .then(() => {
         console.log(
-          `Added ${comedianData.name}'s specials to /specials/upcoming`
+          `- Added ${comedianData.name}'s specials to /specials/upcoming`
         );
         admin
           .firestore()
@@ -230,13 +230,15 @@ exports.addComedianAndSpecials = functions.https.onCall(
         console.log(
           `Added ${comedianData.name}'s specials to /specials/upcoming`
         );
+        console.log(`Successfully added ${comedianData.name}`);
         return {
           added: true,
         };
       })
       .catch((error) => {
-        throw new functions.https.HttpsError("unknown", "ERROR0", {
-          message: error.message,
+        console.log(error);
+        throw new functions.https.HttpsError("Firebase Cloud Function Error", {
+          ...error,
         });
       });
   }
