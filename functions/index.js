@@ -19,7 +19,7 @@ const API_KEY = functions.config().tmdb.key;
 //     "id": {
 //       name:      "Tom Segura",
 //       id:        123456,
-//       imageId:   "09ujoidahfi2h3f0hadf.jpg",
+//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
 //       dateAdded: timestamp,
 //       favorites: 5
 //     }
@@ -27,7 +27,7 @@ const API_KEY = functions.config().tmdb.key;
 //     "id": {
 //       name:      "Tom Segura",
 //       id:        123456,
-//       imageId:   "09ujoidahfi2h3f0hadf.jpg",
+//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
 //       dateAdded: timestamp,
 //     }
 
@@ -36,7 +36,7 @@ const API_KEY = functions.config().tmdb.key;
 //     "id": {
 //       title:      "Ball Hog",
 //       id:         123456,
-//       imageId:    "09ujoidahfi2h3f0hadf.jpg",
+//       profile_path:    "09ujoidahfi2h3f0hadf.jpg",
 //       comedian:   "Tom Segura",
 //       comedianId: 2093409234
 //       favorites:  5
@@ -45,16 +45,16 @@ const API_KEY = functions.config().tmdb.key;
 //     "id": {
 //       title:     "Ball Hog",
 //       id:        123456,
-//       releaseDate: "1/1/25",
-//       imageId:   "09ujoidahfi2h3f0hadf.jpg",
+//       release_date: "1/1/25",
+//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
 //       comedian:  "Tom Segura",
 //     }
 //   upcoming/
 //     "id": {
 //       title:     "Ball Hog",
 //       id:        123456,
-//       releaseDate: "1/1/25",
-//       imageId:   "09ujoidahfi2h3f0hadf.jpg",
+//       release_date: "1/1/25",
+//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
 //       comedian:  "Tom Segura",
 //     }
 
@@ -92,17 +92,10 @@ const getLatestComediansData = async () => {
   return getFirebaseDoc("comedians", "latest");
 };
 
-//
-// add comedian & their specials
-//
-
-// clients push a tmdb id to /comedians/toAdd when requesting a
-// new comedian be added to the db
-exports.addComedianAndSpecials = functions.firestore
-  .document("/comedians/toAdd")
-  .onCreate(async (change, context) => {
-    const toAddData = change.data();
-    const { personalId } = toAddData;
+// add comedian & their specials to the db.
+exports.addComedianAndSpecials = functions.https.onCall(
+  async (data, context) => {
+    const { personalId } = data;
     if (!personalId) return;
 
     const comedianUrl = getPersonDetailsURL(personalId);
@@ -110,11 +103,22 @@ exports.addComedianAndSpecials = functions.firestore
     const comedianData = await fetchData(comedianUrl);
     const { results: specialsData } = await fetchData(specialsUrl);
 
+    if (
+      !comedianData.id ||
+      comedianData.success === false ||
+      specialsData.success === false
+    ) {
+      throw new functions.https.HttpsError(
+        "Fail",
+        "Unable to add the comedian at this time."
+      );
+    }
+
     const comedian = {
       [comedianData.id]: {
         name: comedianData.name,
         id: comedianData.id,
-        imageId: comedianData.profile_path,
+        profile_path: comedianData.profile_path,
         dateAdded: FieldValue.serverTimestamp(),
         favorites: 0,
       },
@@ -126,15 +130,15 @@ exports.addComedianAndSpecials = functions.firestore
         [special.id]: {
           id: special.id,
           title: special.title,
-          imageId: special.poster_path,
-          releaseDate: special.release_date,
+          profile_path: special.poster_path,
+          release_date: special.release_date,
           comedian: comedianData.name,
           comedianId: comedianData.id,
         },
       };
     }, {});
 
-    // add comedian to db: "/comedians/latest"
+    // add comedian to db: "/comedians/latest" & "/comedians/all"
     // check release date of the specials to be added to the db:
     // - if not released yet, add to /specials/upcoming
     // - if newer than one of the latest 10, add to /specials/latest
@@ -170,57 +174,92 @@ exports.addComedianAndSpecials = functions.firestore
     latestComedians = { ...latestComedians, ...comedian };
 
     // finally, reduce latest specials & comedians to a final quantity
-    const latestTenSpecials = reduceLatestSpecialsCountToNum(
+    const latestTenSpecials = reduceLatestCountToNum(
       latestSpecials,
-      10
+      10,
+      "release_date"
     );
 
-    const latestTenComedians = reduceLatestComediansCountToNum(
+    const latestTenComedians = reduceLatestCountToNum(
       latestComedians,
-      10
+      10,
+      "dateAdded"
     );
 
     // update the db
-    admin
+    return admin
       .firestore()
       .collection("comedians")
       .doc("all")
-      .set(comedian, { merge: true });
-    admin
-      .firestore()
-      .collection("comedians")
-      .doc("latest")
-      .set(latestTenComedians);
-    admin
-      .firestore()
-      .collection("specials")
-      .doc("all")
-      .set(specials, { merge: true });
-    admin
-      .firestore()
-      .collection("specials")
-      .doc("latest")
-      .set(latestTenSpecials);
-    admin
-      .firestore()
-      .collection("specials")
-      .doc("upcoming")
-      .set(upcomingSpecials);
+      .set(comedian, { merge: true })
+      .then(() => {
+        console.log(`Added ${comedianData.name} to /comedians/all`);
+        admin
+          .firestore()
+          .collection("comedians")
+          .doc("latest")
+          .set(latestTenComedians);
+      })
+      .then(() => {
+        console.log(`Added ${comedianData.name} to /comedians/latest`);
+        admin
+          .firestore()
+          .collection("specials")
+          .doc("all")
+          .set(specials, { merge: true });
+      })
+      .then(() => {
+        console.log(`Added ${comedianData.name}'s specials to /specials/all`);
+        admin
+          .firestore()
+          .collection("specials")
+          .doc("latest")
+          .set(latestTenSpecials);
+      })
+      .then(() => {
+        console.log(
+          `Added ${comedianData.name}'s specials to /specials/upcoming`
+        );
+        admin
+          .firestore()
+          .collection("specials")
+          .doc("upcoming")
+          .set(upcomingSpecials);
+      })
+      .then(() => {
+        console.log(
+          `Added ${comedianData.name}'s specials to /specials/upcoming`
+        );
+        return {
+          added: true,
+        };
+      })
+      .catch((error) => {
+        throw new functions.https.HttpsError("unknown", "ERROR0", {
+          message: error.message,
+        });
+      });
+  }
+);
 
-    admin.firestore().collection("comedians").doc("toAdd").delete(toAddData);
-  });
-
+// returns true if special's release date is after today's date
 const isSpecialNotOutYet = (special) => {
-  const specialDate = parseISO(special.releaseDate);
+  const specialDate = parseISO(special.release_date);
   const today = new Date();
   return isAfter(specialDate, today) ? true : false;
 };
 
+// returns true if a special's date is after one of the latest specials dates
 const isSpecialALatestRelease = (special, latestSpecialsObj) => {
-  const specialDate = parseISO(special.releaseDate);
+  const specialDate = parseISO(special.release_date);
+
+  // when /specials/latest is empty, accept any special as a latest release
+  if (!latestSpecialsObj || Object.keys(latestSpecialsObj).length === 0)
+    return true;
+
   for (const existingSpecial in latestSpecialsObj) {
     const existingDate = parseISO(
-      latestSpecialsObj[existingSpecial].releaseDate
+      latestSpecialsObj[existingSpecial].release_date
     );
     const isMoreRecent = isAfter(specialDate, existingDate);
     if (isMoreRecent) {
@@ -231,32 +270,17 @@ const isSpecialALatestRelease = (special, latestSpecialsObj) => {
   return false;
 };
 
-const reduceLatestSpecialsCountToNum = (specialsObj, num) => {
+// given a object of comedians or specials, sort by "dateField" &
+// limit the results to "num"
+const reduceLatestCountToNum = (dataObj, num, dateField) => {
   const array = [];
-  for (const special in specialsObj) {
-    array.push(specialsObj[special]);
+  for (const data in dataObj) {
+    array.push(dataObj[data]);
   }
   return array
     .sort((a, b) => {
-      const aDate = parseISO(a.releaseDate);
-      const bDate = parseISO(b.releaseDate);
-      return isAfter(aDate, bDate) ? -1 : 1;
-    })
-    .splice(0, num)
-    .reduce((prev, curr) => {
-      return { ...prev, [curr.id]: { ...curr } };
-    }, {});
-};
-
-const reduceLatestComediansCountToNum = (comediansObj, num) => {
-  const array = [];
-  for (const comedian in comediansObj) {
-    array.push(comediansObj[comedian]);
-  }
-  return array
-    .sort((a, b) => {
-      const aDate = parseISO(a.dateAdded);
-      const bDate = parseISO(b.dateAdded);
+      const aDate = parseISO(a[dateField]);
+      const bDate = parseISO(b[dateField]);
       return isAfter(aDate, bDate) ? -1 : 1;
     })
     .splice(0, num)

@@ -10,7 +10,8 @@ import useFetch from "@/hooks/useFetch";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./SearchResults.scss";
-import { addComedianToDB, getAllComedianIdsFromDB } from "@/firebase/database";
+import { getAllComedianIdsFromDB } from "@/firebase/database";
+import { addComedianToDB } from "@/firebase/functions";
 import ComedianCard from "@/components/ComedianCard/ComedianCard";
 
 function SearchResults() {
@@ -18,7 +19,7 @@ function SearchResults() {
   const term = parseSearchQuery(searchTerm!);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch(url);
-  const [comedianIdsInDb, setComedianIdsInDb] = useState<number[]>([]);
+  const [comedianIdsInDb, setComedianIdsInDb] = useState<number[] | null>(null);
   const [missingComedians, setMissingComedians] = useState<
     IPersonSearchResult[]
   >([]);
@@ -34,21 +35,18 @@ function SearchResults() {
       const comedianIds = await getAllComedianIdsFromDB();
       setComedianIdsInDb(comedianIds);
     };
-
     getComedians();
   }, []);
 
   // once the comedian ids from the db are loaded & search results are fetched,
   // remove comedians that already exist
   useEffect(() => {
-    if (!data || comedianIdsInDb.length === 0) return;
+    if (!data || !comedianIdsInDb) return;
 
     const results = [...data.results];
-
     const missing = results.filter((person) => {
       return !comedianIdsInDb.includes(person.id);
     });
-
     const existing = results.filter((person) => {
       return comedianIdsInDb.includes(person.id);
     });
@@ -57,9 +55,19 @@ function SearchResults() {
     setExistingComedians(existing);
   }, [data, comedianIdsInDb]);
 
-  const handleAddComedian = (personalId: number) => {
-    addComedianToDB(personalId);
+  const handleAddComedian = async (personalId: number) => {
     setShowModal(false);
+    addComedianToDB({ personalId })
+      .then(() => {
+        console.log("success: added comedian");
+      })
+      .catch((error) => {
+        // const message = error.message;
+        // const details = error.details;
+        // const code = error.code;
+        console.log("error: unable to add comedian.");
+        console.log(error);
+      });
   };
 
   // update the results if the search term is changed while on the page

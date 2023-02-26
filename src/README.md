@@ -184,7 +184,7 @@ We don't want to overload the TMDB api or have to query 100's of documents in Fi
   name: "Tom Segura",
   id: 123456,
   // /src/api/ has utility function for recreating full url:
-  imageId: "09ujoidahfi2h3f0hadf.jpg",
+  profile_path: "09ujoidahfi2h3f0hadf.jpg",
   dateAdded: timestamp,
   favoriteCt: 5
 }
@@ -208,7 +208,7 @@ We don't want to overload the TMDB api or have to query 100's of documents in Fi
   name: "Tom Segura",
   id: 123456,
   // /src/api/ has utility function for recreating full url:
-  imageId: "09ujoidahfi2h3f0hadf.jpg",
+  profile_path: "09ujoidahfi2h3f0hadf.jpg",
   dateAdded: timestamp,
   // don't need favorite count here
 }
@@ -256,8 +256,8 @@ _Trigger_: on a daily basis, ie: 3am eastern time
   title: "Ball Hog",
   id: 123456,
   comedianName: "Tom Segura",
-  imageId: "inasdnfoasndf.jpg",
-  releaseDate: timestamp,
+  profile_path: "inasdnfoasndf.jpg",
+  release_date: timestamp,
 }
 ```
 
@@ -300,7 +300,7 @@ _Trigger_: user adds or removes like status (special/comedian).
     "id": {
       name:      "Tom Segura",
       id:        123456,
-      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      profile_path:   "09ujoidahfi2h3f0hadf.jpg",
       dateAdded: timestamp,
       favorites: 5
     }
@@ -308,7 +308,7 @@ _Trigger_: user adds or removes like status (special/comedian).
     "id": {
       name:      "Tom Segura",
       id:        123456,
-      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      profile_path:   "09ujoidahfi2h3f0hadf.jpg",
       dateAdded: timestamp,
     }
 
@@ -317,7 +317,7 @@ _Trigger_: user adds or removes like status (special/comedian).
     "id": {
       title:      "Ball Hog",
       id:         123456,
-      imageId:    "09ujoidahfi2h3f0hadf.jpg",
+      profile_path:    "09ujoidahfi2h3f0hadf.jpg",
       comedian:   "Tom Segura",
       comedianId: 2093409234
       favorites:  5
@@ -326,16 +326,16 @@ _Trigger_: user adds or removes like status (special/comedian).
     "id": {
       title:     "Ball Hog",
       id:        123456,
-      releaseDate: "1/1/25",
-      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      release_date: "1/1/25",
+      profile_path:   "09ujoidahfi2h3f0hadf.jpg",
       comedian:  "Tom Segura",
     }
   upcoming/
     "id": {
       title:     "Ball Hog",
       id:        123456,
-      releaseDate: "1/1/25",
-      imageId:   "09ujoidahfi2h3f0hadf.jpg",
+      release_date: "1/1/25",
+      profile_path:   "09ujoidahfi2h3f0hadf.jpg",
       comedian:  "Tom Segura",
     }
 

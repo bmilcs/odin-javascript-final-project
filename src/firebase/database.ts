@@ -118,7 +118,7 @@ export const getAllComedianIdsFromDB = async () => {
 
 export interface IComedian {
   favorites: number;
-  imageId: string;
+  profile_path: string;
   name: string;
   id: number;
   dateAdded: {
@@ -137,25 +137,15 @@ export const getLatestComediansFromDB = async () => {
   return docSnap.exists() && (docSnap.data() as IComedianList);
 };
 
-// adding comedians to the site:
-// when a user wants to add a comedian to the db, the tmdb id of the comedian
-// is written to the /comedians/toAdd document in firestore. a firebase cloud
-// function is triggered on write & adds the comedian and their specials to the db
-
-const comediansToAddDocRef = doc(db, "comedians", "toAdd");
-export const addComedianToDB = async (personalId: number) => {
-  await setDoc(comediansToAddDocRef, { personalId }, { merge: true });
-};
-
 //
 // specials related functions
 //
 
 export interface IComedySpecial {
   comedian: string;
-  imageId: string;
+  profile_path: string;
   comedianId: number;
-  releaseDate: string;
+  release_date: string;
   id: number;
   title: string;
 }
