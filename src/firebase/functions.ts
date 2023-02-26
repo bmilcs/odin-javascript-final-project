@@ -15,3 +15,8 @@ if (mode === "dev") {
   console.log("dev mode: connecting function emulator");
   connectFunctionsEmulator(functions, "localhost", 8881);
 }
+
+export const addComedianToDB = httpsCallable(
+  functions,
+  "addComedianAndSpecials"
+);

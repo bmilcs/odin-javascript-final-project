@@ -103,7 +103,6 @@ export const getAllComediansFromDB = async () => {
 
   if (docSnap.exists()) {
     const data = docSnap.data();
-
     for (const specialId of Object.keys(data)) {
       const tmdbId = Number.parseInt(specialId);
       if (!allComedians.includes(tmdbId)) allComedians.push(tmdbId);
