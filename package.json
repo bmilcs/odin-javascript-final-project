@@ -1,6 +1,5 @@
 {
   "name": "odin-javascript-final-project",
-  "homepage": "/odin-javascript-final-project",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build && cp ./public/404.html ./dist",
-    "deploy": "gh-pages -d dist",
+    "deploy": "firebase deploy --only hosting",
     "pub": "npm run predeploy && npm run deploy"
   },
   "dependencies": {

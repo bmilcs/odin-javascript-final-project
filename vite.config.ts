@@ -5,7 +5,7 @@ import * as path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/odin-javascript-final-project/",
+  // base: "/odin-javascript-final-project/",
 
   // "@" becomes the default path for src
   resolve: {

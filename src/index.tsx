@@ -7,7 +7,7 @@ import App from "@/app/App";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <Provider store={store}>
-    <BrowserRouter basename="/odin-javascript-final-project">
+    <BrowserRouter>
       <React.StrictMode>
         <App />
       </React.StrictMode>
