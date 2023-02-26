@@ -116,6 +116,27 @@ export const getAllComedianIdsFromDB = async () => {
   return allComedians;
 };
 
+export interface IComedian {
+  favorites: number;
+  imageId: string;
+  name: string;
+  id: number;
+  dateAdded: {
+    seconds: number;
+    nanoseconds: number;
+  };
+}
+
+export interface IComedianList {
+  [key: string]: IComedian;
+}
+
+export const getLatestComediansFromDB = async () => {
+  const latestComediansDocRef = doc(db, "comedians", "latest");
+  const docSnap = await getDoc(latestComediansDocRef);
+  return docSnap.exists() && (docSnap.data() as IComedianList);
+};
+
 // adding comedians to the site:
 // when a user wants to add a comedian to the db, the tmdb id of the comedian
 // is written to the /comedians/toAdd document in firestore. a firebase cloud
