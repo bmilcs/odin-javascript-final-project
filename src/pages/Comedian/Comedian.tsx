@@ -1,5 +1,4 @@
 import { getTMDBImageURL, getIMDBPersonURL } from "@/api/TMDB";
-import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
 import useFetchPersonalAndSpecialsData from "@/hooks/useFetchPersonalAndSpecialsData";
 import { formatDateNumberOfYearsPassed } from "@/utils/date";
@@ -58,7 +57,7 @@ function Comedian() {
       {specials && specials.length > 0 && <SpecialsGrid data={specials} />}
 
       {appearances && appearances.length > 0 && (
-        <AppearancesGrid data={appearances} />
+        <SpecialsGrid data={appearances} />
       )}
     </div>
   );

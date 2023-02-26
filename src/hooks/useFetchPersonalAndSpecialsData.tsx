@@ -3,6 +3,7 @@ import {
   getPersonDetailsURL,
   IDiscoverMovieResult,
 } from "@/api/TMDB";
+import { IComedySpecial } from "@/firebase/database";
 // import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
 import useFetch from "@/hooks/useFetch";
 import { isDateOneBeforeDateTwo } from "@/utils/date";
@@ -24,10 +25,8 @@ function useFetchPersonalAndSpecialsData(personId: number) {
     isLoading: specialsIsLoading,
     setUrl: setSpecialsUrl,
   } = useFetch(specialsURL);
-  const [specials, setSpecials] = useState<null | IDiscoverMovieResult[]>(null);
-  const [appearances, setAppearances] = useState<null | IDiscoverMovieResult[]>(
-    null
-  );
+  const [specials, setSpecials] = useState<null | IComedySpecial[]>(null);
+  const [appearances, setAppearances] = useState<null | IComedySpecial[]>(null);
 
   const changePerson = (newPersonId: number) => {
     id = newPersonId;
