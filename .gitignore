@@ -7,6 +7,10 @@ firestore.rules
 # Firebase Persistent Database Emulation
 db/
 
+# Live build
+dist/
+.firebase/
+
 # Logs
 logs
 *.log
