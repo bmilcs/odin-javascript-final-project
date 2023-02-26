@@ -3,16 +3,21 @@
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const STANDUP_KEYWORD = 9716;
 
-//
-// misc urls
-//
-
 export const getTMDBImageURL = (path: string) => {
   return `https://image.tmdb.org/t/p/original/${path}`;
 };
 
-export const getIMDBURL = (id: string) => {
+export const getIMDBPersonURL = (id: string) => {
   return `https://www.imdb.com/name/${id}`;
+};
+
+export const parseSearchQuery = (string: string): string => {
+  return string === undefined
+    ? ""
+    : string
+        .replace(/[^a-z0-9_]+/gi, "-")
+        .replace(/^-|-$/g, "")
+        .toLowerCase();
 };
 
 //
@@ -114,7 +119,7 @@ export const tmdbSearchUrl = ({
   query,
   requestType,
 }: TMDBSearchRequest): string => {
-  const parsedQuery = encodeURIComponent(query);
+  const parsedQuery = parseSearchQuery(query);
   let url = `https://api.themoviedb.org/3/search/${requestType}?api_key=${API_KEY}`;
   url += `&query=${query}`;
   return url;

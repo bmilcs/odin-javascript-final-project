@@ -1,4 +1,4 @@
-import { getTMDBImageURL, getIMDBURL } from "@/api/TMDB";
+import { getTMDBImageURL, getIMDBPersonURL } from "@/api/TMDB";
 import AppearancesGrid from "@/components/AppearancesGrid/AppearancesGrid";
 import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
 import useFetchPersonalAndSpecialsData from "@/hooks/useFetchPersonalAndSpecialsData";
@@ -47,7 +47,7 @@ function Comedian() {
               )}
               {personalData.imdb_id && (
                 <p className="comedian__imdb">
-                  <a href={getIMDBURL(personalData.imdb_id)}></a>
+                  <a href={getIMDBPersonURL(personalData.imdb_id)}></a>
                 </p>
               )}
             </div>

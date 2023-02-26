@@ -9,6 +9,7 @@ import "./SearchBar.scss";
 import {
   getTMDBImageURL,
   IPersonSearchResult,
+  parseSearchQuery,
   searchForPersonURL,
 } from "@/api/TMDB";
 
@@ -25,7 +26,7 @@ function SearchBar() {
     // for the dropdown autocomplete options
     const delayAutocomplete = setTimeout(() => {
       if (!searchTerm || searchTerm.length < 3) return;
-      const term = encodeURIComponent(searchTerm);
+      const term = parseSearchQuery(searchTerm);
       const url = searchForPersonURL(term);
       setUrl(url);
     }, 1000);
@@ -55,7 +56,7 @@ function SearchBar() {
     e.preventDefault();
     if (!searchTerm) return;
 
-    const term = encodeURIComponent(searchTerm);
+    const term = parseSearchQuery(searchTerm);
     navigate(`/search/${term}`);
     clearHideDropDown();
   };

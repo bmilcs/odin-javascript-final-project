@@ -1,6 +1,7 @@
 import {
   getTMDBImageURL,
   IPersonSearchResult,
+  parseSearchQuery,
   searchForPersonURL,
 } from "@/api/TMDB";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
@@ -14,7 +15,7 @@ import ComedianCard from "@/components/ComedianCard/ComedianCard";
 
 function SearchResults() {
   const { searchTerm } = useParams();
-  const term = encodeURIComponent(searchTerm!);
+  const term = parseSearchQuery(searchTerm!);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch(url);
   const [comedianIdsInDb, setComedianIdsInDb] = useState<number[]>([]);
@@ -63,7 +64,7 @@ function SearchResults() {
 
   // update the results if the search term is changed while on the page
   useEffect(() => {
-    const newUrl = searchForPersonURL(encodeURIComponent(term));
+    const newUrl = searchForPersonURL(parseSearchQuery(term));
     setUrl(newUrl);
     setMissingComedians([]);
     setExistingComedians([]);
@@ -76,9 +77,7 @@ function SearchResults() {
           <h2 className="searchpage__title">Comedian Search</h2>
           <p className="searchpage__details">
             You searched for:{" "}
-            <span className="searchpage__term">
-              " {decodeURIComponent(term)} "
-            </span>
+            <span className="searchpage__term">" {term} "</span>
           </p>
         </div>
       </div>
