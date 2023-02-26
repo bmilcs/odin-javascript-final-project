@@ -4,7 +4,6 @@ import { formatDateYearOnly } from "@/utils/date";
 import { BsCheckLg } from "react-icons/bs";
 import "./SpecialsList.scss";
 
-// function SpecialsList(data: any) {
 function SpecialsList({ data }: { data: IDiscoverMovieResult[] }) {
   return (
     <ul className="specials__ul">

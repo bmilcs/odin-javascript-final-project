@@ -7,57 +7,6 @@ admin.initializeApp();
 
 const API_KEY = functions.config().tmdb.key;
 
-// /users/
-//   {id}/
-//     email
-//     name
-//     id
-//     favorites
-
-// /comedians/
-//   all/
-//     "id": {
-//       name:      "Tom Segura",
-//       id:        123456,
-//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
-//       dateAdded: timestamp,
-//       favorites: 5
-//     }
-//   new/
-//     "id": {
-//       name:      "Tom Segura",
-//       id:        123456,
-//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
-//       dateAdded: timestamp,
-//     }
-
-// /specials/
-//   all/
-//     "id": {
-//       title:      "Ball Hog",
-//       id:         123456,
-//       profile_path:    "09ujoidahfi2h3f0hadf.jpg",
-//       comedian:   "Tom Segura",
-//       comedianId: 2093409234
-//       favorites:  5
-//     }
-//   new/
-//     "id": {
-//       title:     "Ball Hog",
-//       id:        123456,
-//       release_date: "1/1/25",
-//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
-//       comedian:  "Tom Segura",
-//     }
-//   upcoming/
-//     "id": {
-//       title:     "Ball Hog",
-//       id:        123456,
-//       release_date: "1/1/25",
-//       profile_path:   "09ujoidahfi2h3f0hadf.jpg",
-//       comedian:  "Tom Segura",
-//     }
-
 //
 // db retrieval functions
 //
@@ -130,7 +79,8 @@ exports.addComedianAndSpecials = functions.https.onCall(
         [special.id]: {
           id: special.id,
           title: special.title,
-          profile_path: special.poster_path,
+          poster_path: special.poster_path,
+          backdrop_path: special.backdrop_path,
           release_date: special.release_date,
           comedian: comedianData.name,
           comedianId: comedianData.id,

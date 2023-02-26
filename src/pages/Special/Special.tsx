@@ -12,7 +12,7 @@ import "./Special.scss";
 // TODO ^ red banner, add to coming soon section on homepage
 // TODO Hide "Years Ago" if 0
 
-function Comedian() {
+function Special() {
   const { specialId } = useParams();
   const id = specialId ? Number(specialId) : 0;
   const specialURL = getMovieDetailsURL(id);
@@ -95,4 +95,4 @@ function Comedian() {
   );
 }
 
-export default Comedian;
+export default Special;

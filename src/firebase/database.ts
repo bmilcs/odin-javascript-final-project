@@ -120,10 +120,7 @@ export interface IComedian {
   profile_path: string;
   name: string;
   id: number;
-  dateAdded: {
-    seconds: number;
-    nanoseconds: number;
-  };
+  dateAdded: string;
 }
 
 export interface IComedianList {
@@ -142,7 +139,8 @@ export const getLatestComediansFromDB = async () => {
 
 export interface IComedySpecial {
   comedian: string;
-  profile_path: string;
+  backdrop_path: string;
+  poster_path: string;
   comedianId: number;
   release_date: string;
   id: number;
