@@ -1,5 +1,5 @@
 import { RootState } from "@/app/store";
-import { addFavoriteToDB, removeFavoriteFromDB } from "@/firebase/database";
+import { toggleUserFavoriteInDB } from "@/firebase/functions";
 import { createSlice } from "@reduxjs/toolkit";
 
 export type UserState = {
@@ -24,11 +24,9 @@ export const userSlice = createSlice({
   reducers: {
     addUserFavorite: (state, { payload }) => {
       state.favorites.push(payload);
-      if (state.isSignedIn) addFavoriteToDB(payload);
     },
     removeUserFavorite: (state, { payload }) => {
       state.favorites = state.favorites.filter((fav) => fav !== payload);
-      if (state.isSignedIn) removeFavoriteFromDB(payload);
     },
     setUserFavorites: (state, { payload }) => {
       state.favorites = payload;
@@ -39,10 +37,8 @@ export const userSlice = createSlice({
 
       if (favorites.includes(favoriteId)) {
         state.favorites = state.favorites.filter((fav) => fav !== favoriteId);
-        if (state.isSignedIn) removeFavoriteFromDB(payload);
       } else {
         state.favorites.push(favoriteId);
-        if (state.isSignedIn) addFavoriteToDB(payload);
       }
     },
     setUserName: (state, { payload }) => {

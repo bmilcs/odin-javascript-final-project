@@ -42,7 +42,7 @@ function ComedianCard({ id }: Props) {
             {data.name && <p className="comedian-card__name">{data.name}</p>}
             <div className="comedian-card__icons">
               {data.imdb_id && <FaImdb size={20} />}
-              <FavoriteIcon favoriteId={`comedian-${data.id}`} />
+              <FavoriteIcon favoriteId={`comedians-${data.id}`} />
             </div>
           </div>
         </Card>

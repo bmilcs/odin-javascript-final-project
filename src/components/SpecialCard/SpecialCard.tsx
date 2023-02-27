@@ -52,7 +52,7 @@ function SpecialCard({
           <div className="special-card__content">
             {title && <p className="special-card__title">{title}</p>}
 
-            <FavoriteIcon favoriteId={`special-${id}`} />
+            <FavoriteIcon favoriteId={`specials-${id}`} />
             {/* {special.vote_average && (
               <p className="special-card__vote">{special.vote_average}</p>
             )} */}
