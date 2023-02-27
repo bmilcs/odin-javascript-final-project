@@ -1,9 +1,22 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const { FieldValue } = require("firebase-admin/firestore");
+const {
+  initializeApp,
+  applicationDefault,
+  cert,
+} = require("firebase-admin/app");
+const {
+  getFirestore,
+  Timestamp,
+  FieldValue,
+  arrayUnion,
+  arrayRemove,
+} = require("firebase-admin/firestore");
 const { parseISO, isAfter } = require("date-fns");
 
-admin.initializeApp();
+// admin.initializeApp();
+initializeApp();
+const db = getFirestore();
 
 const API_KEY = functions.config().tmdb.key;
 
@@ -12,8 +25,7 @@ const API_KEY = functions.config().tmdb.key;
 //
 
 const getFirebaseDoc = async (collection, doc) => {
-  return admin
-    .firestore()
+  return db
     .collection(collection)
     .doc(doc)
     .get()
@@ -41,7 +53,54 @@ const getLatestComediansData = async () => {
   return getFirebaseDoc("comedians", "latest");
 };
 
+//
+// user favorites handling
+//
+
+exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
+  const favorite = data.favoriteId;
+  const [favoriteCategory, favoriteId] = favorite.split("-");
+  const userId = context.auth.uid;
+
+  const contentFavoritesDocRef = db
+    .collection(favoriteCategory)
+    .doc("favorites");
+  const userDocRef = db.collection("users").doc(userId);
+  const getResponse = await userDocRef.get();
+  const userData = getResponse.data();
+  const favoritesField = userData.favorites;
+
+  if (favoritesField.includes(favorite)) {
+    // remove favorite from user doc
+    userDocRef.set(
+      { favorites: FieldValue.arrayRemove(favorite) },
+      { merge: true }
+    );
+    contentFavoritesDocRef.set(
+      {
+        [favoriteId]: FieldValue.increment(-1),
+      },
+      { merge: true }
+    );
+  } else {
+    // add favorite from user doc
+    userDocRef.set(
+      { favorites: FieldValue.arrayUnion(favorite) },
+      { merge: true }
+    );
+    contentFavoritesDocRef.set(
+      {
+        [favoriteId]: FieldValue.increment(1),
+      },
+      { merge: true }
+    );
+  }
+});
+
+//
 // add comedian & their specials to the db.
+//
+
 exports.addComedianAndSpecials = functions.https.onCall(
   async (data, context) => {
     const { id } = data;
@@ -69,7 +128,6 @@ exports.addComedianAndSpecials = functions.https.onCall(
         id: comedianData.id,
         profile_path: comedianData.profile_path,
         dateAdded: FieldValue.serverTimestamp(),
-        favorites: 0,
       },
     };
 
@@ -137,8 +195,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
     );
 
     // update the db
-    return admin
-      .firestore()
+    return db
       .collection("comedians")
       .doc("all")
       .set(comedian, { merge: true })
@@ -152,29 +209,17 @@ exports.addComedianAndSpecials = functions.https.onCall(
       })
       .then(() => {
         console.log(`- Added ${comedianData.name} to /comedians/latest`);
-        admin
-          .firestore()
-          .collection("specials")
-          .doc("all")
-          .set(specials, { merge: true });
+        db.collection("specials").doc("all").set(specials, { merge: true });
       })
       .then(() => {
         console.log(`- Added ${comedianData.name}'s specials to /specials/all`);
-        admin
-          .firestore()
-          .collection("specials")
-          .doc("latest")
-          .set(latestTenSpecials);
+        db.collection("specials").doc("latest").set(latestTenSpecials);
       })
       .then(() => {
         console.log(
           `- Added ${comedianData.name}'s specials to /specials/upcoming`
         );
-        admin
-          .firestore()
-          .collection("specials")
-          .doc("upcoming")
-          .set(upcomingSpecials);
+        db.collection("specials").doc("upcoming").set(upcomingSpecials);
       })
       .then(() => {
         console.log(
