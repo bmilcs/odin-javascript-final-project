@@ -20,3 +20,8 @@ export const addComedianToDB = httpsCallable(
   functions,
   "addComedianAndSpecials"
 );
+
+export const toggleUserFavoriteInDB = httpsCallable(
+  functions,
+  "toggleUserFavorite"
+);

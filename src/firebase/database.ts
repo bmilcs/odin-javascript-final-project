@@ -79,18 +79,6 @@ const loadUserData = async () => {
   // store.dispatch(logUserData());
 };
 
-export const addFavoriteToDB = async (favorite: string) => {
-  await updateDoc(userDocRef, {
-    favorites: arrayUnion(favorite),
-  });
-};
-
-export const removeFavoriteFromDB = async (favorite: string) => {
-  await updateDoc(userDocRef, {
-    favorites: arrayRemove(favorite),
-  });
-};
-
 //
 // comedian related functions
 //
