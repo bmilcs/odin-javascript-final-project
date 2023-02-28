@@ -29,9 +29,10 @@ const getFirebaseDoc = async (collection, doc) => {
     .collection(collection)
     .doc(doc)
     .get()
-    .then((doc) => {
-      if (!(doc && doc.exists)) throw Error("Error");
-      return doc.data();
+    .then((document) => {
+      if (!(document && document.exists))
+        throw Error(`--> /${collection}/${doc} doesn't exist`);
+      return document.data();
     })
     .then((data) => {
       return { ...data };
@@ -65,17 +66,18 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
   const userDocRef = db.collection("users").doc(userId);
   const userDocResponse = await userDocRef.get();
   const userDocData = userDocResponse.data();
-  const userDocFavoritesField = userDocData.favorites;
+  const userDocFavoritesArr = userDocData.favorites;
 
-  // /comedians/all or /specials/all
+  // depending on the arguments: /comedians/all or /specials/all
   const allContentDocRef = db.collection(newFavoriteCategory).doc("all");
 
-  if (userDocFavoritesField.includes(favoriteId)) {
-    // remove a favorite
+  if (userDocFavoritesArr.includes(favoriteId)) {
+    // remove favorite from /users/.../favorites: []
     userDocRef.set(
       { favorites: FieldValue.arrayRemove(favoriteId) },
       { merge: true }
     );
+    // update favorite count: /.../all/id: {favorites: # }
     allContentDocRef.set(
       {
         [newFavoriteId]: {
@@ -84,12 +86,15 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
       },
       { merge: true }
     );
+    // TODO: Remove favorite count from topFavorites if present
+    // ! on removal of a favorite, /category/all is NOT checked for a new potential top favorite
   } else {
-    // add a favorite
+    // add favorite from /users/.../favorites: []
     userDocRef.set(
       { favorites: FieldValue.arrayUnion(favoriteId) },
       { merge: true }
     );
+    // update favorite count: /.../all/id: {favorites: # }
     allContentDocRef.set(
       {
         [newFavoriteId]: {
@@ -99,43 +104,86 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
       { merge: true }
     );
   }
+  //
+  // top favorites
+  //
 
+  const topFavoritesLimit = 3;
+
+  // TODO might need to move topFavorites functionality to a function that runs on an interval to prevent excessive calls
+
+  // after updating the favorite count for the content, retrieve it's new favorite count & data
   const contentDocResponse = await allContentDocRef.get();
   const contentDocData = await contentDocResponse.data();
-  const contentFavoriteCount = contentDocData[newFavoriteId]["favorites"];
+  const updatedContentData = contentDocData[newFavoriteId];
+  const updatedFavoriteCount = updatedContentData["favorites"];
 
-  // remove dateAdded server timestamp
-  let newFavoriteContentData = data.data;
-  if ("dateAdded" in newFavoriteContentData)
-    delete newFavoriteContentData["dateAdded"];
+  // remove timestamp values from data passed in from function call (comedians only)
+  // --- dateAdded: { nanoseconds, seconds }
+  let newFavoriteData = data.data;
+  if ("dateAdded" in newFavoriteData) delete newFavoriteData["dateAdded"];
 
   getTopFavoritesForCategory(newFavoriteCategory)
     .then((data) => {
-      const leastFavoriteTopTenFavoriteCount = Object.keys(data).reduce(
-        (lowest, current) => {
-          if (lowest === null) return data[current].favorites;
-          return lowest > data[current].favorites ? data[current] : lowest;
+      let topFavorites = data;
+      const numberOfTopFavorites = Object.keys(topFavorites).length;
+
+      // if the top favorite limit of 10 hasn't been reached yet, add the new favorite
+      if (numberOfTopFavorites < topFavoritesLimit) {
+        db.collection(newFavoriteCategory)
+          .doc("topFavorites")
+          .set({ ...topFavorites, [newFavoriteId]: { ...updatedContentData } });
+        return;
+      }
+
+      console.log(
+        "top favorite limit reached: determine if new fav in the top favorite counts"
+      );
+
+      const leastFavoriteOfTopTen = Object.keys(topFavorites).reduce(
+        (leastFav, current) => {
+          const currentCount = topFavorites[current].favorites;
+          const currentId = topFavorites[current].id;
+          if (leastFav === null) return { id: currentId, count: currentCount };
+
+          return leastFav.count > currentCount
+            ? {
+                id: currentId,
+                count: currentCount,
+              }
+            : { id: leastFav.id, count: leastFav.count };
         },
         null
       );
 
-      // TODO: compare favorite counts --- if greater than lowest, add it to top ten & remove the least favorite
+      // if not a new topFavorite, quit here
+      // note: if equal to the least favorite, newer content is preferred
+      if (updatedFavoriteCount < leastFavoriteOfTopTen.count) {
+        console.log("NOT a new top favorite");
+        return;
+      }
 
-      db.collection(newFavoriteCategory)
-        .doc("topFavorites")
-        .set(
-          {
-            [newFavoriteId]: { ...newFavoriteContentData },
-          },
-          { merge: true }
-        );
+      console.log("IS A NEW TOP favorite entry!");
+
+      // new favorite is in the top ten & topFavorite count >= topFavoriteLimit
+      // out with the old:
+      delete topFavorites[leastFavoriteOfTopTen.id];
+
+      // in with the new:
+      topFavorites = {
+        ...topFavorites,
+        [newFavoriteId]: { ...updatedContentData },
+      };
+
+      // update the top ten
+      db.collection(newFavoriteCategory).doc("topFavorites").set(topFavorites);
     })
     .catch((error) => {
-      console.log("---> ERROR", error);
+      console.log(error);
       // topFavorites doesn't exist in the db
       db.collection(newFavoriteCategory)
         .doc("topFavorites")
-        .set({ [newFavoriteId]: { ...newFavoriteContentData } });
+        .set({ [newFavoriteId]: { ...newFavoriteData, favorites: 1 } });
     });
 });
 
