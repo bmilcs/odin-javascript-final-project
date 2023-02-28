@@ -30,7 +30,7 @@ const getFirebaseDoc = async (collection, doc) => {
     .doc(doc)
     .get()
     .then((doc) => {
-      if (!(doc && doc.exists)) return;
+      if (!(doc && doc.exists)) throw Error("Error");
       return doc.data();
     })
     .then((data) => {
@@ -58,44 +58,90 @@ const getLatestComediansData = async () => {
 //
 
 exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
-  const favorite = data.favoriteId;
-  const [favoriteCategory, favoriteId] = favorite.split("-");
   const userId = context.auth.uid;
+  const favoriteId = data.favoriteId;
+  const [newFavoriteCategory, newFavoriteId] = favoriteId.split("-");
 
-  const contentFavoritesDocRef = db
-    .collection(favoriteCategory)
-    .doc("favorites");
   const userDocRef = db.collection("users").doc(userId);
-  const getResponse = await userDocRef.get();
-  const userData = getResponse.data();
-  const favoritesField = userData.favorites;
+  const userDocResponse = await userDocRef.get();
+  const userDocData = userDocResponse.data();
+  const userDocFavoritesField = userDocData.favorites;
 
-  if (favoritesField.includes(favorite)) {
-    // remove favorite from user doc
+  // /comedians/all or /specials/all
+  const allContentDocRef = db.collection(newFavoriteCategory).doc("all");
+
+  if (userDocFavoritesField.includes(favoriteId)) {
+    // remove a favorite
     userDocRef.set(
-      { favorites: FieldValue.arrayRemove(favorite) },
+      { favorites: FieldValue.arrayRemove(favoriteId) },
       { merge: true }
     );
-    contentFavoritesDocRef.set(
+    allContentDocRef.set(
       {
-        [favoriteId]: FieldValue.increment(-1),
+        [newFavoriteId]: {
+          favorites: FieldValue.increment(-1),
+        },
       },
       { merge: true }
     );
   } else {
-    // add favorite from user doc
+    // add a favorite
     userDocRef.set(
-      { favorites: FieldValue.arrayUnion(favorite) },
+      { favorites: FieldValue.arrayUnion(favoriteId) },
       { merge: true }
     );
-    contentFavoritesDocRef.set(
+    allContentDocRef.set(
       {
-        [favoriteId]: FieldValue.increment(1),
+        [newFavoriteId]: {
+          favorites: FieldValue.increment(1),
+        },
       },
       { merge: true }
     );
   }
+
+  const contentDocResponse = await allContentDocRef.get();
+  const contentDocData = await contentDocResponse.data();
+  const contentFavoriteCount = contentDocData[newFavoriteId]["favorites"];
+
+  // remove dateAdded server timestamp
+  let newFavoriteContentData = data.data;
+  if ("dateAdded" in newFavoriteContentData)
+    delete newFavoriteContentData["dateAdded"];
+
+  getTopFavoritesForCategory(newFavoriteCategory)
+    .then((data) => {
+      const leastFavoriteTopTenFavoriteCount = Object.keys(data).reduce(
+        (lowest, current) => {
+          if (lowest === null) return data[current].favorites;
+          return lowest > data[current].favorites ? data[current] : lowest;
+        },
+        null
+      );
+
+      // TODO: compare favorite counts --- if greater than lowest, add it to top ten & remove the least favorite
+
+      db.collection(newFavoriteCategory)
+        .doc("topFavorites")
+        .set(
+          {
+            [newFavoriteId]: { ...newFavoriteContentData },
+          },
+          { merge: true }
+        );
+    })
+    .catch((error) => {
+      console.log("---> ERROR", error);
+      // topFavorites doesn't exist in the db
+      db.collection(newFavoriteCategory)
+        .doc("topFavorites")
+        .set({ [newFavoriteId]: { ...newFavoriteContentData } });
+    });
 });
+
+const getTopFavoritesForCategory = async (category) => {
+  return getFirebaseDoc(category, "topFavorites");
+};
 
 //
 // add comedian & their specials to the db.
@@ -128,6 +174,7 @@ exports.addComedianAndSpecials = functions.https.onCall(
         id: comedianData.id,
         profile_path: comedianData.profile_path,
         dateAdded: FieldValue.serverTimestamp(),
+        favorites: 0,
       },
     };
 
@@ -142,18 +189,26 @@ exports.addComedianAndSpecials = functions.https.onCall(
           release_date: special.release_date,
           comedian: comedianData.name,
           comedianId: comedianData.id,
+          favorites: 0,
         },
       };
     }, {});
+
+    // fetch latest & upcoming data & return {} if error is thrown
+    let latestComedians = await getLatestComediansData().catch(() => {
+      return {};
+    });
+    let latestSpecials = await getLatestSpecialsData().catch(() => {
+      return {};
+    });
+    let upcomingSpecials = await getUpcomingSpecialsData().catch(() => {
+      return {};
+    });
 
     // add comedian to db: "/comedians/latest" & "/comedians/all"
     // check release date of the specials to be added to the db:
     // - if not released yet, add to /specials/upcoming
     // - if newer than one of the latest 10, add to /specials/latest
-
-    let latestComedians = await getLatestComediansData();
-    let latestSpecials = await getLatestSpecialsData();
-    let upcomingSpecials = await getUpcomingSpecialsData();
 
     for (const specialId in specials) {
       const specialData = specials[specialId];
