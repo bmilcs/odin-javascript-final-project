@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "predeploy": "npm run build && cp ./public/404.html ./dist",
     "deploy": "firebase deploy --only hosting",
-    "pub": "npm run predeploy && npm run deploy"
+    "pub": "npm run predeploy && npm run deploy",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx,json}",
+    "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx,json}'",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.2",
@@ -31,7 +34,16 @@
     "@types/node": "^18.11.19",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
     "@vitejs/plugin-react-swc": "^3.0.0",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "prettier": "^2.8.4",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
   }
