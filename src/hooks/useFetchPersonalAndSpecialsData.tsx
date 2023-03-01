@@ -11,14 +11,14 @@ function useFetchPersonalAndSpecialsData(personId: number) {
   const specialsURL = getAllSpecialsForPersonURL(id);
   const {
     data: personalData,
-    error: personalError,
-    isLoading: personalIsLoading,
+    // error: personalError,
+    // isLoading: personalIsLoading,
     setUrl: setPersonalUrl,
   } = useFetch(comedianURL);
   const {
     data: specialsData,
-    error: specialsError,
-    isLoading: specialsIsLoading,
+    // error: specialsError,
+    // isLoading: specialsIsLoading,
     setUrl: setSpecialsUrl,
   } = useFetch(specialsURL);
   const [specials, setSpecials] = useState<null | IComedySpecial[]>(null);

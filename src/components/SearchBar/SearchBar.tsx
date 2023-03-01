@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MdSearch } from 'react-icons/md';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
-import Button from '@/components/Button/Button';
-import useFetch from '@/hooks/useFetch';
-import useOnClickOutside from '@/hooks/useClickOutside';
-import './SearchBar.scss';
 import {
-  getTMDBImageURL,
   IPersonSearchResult,
+  getTMDBImageURL,
   parseSearchQuery,
   searchForPersonURL,
 } from '@/api/TMDB';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
+import Button from '@/components/Button/Button';
+import useOnClickOutside from '@/hooks/useClickOutside';
+import useFetch from '@/hooks/useFetch';
+import { useEffect, useRef, useState } from 'react';
+import { MdSearch } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
+import './SearchBar.scss';
 
 function SearchBar() {
   const [searchTerm, setSearchTerm] = useState('');

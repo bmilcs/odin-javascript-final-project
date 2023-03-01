@@ -1,14 +1,18 @@
-import { Link } from 'react-router-dom';
-import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
 import { useAppSelector } from '@/app/hooks';
-import { isUserSignedIn } from '@/features/userSlice/userSlice';
 import Button from '@/components/Button/Button';
 import NavBar from '@/components/NavBar/NavBar';
-import './Header.scss';
 import SearchBar from '@/components/SearchBar/SearchBar';
+import { isUserSignedIn } from '@/features/userSlice/userSlice';
+import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
+import { Link } from 'react-router-dom';
+import './Header.scss';
 
 function Header() {
   const isSignedIn = useAppSelector(isUserSignedIn);
+
+  const signIn = () => {
+    signUserInWithGooglePopup();
+  };
 
   return (
     <header className='header'>
@@ -31,7 +35,7 @@ function Header() {
             logout
           </Button>
         ) : (
-          <Button onClick={() => signUserInWithGooglePopup()}>login</Button>
+          <Button onClick={() => signIn()}>login</Button>
         )}
       </div>
     </header>

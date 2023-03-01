@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom';
-import { formatDateYearOnly } from '@/utils/date';
 import { getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
-import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import Card from '@/components/Card/Card';
-import './SpecialCard.scss';
+import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import { IComedySpecial } from '@/firebase/database';
+import { formatDateYearOnly } from '@/utils/date';
+import { Link } from 'react-router-dom';
+import './SpecialCard.scss';
 
 type TProps = { data: IComedySpecial };
 

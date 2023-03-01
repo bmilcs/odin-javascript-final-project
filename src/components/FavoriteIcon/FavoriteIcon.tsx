@@ -1,10 +1,9 @@
-import React from 'react';
-import './FavoriteIcon.scss';
-import { MdOutlineFavoriteBorder, MdOutlineFavorite } from 'react-icons/md';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
-import { toggleUserFavoriteInDB } from '@/firebase/functions';
 import { IComedian, IComedySpecial } from '@/firebase/database';
+import { toggleUserFavoriteInDB } from '@/firebase/functions';
+import { MdOutlineFavorite, MdOutlineFavoriteBorder } from 'react-icons/md';
+import './FavoriteIcon.scss';
 
 type Props = {
   category: string;

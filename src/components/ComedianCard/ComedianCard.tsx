@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
 import { getTMDBImageURL } from '@/api/TMDB';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Card from '@/components/Card/Card';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
-import './ComedianCard.scss';
 import { IComedian } from '@/firebase/database';
+import { Link } from 'react-router-dom';
+import './ComedianCard.scss';
 
 interface Props {
   data: IComedian;

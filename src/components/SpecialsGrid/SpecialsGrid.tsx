@@ -1,6 +1,6 @@
-import './SpecialsGrid.scss';
-import SpecialCard from '../SpecialCard/SpecialCard';
 import { IComedySpecial } from '@/firebase/database';
+import SpecialCard from '../SpecialCard/SpecialCard';
+import './SpecialsGrid.scss';
 
 type Props = {
   data: IComedySpecial[];

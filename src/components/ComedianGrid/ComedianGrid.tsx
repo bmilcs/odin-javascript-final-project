@@ -1,6 +1,6 @@
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
-import './ComedianGrid.scss';
 import { IComedian } from '@/firebase/database';
+import './ComedianGrid.scss';
 
 type Props = {
   data: IComedian[];
