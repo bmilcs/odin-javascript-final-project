@@ -1,7 +1,5 @@
-import { store } from "@/app/store";
-import { app } from "./config";
+import { store } from '@/app/store';
 import {
-  logUserData,
   setUserEmail,
   setUserFavorites,
   setUserId,
@@ -10,36 +8,36 @@ import {
   userFavorites,
   userId,
   userName,
-  UserState,
-} from "@/features/userSlice/userSlice";
+} from '@/features/userSlice/userSlice';
 import {
-  arrayRemove,
-  arrayUnion,
+  DocumentData,
+  DocumentReference,
+  DocumentSnapshot,
   collection,
   connectFirestoreEmulator,
   doc,
   getDoc,
   getFirestore,
   setDoc,
-  updateDoc,
-} from "firebase/firestore";
+} from 'firebase/firestore';
+import { app } from './config';
 
 const db = getFirestore(app);
-const mode = import.meta.env.VITE_MODE as "dev" | "prod";
+const mode = import.meta.env.VITE_MODE as 'dev' | 'prod';
 
-if (mode === "dev") {
-  console.log("dev mode: connecting firestore emulator");
-  connectFirestoreEmulator(db, "localhost", 8880);
+if (mode === 'dev') {
+  console.log('dev mode: connecting firestore emulator');
+  connectFirestoreEmulator(db, 'localhost', 8880);
 }
 
 //
 // user-related functions
 //
 
-const allUsersCollectionRef = collection(db, "users");
+const allUsersCollectionRef = collection(db, 'users');
 
-let userDocRef: any;
-let userDocSnap: any;
+let userDocRef: DocumentReference;
+let userDocSnap: Promise<DocumentSnapshot<DocumentData>> | DocumentSnapshot<DocumentData>;
 
 // invoked on auth state change: when a user logs in
 export const connectUserToDB = async () => {
@@ -51,7 +49,7 @@ export const connectUserToDB = async () => {
   if (isNewUser) {
     createNewUser();
   } else {
-    loadUserData();
+    loadUserData(userDocSnap as DocumentSnapshot<DocumentData>);
   }
 };
 
@@ -70,8 +68,18 @@ const createNewUser = async () => {
   });
 };
 
-const loadUserData = async () => {
-  const { id, name, favorites, email }: UserState = userDocSnap.data();
+const loadUserData = async (snapshot: DocumentSnapshot<DocumentData>) => {
+  const userData = snapshot.data();
+  if (
+    userData === undefined ||
+    !userData.id ||
+    !userData.name ||
+    !userData.favorites ||
+    !userData.email
+  )
+    return;
+
+  const { id, name, favorites, email } = userData;
   store.dispatch(setUserId(id));
   store.dispatch(setUserName(name));
   store.dispatch(setUserFavorites(favorites));
@@ -86,7 +94,7 @@ const loadUserData = async () => {
 export const allComedians: number[] = [];
 
 export const getAllComediansFromDB = async () => {
-  const allComediansDocRef = doc(db, "comedians", "all");
+  const allComediansDocRef = doc(db, 'comedians', 'all');
   const docSnap = await getDoc(allComediansDocRef);
 
   if (docSnap.exists()) {
@@ -116,7 +124,7 @@ export interface IComedianList {
 }
 
 export const getLatestComediansFromDB = async () => {
-  const latestComediansDocRef = doc(db, "comedians", "latest");
+  const latestComediansDocRef = doc(db, 'comedians', 'latest');
   const docSnap = await getDoc(latestComediansDocRef);
   return docSnap.exists() && (docSnap.data() as IComedianList);
 };
@@ -140,13 +148,13 @@ export interface ComedySpecialsList {
 }
 
 export const getLatestSpecialsFromDB = async () => {
-  const latestSpecialsDocRef = doc(db, "specials", "latest");
+  const latestSpecialsDocRef = doc(db, 'specials', 'latest');
   const docSnap = await getDoc(latestSpecialsDocRef);
   return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
 };
 
 export const getUpcomingSpecialsFromDB = async () => {
-  const upcomingSpecialsDocRef = doc(db, "specials", "upcoming");
+  const upcomingSpecialsDocRef = doc(db, 'specials', 'upcoming');
   const docSnap = await getDoc(upcomingSpecialsDocRef);
   return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
 };
@@ -158,7 +166,7 @@ export const getUpcomingSpecialsFromDB = async () => {
 // TODO: save locally > persist through refresh
 
 const allSpecials: number[] = [];
-const allSpecialsDocRef = doc(db, "specials", "all");
+const allSpecialsDocRef = doc(db, 'specials', 'all');
 
 export const getAllSpecialsFromDB = async () => {
   const docSnap = await getDoc(allSpecialsDocRef);

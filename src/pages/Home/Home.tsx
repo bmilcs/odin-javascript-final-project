@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
-import ComedianCard from "@/components/ComedianCard/ComedianCard";
+import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
+import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import {
   IComedian,
   IComedySpecial,
   getLatestComediansFromDB,
   getLatestSpecialsFromDB,
   getUpcomingSpecialsFromDB,
-} from "@/firebase/database";
-import SpecialsGrid from "@/components/SpecialsGrid/SpecialsGrid";
-import "./Home.scss";
-import ComedianGrid from "@/components/ComedianGrid/ComedianGrid";
+} from '@/firebase/database';
+import { useEffect, useState } from 'react';
+import './Home.scss';
 
 function Home() {
   const [latestSpecials, setLatestSpecials] = useState<IComedySpecial[]>([]);
   const [latestComedians, setLatestComedians] = useState<IComedian[]>([]);
-  const [upcomingSpecials, setUpcomingSpecials] = useState<IComedySpecial[]>(
-    []
-  );
+  const [upcomingSpecials, setUpcomingSpecials] = useState<IComedySpecial[]>([]);
 
   // on first page load, retrieve latest/upcoming specials & comedians
   useEffect(() => {
@@ -24,7 +21,7 @@ function Home() {
       const latestData = await getLatestSpecialsFromDB();
       if (!latestData) return;
 
-      let latest: IComedySpecial[] = [];
+      const latest: IComedySpecial[] = [];
       for (const special in latestData) {
         latest.push(latestData[special]);
       }
@@ -35,7 +32,7 @@ function Home() {
       const upcomingData = await getUpcomingSpecialsFromDB();
       if (!upcomingData) return;
 
-      let upcoming: IComedySpecial[] = [];
+      const upcoming: IComedySpecial[] = [];
       for (const special in upcomingData) {
         upcoming.push(upcomingData[special]);
       }
@@ -46,7 +43,7 @@ function Home() {
       const latestComedians = await getLatestComediansFromDB();
       if (!latestComedians) return;
 
-      let latest = [];
+      const latest = [];
       for (const comedian in latestComedians) {
         latest.push(latestComedians[comedian]);
       }
@@ -59,18 +56,12 @@ function Home() {
   }, []);
 
   return (
-    <div className="column">
-      {latestSpecials && (
-        <SpecialsGrid title="Latest Releases" data={latestSpecials} />
-      )}
+    <div className='column'>
+      {latestSpecials && <SpecialsGrid title='Latest Releases' data={latestSpecials} />}
 
-      {upcomingSpecials && (
-        <SpecialsGrid title="Coming Soon" data={upcomingSpecials} />
-      )}
+      {upcomingSpecials && <SpecialsGrid title='Coming Soon' data={upcomingSpecials} />}
 
-      {latestComedians && (
-        <ComedianGrid data={latestComedians} title="Recently Added Comedians" />
-      )}
+      {latestComedians && <ComedianGrid data={latestComedians} title='Recently Added Comedians' />}
     </div>
   );
 }

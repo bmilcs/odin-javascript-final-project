@@ -1,4 +1,4 @@
-import "./Card.scss";
+import './Card.scss';
 
 interface Props {
   dataAttribute: string;
@@ -8,10 +8,7 @@ interface Props {
 
 function Card({ dataAttribute, children, className }: Props) {
   return (
-    <article
-      data-tmdb-id={dataAttribute}
-      className={`card ${className ? className : ""}`}
-    >
+    <article data-tmdb-id={dataAttribute} className={`card ${className ? className : ''}`}>
       {children}
     </article>
   );

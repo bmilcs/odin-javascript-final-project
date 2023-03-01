@@ -1,13 +1,9 @@
-import {
-  getAllSpecialsForPersonURL,
-  getPersonDetailsURL,
-  IDiscoverMovieResult,
-} from "@/api/TMDB";
-import { IComedySpecial } from "@/firebase/database";
+import { getAllSpecialsForPersonURL, getPersonDetailsURL, IDiscoverMovieResult } from '@/api/TMDB';
+import { IComedySpecial } from '@/firebase/database';
 // import { addSpecialToDB, doesSpecialExistInDB } from "@/firebase/database";
-import useFetch from "@/hooks/useFetch";
-import { isDateOneBeforeDateTwo } from "@/utils/date";
-import { useEffect, useState } from "react";
+import useFetch from '@/hooks/useFetch';
+import { isDateOneBeforeDateTwo } from '@/utils/date';
+import { useEffect, useState } from 'react';
 
 function useFetchPersonalAndSpecialsData(personId: number) {
   let id = personId;
@@ -43,49 +39,40 @@ function useFetchPersonalAndSpecialsData(personId: number) {
   // - titles without the comedians name
 
   useEffect(() => {
-    if (
-      specialsData &&
-      specialsData.results &&
-      personalData &&
-      personalData.name
-    ) {
+    if (specialsData && specialsData.results && personalData && personalData.name) {
       setSpecials(
         specialsData.results
           .filter((movie: IDiscoverMovieResult) => {
             const title = movie.title!.toString();
-            const [firstName, lastName] = personalData.name.split(" ");
-            const titlePrefix = title.split(":")[0];
+            const [firstName, lastName] = personalData.name.split(' ');
+            const titlePrefix = title.split(':')[0];
 
-            const isSpecial =
-              title.includes(firstName) && title.includes(lastName);
-            const isNotAppearance = !titlePrefix.includes("Presents");
+            const isSpecial = title.includes(firstName) && title.includes(lastName);
+            const isNotAppearance = !titlePrefix.includes('Presents');
 
             return isSpecial && isNotAppearance;
           })
           .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
-            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
-          )
+            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1,
+          ),
       );
 
       setAppearances(
         specialsData.results
           .filter((movie: IDiscoverMovieResult) => {
             const title = movie.title!.toString();
-            const [firstName, lastName] = personalData.name.split(" ");
-            const titlePrefix = title.split(":")[0];
+            const [firstName, lastName] = personalData.name.split(' ');
+            const titlePrefix = title.split(':')[0];
 
             const isAppearance =
-              titlePrefix.includes("Presents") ||
-              !(
-                titlePrefix.includes(firstName) &&
-                titlePrefix.includes(lastName)
-              );
+              titlePrefix.includes('Presents') ||
+              !(titlePrefix.includes(firstName) && titlePrefix.includes(lastName));
 
             return isAppearance;
           })
           .sort((a: IDiscoverMovieResult, b: IDiscoverMovieResult) =>
-            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1
-          )
+            isDateOneBeforeDateTwo(a.release_date!, b.release_date!) ? 1 : -1,
+          ),
       );
     }
   }, [specialsData, personalData]);

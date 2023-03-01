@@ -1,13 +1,10 @@
-import "./FavoriteIcon.scss";
-import { MdOutlineFavoriteBorder, MdOutlineFavorite } from "react-icons/md";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import {
-  isUserSignedIn,
-  toggleUserFavorite,
-  userFavorites,
-} from "@/features/userSlice/userSlice";
-import { toggleUserFavoriteInDB } from "@/firebase/functions";
-import { IComedian, IComedySpecial } from "@/firebase/database";
+import React from 'react';
+import './FavoriteIcon.scss';
+import { MdOutlineFavoriteBorder, MdOutlineFavorite } from 'react-icons/md';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
+import { toggleUserFavoriteInDB } from '@/firebase/functions';
+import { IComedian, IComedySpecial } from '@/firebase/database';
 
 type Props = {
   category: string;
@@ -29,11 +26,11 @@ function FavoriteIcon({ category, data }: Props) {
   };
 
   return (
-    <div className="heart" onClick={() => handleToggleFavorite()}>
+    <div className='heart' onClick={() => handleToggleFavorite()}>
       {isFavorite ? (
-        <MdOutlineFavorite size={22} className="heart__full" />
+        <MdOutlineFavorite size={22} className='heart__full' />
       ) : (
-        <MdOutlineFavoriteBorder size={22} className="heart__empty" />
+        <MdOutlineFavoriteBorder size={22} className='heart__empty' />
       )}
     </div>
   );

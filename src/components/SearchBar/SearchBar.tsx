@@ -1,22 +1,22 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MdSearch } from "react-icons/md";
-import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import Button from "@/components/Button/Button";
-import useFetch from "@/hooks/useFetch";
-import useOnClickOutside from "@/hooks/useClickOutside";
-import "./SearchBar.scss";
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MdSearch } from 'react-icons/md';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
+import Button from '@/components/Button/Button';
+import useFetch from '@/hooks/useFetch';
+import useOnClickOutside from '@/hooks/useClickOutside';
+import './SearchBar.scss';
 import {
   getTMDBImageURL,
   IPersonSearchResult,
   parseSearchQuery,
   searchForPersonURL,
-} from "@/api/TMDB";
+} from '@/api/TMDB';
 
 function SearchBar() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const { data, isLoading, setUrl } = useFetch("");
+  const { data, isLoading, setUrl } = useFetch('');
   const navigate = useNavigate();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -42,9 +42,9 @@ function SearchBar() {
   }, [data]);
 
   const clearHideDropDown = () => {
-    setSearchTerm("");
+    setSearchTerm('');
     setDropdownVisible(false);
-    setUrl("");
+    setUrl('');
   };
 
   useOnClickOutside(searchRef, () => {
@@ -64,7 +64,7 @@ function SearchBar() {
   // when the user clicks on person in the autocomplete dropdown
   const handleMenuClick = (e: React.MouseEvent) => {
     const elem = e.target as HTMLDivElement;
-    const tmdbId = elem.getAttribute("data-tmdb");
+    const tmdbId = elem.getAttribute('data-tmdb');
     if (!tmdbId) return;
 
     clearHideDropDown();
@@ -72,34 +72,32 @@ function SearchBar() {
   };
 
   return (
-    <div className="search" ref={searchRef}>
-      <form className="search__form" onSubmit={(e) => handleSearchSubmit(e)}>
+    <div className='search' ref={searchRef}>
+      <form className='search__form' onSubmit={(e) => handleSearchSubmit(e)}>
         <input
-          type="text"
-          id="search-input"
-          className="search-input"
-          placeholder="Bill Burr"
-          autoComplete="off"
+          type='text'
+          id='search-input'
+          className='search-input'
+          placeholder='Bill Burr'
+          autoComplete='off'
           minLength={3}
           maxLength={64}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setDropdownVisible(true)}
           value={searchTerm}
           onKeyDown={(e) => {
-            if (e.key === "Escape") setDropdownVisible(false);
+            if (e.key === 'Escape') setDropdownVisible(false);
           }}
         />
 
-        <Button type="icon" className="search__button">
+        <Button type='icon' className='search__button'>
           <MdSearch size={24} />
         </Button>
 
-        {dropdownVisible && isLoading && (
-          <div className="dropdown">Loading...</div>
-        )}
+        {dropdownVisible && isLoading && <div className='dropdown'>Loading...</div>}
 
         {dropdownVisible && data && data.results && data.length !== 0 && (
-          <div className="dropdown" onClick={(e) => handleMenuClick(e)}>
+          <div className='dropdown' onClick={(e) => handleMenuClick(e)}>
             {data.results
               // sort by popularity
               .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
@@ -110,19 +108,17 @@ function SearchBar() {
               // display tiny image & person's name
               .map((person: IPersonSearchResult) => {
                 return (
-                  <div className="result" data-tmdb={person.id} key={person.id}>
+                  <div className='result' data-tmdb={person.id} key={person.id}>
                     {person.profile_path ? (
                       <img
                         src={getTMDBImageURL(person.profile_path)}
                         alt={`${person.name} Headshot`}
-                        className="result__photo"
+                        className='result__photo'
                       />
                     ) : (
-                      <MicrophoneSVG className="result__photo result__svg" />
+                      <MicrophoneSVG className='result__photo result__svg' />
                     )}
-                    {person.name && (
-                      <p className="result__name">{person.name}</p>
-                    )}
+                    {person.name && <p className='result__name'>{person.name}</p>}
                   </div>
                 );
               })}

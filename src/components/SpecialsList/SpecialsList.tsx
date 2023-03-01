@@ -1,18 +1,17 @@
-import { getTMDBImageURL, IDiscoverMovieResult } from "@/api/TMDB";
-import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import { formatDateYearOnly } from "@/utils/date";
-import { BsCheckLg } from "react-icons/bs";
-import "./SpecialsList.scss";
+import { IDiscoverMovieResult } from '@/api/TMDB';
+import { formatDateYearOnly } from '@/utils/date';
+import { BsCheckLg } from 'react-icons/bs';
+import './SpecialsList.scss';
 
 function SpecialsList({ data }: { data: IDiscoverMovieResult[] }) {
   return (
-    <ul className="specials__ul">
+    <ul className='specials__ul'>
       {data.map((special) => {
         return (
-          <li className="specials__li" key={special.id}>
+          <li className='specials__li' key={special.id}>
             {special.release_date && special.title && (
               <>
-                <BsCheckLg size={14} className="specials__li__bullet" />
+                <BsCheckLg size={14} className='specials__li__bullet' />
                 {special.title} ({formatDateYearOnly(special.release_date)})
               </>
             )}

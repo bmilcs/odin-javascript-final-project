@@ -1,20 +1,19 @@
-import { store } from "@/app/store";
+import { store } from '@/app/store';
 import {
-  setUserEmail,
   setUserAsSignedIn,
   setUserAsSignedOut,
+  setUserEmail,
   setUserName,
-} from "@/features/userSlice/userSlice";
+} from '@/features/userSlice/userSlice';
 import {
-  getAuth,
-  signInWithPopup,
   GoogleAuthProvider,
-  signOut,
+  getAuth,
   onAuthStateChanged,
-  getAdditionalUserInfo,
-} from "firebase/auth";
-import { app } from "./config";
-import { connectUserToDB } from "./database";
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import { app } from './config';
+import { connectUserToDB } from './database';
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
@@ -35,28 +34,28 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-export const signUserInWithGooglePopup = () =>
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      // google access token: access the Google API
-      const credential = GoogleAuthProvider.credentialFromResult(result)!;
-      const token = credential.accessToken;
-      // The signed-in user info.
-      const user = result.user;
-      // IdP data available using getAdditionalUserInfo(result)
-      const additionalInfo = getAdditionalUserInfo(result);
-      // console.log(additionalInfo);
-    })
-    .catch((error) => {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.customData.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      // ...
-    });
+export const signUserInWithGooglePopup = () => signInWithPopup(auth, provider);
+// .then((result) => {
+// if (result === null) throw Error('--> Google Signin failed.');
+// google access token: access the Google API
+// const credential = GoogleAuthProvider.credentialFromResult(result);
+// const token = credential.accessToken;
+// The signed-in user info.
+// const user = result.user;
+// IdP data available using getAdditionalUserInfo(result)
+// const additionalInfo = getAdditionalUserInfo(result);
+// console.log(additionalInfo);
+// })
+// .catch((error) => {
+// Handle Errors here.
+// const errorCode = error.code;
+// const errorMessage = error.message;
+// // The email of the user's account used.
+// const email = error.customData.email;
+// // The AuthCredential type that was used.
+// const credential = GoogleAuthProvider.credentialFromError(error);
+// ...
+// });
 
 export const signUserOutFromFirebase = () => signOut(auth);
 // .then(() => {

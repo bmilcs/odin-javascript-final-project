@@ -1,9 +1,9 @@
-import { getTMDBImageURL, getMovieDetailsURL } from "@/api/TMDB";
-import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import useFetch from "@/hooks/useFetch";
-import { formatDateNumberOfYearsPassed } from "@/utils/date";
-import { useParams } from "react-router-dom";
-import "./Special.scss";
+import { getMovieDetailsURL, getTMDBImageURL } from '@/api/TMDB';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
+import useFetch from '@/hooks/useFetch';
+import { formatDateNumberOfYearsPassed } from '@/utils/date';
+import { useParams } from 'react-router-dom';
+import './Special.scss';
 
 // http://localhost:5173/odin-javascript-final-project/specials/1065890
 // TODO improve GUI, add Comedian info & other specials
@@ -18,8 +18,8 @@ function Special() {
   const specialURL = getMovieDetailsURL(id);
   const {
     data: specialData,
-    error: specialError,
-    isLoading: specialIsLoading,
+    // error: specialError,
+    // isLoading: specialIsLoading,
   } = useFetch(specialURL);
 
   // useEffect(() => {
@@ -27,64 +27,55 @@ function Special() {
   // }, [specialData]);
 
   return (
-    <div className="column">
+    <div className='column'>
       {specialData && (
-        <div className="special">
+        <div className='special'>
           {/* image */}
           {specialData.backdrop_path ? (
             <img
-              className="special__image"
+              className='special__image'
               src={getTMDBImageURL(specialData.backdrop_path)}
               alt={`${specialData.title}`}
             />
           ) : specialData.poster_path ? (
             <img
-              className="special__image"
+              className='special__image'
               src={getTMDBImageURL(specialData.poster_path)}
               alt={`${specialData.title}`}
             />
           ) : (
-            <MicrophoneSVG className="special__image special__svg" />
+            <MicrophoneSVG className='special__image special__svg' />
           )}
 
           {/* information */}
-          <div className="special__content">
-            {specialData.title && (
-              <h2 className="special__title">{specialData.title}</h2>
-            )}
+          <div className='special__content'>
+            {specialData.title && <h2 className='special__title'>{specialData.title}</h2>}
 
             {specialData.release_date && (
               <>
-                <p className="special__years_ago">
-                  {formatDateNumberOfYearsPassed(specialData.release_date)}{" "}
-                  Years Ago
+                <p className='special__years_ago'>
+                  {formatDateNumberOfYearsPassed(specialData.release_date)} Years Ago
                 </p>
-                <p className="special__release_date">
-                  {specialData.release_date}
-                </p>
+                <p className='special__release_date'>{specialData.release_date}</p>
               </>
             )}
 
             {specialData.vote_average && (
-              <p className="special__vote_average">
-                {specialData.vote_average}/10
-              </p>
+              <p className='special__vote_average'>{specialData.vote_average}/10</p>
             )}
 
             {specialData.runtime && (
-              <p className="special__runtime">{specialData.runtime} minutes</p>
+              <p className='special__runtime'>{specialData.runtime} minutes</p>
             )}
 
-            {specialData.status && specialData.status !== "Released" && (
-              <p className="special__status">{specialData.status}</p>
+            {specialData.status && specialData.status !== 'Released' && (
+              <p className='special__status'>{specialData.status}</p>
             )}
 
-            {specialData.overview && (
-              <p className="special__overview">{specialData.overview}</p>
-            )}
+            {specialData.overview && <p className='special__overview'>{specialData.overview}</p>}
 
             {specialData.homepage && (
-              <a className="special__homepage" href={specialData.homepage}>
+              <a className='special__homepage' href={specialData.homepage}>
                 Watch It Now
               </a>
             )}

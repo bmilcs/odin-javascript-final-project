@@ -3,34 +3,27 @@ import {
   IPersonSearchResult,
   parseSearchQuery,
   searchForPersonURL,
-} from "@/api/TMDB";
-import MicrophoneSVG from "@/assets/MicrophoneSVG";
-import AddComedianModal from "@/components/AddComedianModal/AddComedianModal";
-import useFetch from "@/hooks/useFetch";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import "./SearchResults.scss";
-import { getAllComedianIdsFromDB } from "@/firebase/database";
-import { addComedianToDB } from "@/firebase/functions";
-import ComedianCard from "@/components/ComedianCard/ComedianCard";
+} from '@/api/TMDB';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
+import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
+import { getAllComedianIdsFromDB } from '@/firebase/database';
+import { addComedianToDB } from '@/firebase/functions';
+import useFetch from '@/hooks/useFetch';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import './SearchResults.scss';
 
 function SearchResults() {
   const { searchTerm } = useParams();
-  const term = parseSearchQuery(searchTerm!);
+  const term = parseSearchQuery(searchTerm as string);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch(url);
   const [comedianIdsInDb, setComedianIdsInDb] = useState<number[] | null>(null);
-  const [missingComedians, setMissingComedians] = useState<
-    IPersonSearchResult[]
-  >([]);
-  const [existingComedians, setExistingComedians] = useState<
-    IPersonSearchResult[]
-  >([]);
+  const [missingComedians, setMissingComedians] = useState<IPersonSearchResult[]>([]);
+  const [existingComedians, setExistingComedians] = useState<IPersonSearchResult[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [modalPersonId, setModalPersonId] = useState<number>();
-  const [addComedianPending, setAddComedianPending] = useState<boolean | null>(
-    null
-  );
+  const [addComedianPending, setAddComedianPending] = useState<boolean | null>(null);
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
 
@@ -67,13 +60,13 @@ function SearchResults() {
     addComedianToDB({ id: personalId })
       .then(() => {
         setAddComedianPending(false);
-        console.log("success: added comedian");
+        console.log('success: added comedian');
         navigate(`/comedians/${personalId}`);
       })
       .catch((error) => {
         setAddComedianPending(false);
         setShowError(true);
-        console.log("error: unable to add comedian.");
+        console.log('error: unable to add comedian.');
         console.log(error.message);
       });
   };
@@ -87,13 +80,12 @@ function SearchResults() {
   }, [term]);
 
   return (
-    <div className="column">
-      <div className="searchpage">
-        <div className="searchpage__header">
-          <h2 className="searchpage__title">Comedian Search</h2>
-          <p className="searchpage__details">
-            You searched for:{" "}
-            <span className="searchpage__term">" {term} "</span>
+    <div className='column'>
+      <div className='searchpage'>
+        <div className='searchpage__header'>
+          <h2 className='searchpage__title'>Comedian Search</h2>
+          <p className='searchpage__details'>
+            You searched for: <span className='searchpage__term'>{term}</span>
           </p>
         </div>
       </div>
@@ -102,42 +94,43 @@ function SearchResults() {
 
       {showError && (
         <p>
-          Sorry. Something went wrong and we're unable to add comedians at this
-          time. Please contact us if the issue doesn't resolve itself in a day
-          or two.
+          Sorry. Something went wrong. Unable to add comedians at this time. Please contact us if
+          the issue persists.
         </p>
       )}
 
       {/* display results of the search */}
-      {!addComedianPending && !showError && (
+      {!showError && !addComedianPending && (
         <>
           {existingComedians.length !== 0 && (
             <>
-              <div className="result__header">
-                <h3 className="result__header__h3">Existing Comedians</h3>
-                <p className="result__header__p">
+              <div className='result__header'>
+                <h3 className='result__header__h3'>Existing Comedians</h3>
+                <p className='result__header__p'>
                   The following comedians already exist in the database.
                 </p>
               </div>
-              <div className="searchpage__grid">
-                {existingComedians.map((comedian) => (
-                  <ComedianCard id={comedian.id} key={comedian.id} />
-                ))}
+              <div className='searchpage__grid'>
+                {/* TODO use firestore data. 
+                    Convert IPersonSearchResult > IComedian
+                */}
+                {/* {existingComedians.map((comedian: IComedian) => (
+                  <ComedianCard data={comedian} key={comedian.id} />
+                ))} */}
               </div>
             </>
           )}
 
-          {missingComedians.length !== 0 && (
+          {!showError && missingComedians.length !== 0 && (
             // allow the user to add new comedians to the site
             <>
-              <div className="result__header">
-                <h3 className="result__header__h3">Add New Comedians</h3>
-                <p className="result__header__p">
-                  The following results are potential comedians that you can add
-                  to the site.
+              <div className='result__header'>
+                <h3 className='result__header__h3'>Add New Comedians</h3>
+                <p className='result__header__p'>
+                  The following results are potential comedians that you can add to the site.
                 </p>
               </div>
-              <div className="searchpage__grid">
+              <div className='searchpage__grid'>
                 {missingComedians
                   // sort by popularity
                   .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
@@ -146,7 +139,7 @@ function SearchResults() {
                   // create clickable cards each person
                   .map((person: IPersonSearchResult) => (
                     <div
-                      className="searchpage__person"
+                      className='searchpage__person'
                       key={person.id}
                       onClick={() => {
                         setShowModal(true);
@@ -157,12 +150,12 @@ function SearchResults() {
                         <img
                           src={getTMDBImageURL(person.profile_path)}
                           alt={`${person.name} Headshot`}
-                          className="searchpage__headshot"
+                          className='searchpage__headshot'
                         />
                       ) : (
-                        <MicrophoneSVG className="comedian-card__image comedian-card__svg" />
+                        <MicrophoneSVG className='comedian-card__image comedian-card__svg' />
                       )}
-                      <h3 className="searchpage__name">{person.name}</h3>
+                      <h3 className='searchpage__name'>{person.name}</h3>
                     </div>
                   ))}
               </div>
@@ -173,12 +166,9 @@ function SearchResults() {
 
       {addComedianPending && <h4>Adding your comedian... Please wait!</h4>}
 
-      {showModal && modalPersonId && (
-        <div className="overlay" onClick={(e) => setShowModal(false)}>
-          <AddComedianModal
-            personId={modalPersonId}
-            handleAddComedian={handleAddComedian}
-          />
+      {!showError && showModal && modalPersonId && (
+        <div className='overlay' onClick={() => setShowModal(false)}>
+          <AddComedianModal personId={modalPersonId} handleAddComedian={handleAddComedian} />
         </div>
       )}
     </div>

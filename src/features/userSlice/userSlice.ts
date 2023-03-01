@@ -1,6 +1,5 @@
-import { RootState } from "@/app/store";
-import { toggleUserFavoriteInDB } from "@/firebase/functions";
-import { createSlice } from "@reduxjs/toolkit";
+import { RootState } from '@/app/store';
+import { createSlice } from '@reduxjs/toolkit';
 
 export type UserState = {
   id: string;
@@ -11,15 +10,15 @@ export type UserState = {
 };
 
 const initialState: UserState = {
-  id: "",
-  name: "",
-  email: "",
+  id: '',
+  name: '',
+  email: '',
   favorites: [],
   isSignedIn: false,
 };
 
 export const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
     addUserFavorite: (state, { payload }) => {
@@ -56,15 +55,15 @@ export const userSlice = createSlice({
     },
     setUserAsSignedOut: (state) => {
       state.isSignedIn = false;
-      state.email = "";
-      state.name = "";
+      state.email = '';
+      state.name = '';
     },
     logUserData: (state) => {
-      console.log("name:", state.name);
-      console.log("id:", state.id);
-      console.log("email:", state.email);
-      console.log("favorites:", state.favorites);
-      console.log("isSignedIn:", state.isSignedIn);
+      console.log('name:', state.name);
+      console.log('id:', state.id);
+      console.log('email:', state.email);
+      console.log('favorites:', state.favorites);
+      console.log('isSignedIn:', state.isSignedIn);
     },
   },
 });

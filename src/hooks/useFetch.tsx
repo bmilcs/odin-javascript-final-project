@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export type TApiResponse = {
-  status: Number;
-  statusText: String;
+  status: number;
+  statusText: string;
   data: any;
   error: any;
-  isLoading: Boolean;
+  isLoading: boolean;
   setUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
 function useFetch(initialUrl: string): TApiResponse {
   const [url, setUrl] = useState<string>(initialUrl);
-  const [status, setStatus] = useState<Number>(0);
-  const [statusText, setStatusText] = useState<String>("");
+  const [status, setStatus] = useState<number>(0);
+  const [statusText, setStatusText] = useState<string>('');
   const [data, setData] = useState<any>();
   const [error, setError] = useState<any>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -45,14 +45,14 @@ function useFetch(initialUrl: string): TApiResponse {
   // execute fetch on initial render & url change
   useEffect(() => {
     // clear previous results
-    setData("");
-    setError("");
+    setData('');
+    setError('');
     setStatus(0);
-    setStatusText("");
+    setStatusText('');
 
     // prevent empty urls
     if (!url) {
-      setError("Missing URL");
+      setError('Missing URL');
       setIsLoading(false);
       return;
     }

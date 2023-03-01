@@ -1,19 +1,18 @@
-import "./SpecialsGrid.scss";
-import SpecialCard from "../SpecialCard/SpecialCard";
-import { IComedySpecial } from "@/firebase/database";
-import { useEffect } from "react";
+import './SpecialsGrid.scss';
+import SpecialCard from '../SpecialCard/SpecialCard';
+import { IComedySpecial } from '@/firebase/database';
 
 type Props = {
   data: IComedySpecial[];
   title?: string;
 };
 
-function SpecialsGrid({ data, title = "Specials" }: Props) {
+function SpecialsGrid({ data, title = 'Specials' }: Props) {
   return (
     data && (
-      <section className="specials">
-        <h3 className="specials__header">{title}</h3>
-        <div className="specials__grid">
+      <section className='specials'>
+        <h3 className='specials__header'>{title}</h3>
+        <div className='specials__grid'>
           {data.map((special: IComedySpecial) => (
             <SpecialCard data={special} key={special.id} />
           ))}

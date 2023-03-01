@@ -13,10 +13,10 @@ export const getIMDBPersonURL = (id: string) => {
 
 export const parseSearchQuery = (string: string): string => {
   return string === undefined
-    ? ""
+    ? ''
     : string
-        .replace(/[^a-z0-9_]+/gi, "-")
-        .replace(/^-|-$/g, "")
+        .replace(/[^a-z0-9_]+/gi, '-')
+        .replace(/^-|-$/g, '')
         .toLowerCase();
 };
 
@@ -82,16 +82,14 @@ export const tmdbPersonURL = ({
   personId,
 }: TMDBPersonRequest): string => {
   let url = `https://api.themoviedb.org/3/person/${personId}`;
-  requestType
-    ? (url += `/${requestType}?api_key=${API_KEY}`)
-    : (url += `?api_key=${API_KEY}`);
+  requestType ? (url += `/${requestType}?api_key=${API_KEY}`) : (url += `?api_key=${API_KEY}`);
   if (keywords) url += `&with_keywords=${keywords}`;
   if (without_keywords) url += `&without_keywords=${without_keywords}`;
   return url;
 };
 
 export const getTVShowsForPersonURL = (personId: number): string => {
-  return tmdbPersonURL({ personId: personId, requestType: "tv_credits" });
+  return tmdbPersonURL({ personId: personId, requestType: 'tv_credits' });
 };
 
 export const getPersonDetailsURL = (personId: number): string => {
@@ -99,11 +97,11 @@ export const getPersonDetailsURL = (personId: number): string => {
 };
 
 export const getPersonExternalIdsURL = (personId: number): string => {
-  return tmdbPersonURL({ personId: personId, requestType: "external_ids" });
+  return tmdbPersonURL({ personId: personId, requestType: 'external_ids' });
 };
 
 export const getPersonImagesURL = (personId: number): string => {
-  return tmdbPersonURL({ personId: personId, requestType: "images" });
+  return tmdbPersonURL({ personId: personId, requestType: 'images' });
 };
 
 //
@@ -115,22 +113,19 @@ interface TMDBSearchRequest {
   requestType: string | undefined;
 }
 
-export const tmdbSearchUrl = ({
-  query,
-  requestType,
-}: TMDBSearchRequest): string => {
+export const tmdbSearchUrl = ({ query, requestType }: TMDBSearchRequest): string => {
   const parsedQuery = parseSearchQuery(query);
   let url = `https://api.themoviedb.org/3/search/${requestType}?api_key=${API_KEY}`;
-  url += `&query=${query}`;
+  url += `&query=${parsedQuery}`;
   return url;
 };
 
 export const searchForPersonURL = (name: string): string => {
-  return tmdbSearchUrl({ query: name, requestType: "person" });
+  return tmdbSearchUrl({ query: name, requestType: 'person' });
 };
 
 export const searchAllURL = (name: string): string => {
-  return tmdbSearchUrl({ query: name, requestType: "multi" });
+  return tmdbSearchUrl({ query: name, requestType: 'multi' });
 };
 
 //
@@ -182,13 +177,7 @@ export interface IMovieDetails {
   revenue?: number;
   runtime?: number | null;
   spoken_languages: { iso_639_1?: string; name?: string }[];
-  status:
-    | "Rumored"
-    | "Planned"
-    | "In Production"
-    | "Post Production"
-    | "Released"
-    | "Cancelled";
+  status: 'Rumored' | 'Planned' | 'In Production' | 'Post Production' | 'Released' | 'Cancelled';
   tagline?: string | null;
   title?: string;
   video?: boolean;
