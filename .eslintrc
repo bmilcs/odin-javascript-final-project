@@ -24,10 +24,9 @@
 
   "rules": {
   "react/react-in-jsx-scope": "off",
-  "camelcase": "error",
   "semi": ["error"],
   "spaced-comment": "error",
-  "indent": ["error", 2],
+  "indent": "off",
   "quotes": ["error", "single"],
   "prettier/prettier": 2,
   "no-duplicate-imports": "error",
