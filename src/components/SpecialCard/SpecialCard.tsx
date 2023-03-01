@@ -13,13 +13,11 @@ import Card from "@/components/Card/Card";
 import "./SpecialCard.scss";
 import { IComedySpecial } from "@/firebase/database";
 
-function SpecialCard({
-  id,
-  title,
-  backdrop_path,
-  poster_path,
-  release_date,
-}: IComedySpecial) {
+type TProps = { data: IComedySpecial };
+
+function SpecialCard({ data }: TProps) {
+  const { id, title, backdrop_path, poster_path, release_date } = data;
+
   return (
     <>
       <Card className="special-card" dataAttribute={`special-${id}`}>
@@ -52,10 +50,7 @@ function SpecialCard({
           <div className="special-card__content">
             {title && <p className="special-card__title">{title}</p>}
 
-            <FavoriteIcon favoriteId={`specials-${id}`} />
-            {/* {special.vote_average && (
-              <p className="special-card__vote">{special.vote_average}</p>
-            )} */}
+            <FavoriteIcon category={`specials`} data={data} />
           </div>
         </>
       </Card>

@@ -7,14 +7,14 @@ type Props = {
   title?: string;
 };
 
-function ComedianGrid({ data, title = "Recently Added Comedians" }: Props) {
+function ComedianGrid({ data, title = "Comedians" }: Props) {
   return (
     data && (
       <section className="comedians">
         <h3 className="comedians__header">{title}</h3>
         <div className="comedians__grid">
           {data.map((comedian: IComedian) => (
-            <ComedianCard {...comedian} key={comedian.id} />
+            <ComedianCard data={comedian} key={comedian.id} />
           ))}
         </div>
       </section>

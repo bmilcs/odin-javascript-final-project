@@ -7,20 +7,25 @@ import {
   userFavorites,
 } from "@/features/userSlice/userSlice";
 import { toggleUserFavoriteInDB } from "@/firebase/functions";
+import { IComedian, IComedySpecial } from "@/firebase/database";
 
 type Props = {
-  favoriteId: string;
+  category: string;
+  data: IComedySpecial | IComedian;
 };
 
-function FavoriteIcon({ favoriteId }: Props) {
+function FavoriteIcon({ category, data }: Props) {
   const dispatch = useAppDispatch();
   const isUserLoggedIn = useAppSelector(isUserSignedIn);
   const favorites = useAppSelector(userFavorites);
+
+  // favorites are classified by category-id in /users/.../favorites: []
+  const favoriteId = `${category}-${data.id}`;
   const isFavorite = favorites.includes(favoriteId);
 
   const handleToggleFavorite = () => {
     dispatch(toggleUserFavorite(favoriteId));
-    if (isUserLoggedIn) toggleUserFavoriteInDB({ favoriteId });
+    if (isUserLoggedIn) toggleUserFavoriteInDB({ favoriteId, data });
   };
 
   return (

@@ -1,6 +1,7 @@
 import "./SpecialsGrid.scss";
 import SpecialCard from "../SpecialCard/SpecialCard";
 import { IComedySpecial } from "@/firebase/database";
+import { useEffect } from "react";
 
 type Props = {
   data: IComedySpecial[];
@@ -14,7 +15,7 @@ function SpecialsGrid({ data, title = "Specials" }: Props) {
         <h3 className="specials__header">{title}</h3>
         <div className="specials__grid">
           {data.map((special: IComedySpecial) => (
-            <SpecialCard {...special} key={special.id} />
+            <SpecialCard data={special} key={special.id} />
           ))}
         </div>
       </section>

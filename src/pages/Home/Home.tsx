@@ -68,7 +68,9 @@ function Home() {
         <SpecialsGrid title="Coming Soon" data={upcomingSpecials} />
       )}
 
-      {latestComedians && <ComedianGrid data={latestComedians} />}
+      {latestComedians && (
+        <ComedianGrid data={latestComedians} title="Recently Added Comedians" />
+      )}
     </div>
   );
 }

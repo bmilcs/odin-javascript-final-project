@@ -7,19 +7,13 @@ import FavoriteIcon from "@/components/FavoriteIcon/FavoriteIcon";
 import MicrophoneSVG from "@/assets/MicrophoneSVG";
 import useFetch from "@/hooks/useFetch";
 import "./ComedianCard.scss";
+import { IComedian } from "@/firebase/database";
 
 interface Props {
-  id: number;
+  data: IComedian;
 }
 
-function ComedianCard({ id }: Props) {
-  const personalUrl = getPersonDetailsURL(id);
-  const { data, error } = useFetch(personalUrl);
-
-  useEffect(() => {
-    // console.log("data", data);
-  }, [data]);
-
+function ComedianCard({ data }: Props) {
   return (
     <>
       {data && (
@@ -41,8 +35,7 @@ function ComedianCard({ id }: Props) {
           <div className="comedian-card__details">
             {data.name && <p className="comedian-card__name">{data.name}</p>}
             <div className="comedian-card__icons">
-              {data.imdb_id && <FaImdb size={20} />}
-              <FavoriteIcon favoriteId={`comedians-${data.id}`} />
+              <FavoriteIcon category={`comedians`} data={data} />
             </div>
           </div>
         </Card>
