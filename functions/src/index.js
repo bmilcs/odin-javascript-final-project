@@ -14,8 +14,6 @@ const { parseISO, isAfter } = require('date-fns');
 initializeApp();
 const db = getFirestore();
 
-exports.db = db;
-
 const API_KEY = functions.config().tmdb.key;
 
 //
