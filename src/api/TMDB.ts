@@ -137,17 +137,24 @@ export interface IDiscoverMovieResult {
   backdrop_path?: string | null;
   card_title?: string;
   genre_ids?: number[];
-  id?: number;
+  id: number;
   original_language?: string;
   original_title?: string;
   overview?: string;
   popularity?: number;
   poster_path?: string | null;
-  release_date?: string;
-  title?: string;
+  release_date: string;
+  title: string;
   video?: boolean;
   vote_average?: number;
   vote_count?: number;
+}
+
+export interface IDiscoverMovieResultsApiResponse {
+  page?: number;
+  results?: IDiscoverMovieResult[];
+  total_results?: number;
+  total_pages?: number;
 }
 
 export interface IMovieDetails {
@@ -189,17 +196,17 @@ export interface IPersonSearchResult {
   profile_path?: string | null;
   id: number;
   name: string;
-  popularity: number;
+  popularity?: number;
 }
 
 export interface IPersonDetailsResult {
-  birthday: string | null;
-  deathday: string | null;
+  birthday?: string | null;
+  deathday?: string | null;
   id: number;
   name: string;
-  biography: string;
-  popularity: number;
-  profile_path: string | null;
+  biography?: string;
+  popularity?: number;
+  profile_path?: string | null;
   imdb_id?: string;
   homepage?: string;
 }
