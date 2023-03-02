@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 
-export type TApiResponse = {
+export type TReturnValues<T> = {
   status: number;
   statusText: string;
-  data: any;
-  error: any;
+  data: T | null;
+  error: Error | null;
   isLoading: boolean;
   setUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
-function useFetch(initialUrl: string): TApiResponse {
+function useFetch<T>(initialUrl: string): TReturnValues<T> {
   const [url, setUrl] = useState<string>(initialUrl);
   const [status, setStatus] = useState<number>(0);
   const [statusText, setStatusText] = useState<string>('');
-  const [data, setData] = useState<any>();
-  const [error, setError] = useState<any>();
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const getData = async () => {
@@ -30,10 +30,10 @@ function useFetch(initialUrl: string): TApiResponse {
       setStatus(response.status);
       setStatusText(response.statusText);
       // get data
-      const json = await response.json();
+      const json = await response.json().then((data) => data as T);
       setData(json);
     } catch (err) {
-      setError(err);
+      setError(err as Error);
     }
 
     setIsLoading(false);
@@ -45,14 +45,13 @@ function useFetch(initialUrl: string): TApiResponse {
   // execute fetch on initial render & url change
   useEffect(() => {
     // clear previous results
-    setData('');
-    setError('');
+    setData(null);
+    setError(null);
     setStatus(0);
     setStatusText('');
 
     // prevent empty urls
     if (!url) {
-      setError('Missing URL');
       setIsLoading(false);
       return;
     }
