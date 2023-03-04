@@ -198,11 +198,11 @@ exports.addComedianAndSpecials = functions.https.onCall(async (data, context) =>
   }
 
   return addComedianPageDoc(comedianRawData, specialsRawData)
-    .then(() => addSpecialsPageDoc(comedianRawData, specialsRawData))
+    .then(() => addSpecialsPageDocs(comedianRawData, specialsRawData))
     .then(() => addComedianToAllComediansDoc(comedianRawData))
     .then(() => addComedianToLatestComediansDoc(comedianRawData))
-    .then(() => addSpecialsToAllSpecialsDoc(comedianRawData, specialsRawData))
-    .then(() => addSpecialsToLatestAndUpcomingSpecialsDocs(comedianRawData, specialsRawData))
+    .then(() => addSpecialsToAllSpecialsDoc(specialsRawData))
+    .then(() => addSpecialsToLatestAndUpcomingSpecialsDocs(specialsRawData))
     .catch((error) => {
       console.log(error);
       throw new functions.https.HttpsError(
@@ -225,26 +225,47 @@ const addComedianPageDoc = (comedianRawData, specialsRawData) => {
     profile_path: comedianRawData.profile_path,
     biography: comedianRawData.biography,
     birthday: comedianRawData.birthday,
+    imdb_id: comedianRawData.imdb_id,
   };
-  const specials = specialsRawData.reduce((prev, special) => {
-    return {
-      ...prev,
-      [special.id]: {
-        id: special.id,
-        title: special.title,
-        poster_path: special.poster_path,
-        backdrop_path: special.backdrop_path,
-        release_date: special.release_date,
-        ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
-        ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
-      },
-    };
-  }, {});
-  const pageData = {
-    ...comedian,
-    specials: {
-      ...specials,
+  const categorizedContent = specialsRawData.reduce(
+    (prev, special) => {
+      if (isSpecial(comedianRawData.name, special.title)) {
+        return {
+          ...prev,
+          specials: {
+            ...prev.specials,
+            [special.id]: {
+              id: special.id,
+              title: special.title,
+              poster_path: special.poster_path,
+              backdrop_path: special.backdrop_path,
+              release_date: special.release_date,
+            },
+          },
+        };
+      } else if (isAppearance(comedianRawData.name, special.title)) {
+        return {
+          ...prev,
+          appearances: {
+            ...prev.appearances,
+            [special.id]: {
+              id: special.id,
+              title: special.title,
+              poster_path: special.poster_path,
+              backdrop_path: special.backdrop_path,
+              release_date: special.release_date,
+            },
+          },
+        };
+      } else {
+        return prev;
+      }
     },
+    { specials: {}, appearances: {} },
+  );
+  const pageData = {
+    personalData: { ...comedian },
+    ...categorizedContent,
   };
   const comedianId = comedianRawData.id;
   return db.collection('comedianPages').doc(comedianId.toString()).set(pageData);
@@ -254,27 +275,49 @@ const addComedianPageDoc = (comedianRawData, specialsRawData) => {
 // firestore: /specialPages/{id}
 //
 
-const addSpecialsPageDoc = async (comedianRawData, specialsRawData) => {
+const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
   const comedian = {
     comedian: comedianRawData.name,
     comedianId: comedianRawData.id,
     profile_path: comedianRawData.profile_path,
   };
-  const specials = specialsRawData.reduce((prev, special) => {
+
+  const specials = specialsRawData.reduce((prev, special, index) => {
+    // each special page features the details of the special
+    // and provides links to other specials by the same comedian
+
+    const otherSpecialsByComedian = specialsRawData
+      .filter((x, i) => i !== index)
+      .map((other) => {
+        return {
+          id: other.id,
+          title: other.title,
+          release_date: other.release_date,
+          poster_path: other.poster_path,
+          backdrop_path: other.backdrop_path,
+        };
+      });
+
     return {
       ...prev,
       [special.id]: {
-        id: special.id,
-        title: special.title,
-        ...(special.poster_path && { poster_path: special.poster_path }),
-        ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
-        ...(special.runtime && { runtime: special.runtime }),
-        ...(special.status && { status: special.status }),
-        ...(special.overview && { overview: special.overview }),
-        ...(special.homepage && { homepage: special.homepage }),
-        ...(special.release_date && { release_date: special.release_date }),
-        ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
-        ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
+        data: {
+          comedian: comedianRawData.name,
+          comedianId: comedianRawData.id,
+          profile_path: comedianRawData.profile_path,
+          id: special.id,
+          title: special.title,
+          ...(special.poster_path && { poster_path: special.poster_path }),
+          ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
+          ...(special.runtime && { runtime: special.runtime }),
+          ...(special.status && { status: special.status }),
+          ...(special.overview && { overview: special.overview }),
+          ...(special.homepage && { homepage: special.homepage }),
+          ...(special.release_date && { release_date: special.release_date }),
+          ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
+          ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
+        },
+        otherContent: otherSpecialsByComedian,
       },
     };
   }, {});
@@ -300,7 +343,6 @@ const addComedianToAllComediansDoc = (comedianRawData) => {
       name: comedianRawData.name,
       id: comedianRawData.id,
       profile_path: comedianRawData.profile_path,
-      dateAdded: FieldValue.serverTimestamp(),
       favorites: 0,
     },
   };
@@ -311,7 +353,7 @@ const addComedianToAllComediansDoc = (comedianRawData) => {
 // firestore: /specials/all
 //
 
-const addSpecialsToAllSpecialsDoc = (comedianRawData, specialsRawData) => {
+const addSpecialsToAllSpecialsDoc = (specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -321,11 +363,7 @@ const addSpecialsToAllSpecialsDoc = (comedianRawData, specialsRawData) => {
         poster_path: special.poster_path,
         backdrop_path: special.backdrop_path,
         release_date: special.release_date,
-        comedian: comedianRawData.name,
-        comedianId: comedianRawData.id,
         favorites: 0,
-        ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
-        ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
       },
     };
   }, {});
@@ -344,7 +382,6 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
       id: comedianRawData.id,
       profile_path: comedianRawData.profile_path,
       dateAdded: FieldValue.serverTimestamp(),
-      favorites: 0,
     },
   };
   let latestComedians = await getLatestComediansData().catch(() => {
@@ -360,7 +397,7 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
 //
 
 // add recently released specials to /specials/latest & upcoming specials to /specials/upcoming
-const addSpecialsToLatestAndUpcomingSpecialsDocs = async (comedianRawData, specialsRawData) => {
+const addSpecialsToLatestAndUpcomingSpecialsDocs = async (specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -370,10 +407,6 @@ const addSpecialsToLatestAndUpcomingSpecialsDocs = async (comedianRawData, speci
         poster_path: special.poster_path,
         backdrop_path: special.backdrop_path,
         release_date: special.release_date,
-        comedian: comedianRawData.name,
-        comedianId: comedianRawData.id,
-        ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
-        ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
       },
     };
   }, {});
