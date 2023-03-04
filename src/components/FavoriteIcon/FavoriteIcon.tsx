@@ -1,13 +1,13 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
-import { IComedian, IComedySpecial } from '@/firebase/database';
+import { IComedian, IComedianPageSpecialOrAppearance, ISpecial } from '@/firebase/database';
 import { toggleUserFavoriteInDB } from '@/firebase/functions';
 import { MdOutlineFavorite, MdOutlineFavoriteBorder } from 'react-icons/md';
 import './FavoriteIcon.scss';
 
 type Props = {
   category: string;
-  data: IComedySpecial | IComedian;
+  data: ISpecial | IComedian | IComedianPageSpecialOrAppearance;
 };
 
 function FavoriteIcon({ category, data }: Props) {
