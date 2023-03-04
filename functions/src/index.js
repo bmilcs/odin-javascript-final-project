@@ -97,7 +97,7 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
   // top favorites
   //
 
-  const topFavoritesLimit = 3;
+  const topFavoritesLimit = 10;
 
   // TODO might need to move topFavorites functionality to a function that runs on an interval to prevent excessive calls
 
@@ -301,10 +301,12 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
     return {
       ...prev,
       [special.id]: {
-        data: {
-          comedian: comedianRawData.name,
-          comedianId: comedianRawData.id,
+        comedian: {
+          name: comedianRawData.name,
+          id: comedianRawData.id,
           profile_path: comedianRawData.profile_path,
+        },
+        data: {
           id: special.id,
           title: special.title,
           ...(special.poster_path && { poster_path: special.poster_path }),
