@@ -2,12 +2,12 @@ import { getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Card from '@/components/Card/Card';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
-import { IComedySpecial } from '@/firebase/database';
+import { IComedianPageSpecialOrAppearance, ISpecial } from '@/firebase/database';
 import { formatDateYearOnly } from '@/utils/date';
 import { Link } from 'react-router-dom';
 import './SpecialCard.scss';
 
-type TProps = { data: IComedySpecial };
+type TProps = { data: IComedianPageSpecialOrAppearance | ISpecial };
 
 function SpecialCard({ data }: TProps) {
   const { id, title, backdrop_path, poster_path, release_date } = data;
@@ -41,7 +41,6 @@ function SpecialCard({ data }: TProps) {
           {/* text details */}
           <div className='special-card__content'>
             {title && <p className='special-card__title'>{title}</p>}
-
             <FavoriteIcon category={'specials'} data={data} />
           </div>
         </>
