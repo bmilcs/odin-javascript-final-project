@@ -22,4 +22,9 @@
     max-height: 50vh;
     border-radius: var(--border-radius-200);
   }
+
+  &__svg {
+    width: min(30vw, 300px);
+    aspect-ratio: 1/1;
+  }
 }

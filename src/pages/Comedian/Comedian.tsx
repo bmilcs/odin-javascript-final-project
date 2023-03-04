@@ -1,26 +1,64 @@
 import { getIMDBPersonURL, getTMDBImageURL } from '@/api/TMDB';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
-import useFetchPersonalAndSpecialsData from '@/hooks/useFetchPersonalAndSpecialsData';
-import { formatDateNumberOfYearsPassed } from '@/utils/date';
+import {
+  IComedianPagePersonalData,
+  IComedianPageSpecialOrAppearance,
+  getComedianPageFromDB,
+} from '@/firebase/database';
+import { formatDateNumberOfYearsPassed, isDateOneBeforeDateTwo } from '@/utils/date';
+import { useEffect, useState } from 'react';
+import { FaImdb } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import './Comedian.scss';
 
-// TODO validate incoming api ID
-
 function Comedian() {
   const { personId } = useParams();
-  const { specials, appearances, personalData } = useFetchPersonalAndSpecialsData(Number(personId));
+  const [personalData, setPersonalData] = useState<IComedianPagePersonalData>();
+  const [specials, setSpecials] = useState<IComedianPageSpecialOrAppearance[]>();
+  const [appearances, setAppearances] = useState<IComedianPageSpecialOrAppearance[]>();
+
+  useEffect(() => {
+    const getDataFromDB = async () => {
+      const pageRawData = await getComedianPageFromDB(Number(personId));
+      if (!pageRawData) return;
+      const personalData = pageRawData.personalData;
+      const specials = Object.keys(pageRawData.specials)
+        .map((specialId) => {
+          return pageRawData.specials[specialId];
+        })
+        .sort((a, b) => {
+          return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
+        });
+      const appearances = Object.keys(pageRawData.appearances)
+        .map((appearanceId) => {
+          return pageRawData.appearances[appearanceId];
+        })
+        .sort((a, b) => {
+          return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
+        });
+
+      setPersonalData(personalData);
+      if (specials) setSpecials(specials);
+      if (appearances) setAppearances(appearances);
+    };
+    getDataFromDB();
+  }, [personId]);
 
   return (
     <div className='column'>
       <div className='comedian'>
         {personalData && (
           <>
-            <img
-              className='comedian__headshot'
-              src={getTMDBImageURL(personalData.profile_path)}
-              alt=''
-            ></img>
+            {personalData.profile_path ? (
+              <img
+                className='comedian__headshot'
+                src={getTMDBImageURL(personalData.profile_path)}
+                alt=''
+              ></img>
+            ) : (
+              <MicrophoneSVG className='comedian__headshot comedian__svg' />
+            )}
             <div className='comedian__details'>
               <h2 className='comedian__name'>{personalData.name}</h2>
               {personalData.birthday && (
@@ -39,7 +77,9 @@ function Comedian() {
               )}
               {personalData.imdb_id && (
                 <p className='comedian__imdb'>
-                  <a href={getIMDBPersonURL(personalData.imdb_id)}></a>
+                  <a href={getIMDBPersonURL(personalData.imdb_id)}>
+                    <FaImdb size={28} />
+                  </a>
                 </p>
               )}
             </div>
@@ -49,7 +89,9 @@ function Comedian() {
 
       {specials && specials.length > 0 && <SpecialsGrid data={specials} />}
 
-      {appearances && appearances.length > 0 && <SpecialsGrid data={appearances} />}
+      {appearances && appearances.length > 0 && (
+        <SpecialsGrid data={appearances} title='Appearances' />
+      )}
     </div>
   );
 }
