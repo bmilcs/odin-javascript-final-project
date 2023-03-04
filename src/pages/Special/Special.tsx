@@ -1,7 +1,13 @@
-import { getMovieDetailsURL, getTMDBImageURL } from '@/api/TMDB';
+import { getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
-import useFetch from '@/hooks/useFetch';
-import { formatDateNumberOfYearsPassed } from '@/utils/date';
+import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
+import {
+  ISpecialPageData,
+  ISpecialPageOtherContent,
+  getSpecialOrAppearancePageFromDB,
+} from '@/firebase/database';
+import { formatDateNumberOfYearsPassed, isDateOneBeforeDateTwo } from '@/utils/date';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './Special.scss';
 
@@ -14,17 +20,24 @@ import './Special.scss';
 
 function Special() {
   const { specialId } = useParams();
-  const id = specialId ? Number(specialId) : 0;
-  const specialURL = getMovieDetailsURL(id);
-  const {
-    data: specialData,
-    // error: specialError,
-    // isLoading: specialIsLoading,
-  } = useFetch(specialURL);
+  const [specialData, setSpecialData] = useState<ISpecialPageData | null>(null);
+  const [otherContentData, setOtherContentData] = useState<ISpecialPageOtherContent[] | null>(null);
 
-  // useEffect(() => {
-  //   console.log("specialdata: ", specialData);
-  // }, [specialData]);
+  useEffect(() => {
+    const getDataFromDB = async () => {
+      const pageRawData = await getSpecialOrAppearancePageFromDB(Number(specialId));
+      if (pageRawData) {
+        setSpecialData(pageRawData.data);
+        if (pageRawData.otherContent.length > 0) {
+          pageRawData.otherContent.sort((a, b) => {
+            return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
+          });
+          setOtherContentData(pageRawData.otherContent);
+        }
+      }
+    };
+    getDataFromDB();
+  }, [specialId]);
 
   return (
     <div className='column'>
@@ -60,10 +73,6 @@ function Special() {
               </>
             )}
 
-            {specialData.vote_average && (
-              <p className='special__vote_average'>{specialData.vote_average}/10</p>
-            )}
-
             {specialData.runtime && (
               <p className='special__runtime'>{specialData.runtime} minutes</p>
             )}
@@ -80,6 +89,13 @@ function Special() {
               </a>
             )}
           </div>
+
+          {otherContentData && (
+            <SpecialsGrid
+              title={`Other Specials From ${specialData.comedian}`}
+              data={otherContentData}
+            />
+          )}
         </div>
       )}
     </div>
