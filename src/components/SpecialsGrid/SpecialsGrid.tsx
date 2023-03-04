@@ -1,9 +1,9 @@
-import { IComedySpecial } from '@/firebase/database';
+import { IComedianPageSpecialOrAppearance } from '@/firebase/database';
 import SpecialCard from '../SpecialCard/SpecialCard';
 import './SpecialsGrid.scss';
 
 type Props = {
-  data: IComedySpecial[];
+  data: IComedianPageSpecialOrAppearance[];
   title?: string;
 };
 
@@ -13,7 +13,7 @@ function SpecialsGrid({ data, title = 'Specials' }: Props) {
       <section className='specials'>
         <h3 className='specials__header'>{title}</h3>
         <div className='specials__grid'>
-          {data.map((special: IComedySpecial) => (
+          {data.map((special) => (
             <SpecialCard data={special} key={special.id} />
           ))}
         </div>
