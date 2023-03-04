@@ -153,7 +153,7 @@ export interface IDiscoverMovieResult {
 export interface IDiscoverMovieResultsApiResponse {
   page?: number;
   results?: IDiscoverMovieResult[];
-  total_results?: number;
+  total_results: number;
   total_pages?: number;
 }
 
@@ -190,6 +190,13 @@ export interface IMovieDetails {
   video?: boolean;
   vote_average?: number;
   vote_count?: number;
+}
+
+export interface IPersonSearchResultApiResponse {
+  page?: number;
+  results: IPersonSearchResult[];
+  total_results?: number;
+  total_pages?: number;
 }
 
 export interface IPersonSearchResult {
