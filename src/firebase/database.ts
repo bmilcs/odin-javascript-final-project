@@ -31,6 +31,82 @@ if (mode === 'dev') {
 }
 
 //
+// comedian pages
+//
+
+interface IComedianPageResponse {
+  personalData: IComedianPagePersonalData;
+  specials: { [key: string]: IComedianPageSpecialOrAppearance };
+  appearances: { [key: string]: IComedianPageSpecialOrAppearance };
+}
+export interface IComedianPagePersonalData {
+  name: string;
+  id: number;
+  profile_path: string;
+  biography: string;
+  birthday: string;
+  imdb_id: string;
+}
+
+export interface IComedianPageSpecialOrAppearance {
+  id: number;
+  title: string;
+  poster_path: string;
+  backdrop_path: string;
+  release_date: string;
+}
+
+export type TComedianPageSpecialAppearanceArray = IComedianPageSpecialOrAppearance[];
+
+export const getComedianPageFromDB = async (id: number) => {
+  const pageRef = doc(db, 'comedianPages', id.toString());
+  const pageResponse = await getDoc(pageRef);
+  if (pageResponse.exists()) {
+    return pageResponse.data() as IComedianPageResponse;
+  }
+};
+
+//
+// specials pages
+//
+
+export interface ISpecialPageResponse {
+  data: ISpecialPageData;
+  otherContent: ISpecialPageOtherContent[];
+}
+export interface ISpecialPageData {
+  comedian: string;
+  comedianId: number;
+  profile_path: string;
+  id: number;
+  title: string;
+  poster_path: string;
+  backdrop_path: string;
+  runtime: string;
+  status: string;
+  overview: string;
+  homepage: string;
+  release_date: string;
+  type: 'special' | 'appearance';
+}
+
+export interface ISpecialPageOtherContent {
+  title: string;
+  release_date: string;
+  backdrop_path: string;
+  poster_path: string;
+  id: number;
+}
+
+export const getSpecialOrAppearancePageFromDB = async (specialId: number) => {
+  const pageRef = doc(db, 'specialPages', specialId.toString());
+  const pageResponse = await getDoc(pageRef);
+  if (pageResponse.exists()) {
+    return pageResponse.data() as ISpecialPageResponse;
+  }
+};
+
+//
 // user-related functions
 //
 
@@ -91,6 +167,40 @@ const loadUserData = async (snapshot: DocumentSnapshot<DocumentData>) => {
 // comedian related functions
 //
 
+export interface IComedian {
+  favorites: number;
+  profile_path: string;
+  name: string;
+  id: number;
+}
+
+export interface IComedianMap {
+  [key: string]: IComedian;
+}
+
+interface IComedianLatest extends IComedian {
+  dateAdded: {
+    seconds: number;
+    nanoseconds: number;
+  };
+}
+
+export interface IComedianLatestMap {
+  [key: number]: IComedianLatest;
+}
+
+export const getLatestComediansFromDB = async () => {
+  const latestComediansDocRef = doc(db, 'comedians', 'latest');
+  const docSnap = await getDoc(latestComediansDocRef);
+  return docSnap.exists() && (docSnap.data() as IComedianLatestMap);
+};
+
+export const getTopFavoriteComediansFromDB = async () => {
+  const topFavoriteComediansDocRef = doc(db, 'comedians', 'topFavorites');
+  const docSnap = await getDoc(topFavoriteComediansDocRef);
+  return docSnap.exists() && (docSnap.data() as IComedianMap);
+};
+
 export const allComedians: number[] = [];
 
 export const getAllComediansFromDB = async () => {
@@ -111,72 +221,73 @@ export const getAllComedianIdsFromDB = async () => {
   return allComedians;
 };
 
-export interface IComedian {
-  favorites: number;
-  profile_path: string;
-  name: string;
-  id: number;
-  dateAdded: string;
-}
-
-export interface IComedianList {
-  [key: string]: IComedian;
-}
-
-export const getLatestComediansFromDB = async () => {
-  const latestComediansDocRef = doc(db, 'comedians', 'latest');
-  const docSnap = await getDoc(latestComediansDocRef);
-  return docSnap.exists() && (docSnap.data() as IComedianList);
-};
-
 //
 // specials related functions
 //
 
-export interface IComedySpecial {
-  comedian: string;
+export interface ISpecial {
   backdrop_path: string;
-  poster_path: string;
-  comedianId: number;
-  release_date: string;
+  favorites: number;
   id: number;
+  poster_path: string;
+  release_date: string;
   title: string;
 }
 
-export interface ComedySpecialsList {
-  [id: string]: IComedySpecial;
+export interface ISpecialMap {
+  [id: number]: ISpecial;
+}
+
+export interface ISpecialLatestUpcoming extends ISpecial {
+  type: 'special' | 'appearance';
+}
+
+export interface ISpecialLatestUpcomingMap {
+  [id: number]: ISpecialLatestUpcoming;
+}
+
+export interface ISpecialTopFavorites extends ISpecial {
+  type: 'special' | 'appearance';
+}
+
+export interface ISpecialTopFavoritesMap {
+  [id: number]: ISpecialTopFavorites;
 }
 
 export const getLatestSpecialsFromDB = async () => {
   const latestSpecialsDocRef = doc(db, 'specials', 'latest');
   const docSnap = await getDoc(latestSpecialsDocRef);
-  return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
+  return docSnap.exists() && (docSnap.data() as ISpecialLatestUpcomingMap);
 };
 
 export const getUpcomingSpecialsFromDB = async () => {
   const upcomingSpecialsDocRef = doc(db, 'specials', 'upcoming');
   const docSnap = await getDoc(upcomingSpecialsDocRef);
-  return docSnap.exists() && (docSnap.data() as ComedySpecialsList);
+  return docSnap.exists() && (docSnap.data() as ISpecialLatestUpcomingMap);
+};
+
+export const getTopFavoriteSpecialsFromDB = async () => {
+  const topFavoriteSpecialsDocRef = doc(db, 'specials', 'topFavorites');
+  const docSnap = await getDoc(topFavoriteSpecialsDocRef);
+  return docSnap.exists() && (docSnap.data() as ISpecialTopFavoritesMap);
 };
 
 //
 // standup specials related functions
 //
 
-// TODO: save locally > persist through refresh
+// const allSpecials: number[] = [];
+// const allSpecialsDocRef = doc(db, 'specials', 'all');
 
-const allSpecials: number[] = [];
-const allSpecialsDocRef = doc(db, 'specials', 'all');
+// export const getAllSpecialsFromDB = async () => {
+//   const docSnap = await getDoc(allSpecialsDocRef);
 
-export const getAllSpecialsFromDB = async () => {
-  const docSnap = await getDoc(allSpecialsDocRef);
+//   if (docSnap.exists()) {
+//     const data = docSnap.data();
 
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-
-    for (const specialId of Object.keys(data)) {
-      const tmdbId = Number.parseInt(specialId);
-      if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
-    }
-  }
-};
+//     for (const specialId of Object.keys(data)) {
+//       const tmdbId = Number.parseInt(specialId);
+//       if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
+//     }
+//   }
+// };
