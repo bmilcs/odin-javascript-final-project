@@ -5,13 +5,14 @@ import {
   parseSearchQuery,
   searchForPersonURL,
 } from '@/api/TMDB';
-import { useAppSelector } from '@/app/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
 import {
   allComedianIdsArr,
   allComediansDataArr,
+  fetchAllComedians,
 } from '@/features/allComediansSlice/allComediansSlice';
 import { IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
@@ -25,6 +26,7 @@ function SearchResults() {
   const term = parseSearchQuery(searchTerm as string);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch<IPersonSearchResultApiResponse>(url);
+  const dispatch = useAppDispatch();
   const comedianIdsInDB = useAppSelector(allComedianIdsArr);
   const comediansInDb = useAppSelector(allComediansDataArr);
   const [missingComedians, setMissingComedians] = useState<IPersonSearchResult[]>([]);
@@ -70,7 +72,7 @@ function SearchResults() {
     addComedianToDB({ id: personalId })
       .then(() => {
         setAddComedianPending(false);
-        console.log('success: added comedian');
+        dispatch(fetchAllComedians());
         navigate(`/comedians/${personalId}`);
       })
       .catch((error) => {
