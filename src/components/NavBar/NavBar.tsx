@@ -11,17 +11,17 @@ function NavBar() {
           </Link>
         </li>
         <li className='nav__li'>
-          <Link to='/all/comedians' className='nav__a'>
+          <Link to='/comedians' className='nav__a'>
             Comedians
           </Link>
         </li>
         <li className='nav__li'>
-          <Link to='/all/specials' className='nav__a'>
+          <Link to='/specials' className='nav__a'>
             Specials
           </Link>
         </li>
         <li className='nav__li'>
-          <Link to='/' className='nav__a'>
+          <Link to='/favorites' className='nav__a'>
             Favorites
           </Link>
         </li>
