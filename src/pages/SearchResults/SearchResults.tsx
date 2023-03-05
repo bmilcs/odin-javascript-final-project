@@ -5,10 +5,12 @@ import {
   parseSearchQuery,
   searchForPersonURL,
 } from '@/api/TMDB';
+import { useAppSelector } from '@/app/hooks';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
-import { getAllComedianIdsFromDB, IComedian } from '@/firebase/database';
+import { allComedianIdsArr } from '@/features/allComediansSlice/allComediansSlice';
+import { IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
 import useFetch from '@/hooks/useFetch';
 import { useEffect, useState } from 'react';
@@ -20,7 +22,7 @@ function SearchResults() {
   const term = parseSearchQuery(searchTerm as string);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch<IPersonSearchResultApiResponse>(url);
-  const [comedianIdsInDb, setComedianIdsInDb] = useState<number[] | null>(null);
+  const existingComedianIds = useAppSelector(allComedianIdsArr);
   const [missingComedians, setMissingComedians] = useState<IPersonSearchResult[]>([]);
   const [existingComedians, setExistingComedians] = useState<IComedian[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -29,31 +31,24 @@ function SearchResults() {
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
 
-  // on first page load, get list of all comedians currently on the site
-  useEffect(() => {
-    const getComedians = async () => {
-      const comedianIds = await getAllComedianIdsFromDB();
-      setComedianIdsInDb(comedianIds);
-    };
-    getComedians();
-  }, []);
-
   // once the comedian ids from the db are loaded & search results are fetched,
   // remove comedians that already exist
   useEffect(() => {
-    if (!data || !comedianIdsInDb) return;
+    if (!data || !existingComedianIds) return;
 
     const results = [...data.results];
+
     const missing = results.filter((person) => {
-      return !comedianIdsInDb.includes(person.id);
+      return !existingComedianIds.includes(person.id);
     });
+
     const existing = results.filter((person) => {
-      return comedianIdsInDb.includes(person.id);
+      return existingComedianIds.includes(person.id);
     });
 
     setMissingComedians(missing);
-    setExistingComedians(existing);
-  }, [data, comedianIdsInDb]);
+    setExistingComedians(existing as IComedian[]);
+  }, [data, existingComedianIds]);
 
   const handleAddComedian = async (personalId: number) => {
     setAddComedianPending(true);
@@ -136,6 +131,8 @@ function SearchResults() {
                 {missingComedians
                   // sort by popularity
                   .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
+                    if (!a.popularity) return 1;
+                    if (!b.popularity) return -1;
                     return a.popularity > b.popularity ? -1 : 1;
                   })
                   // create clickable cards each person

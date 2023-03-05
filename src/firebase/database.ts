@@ -208,24 +208,13 @@ export const getTopFavoriteComediansFromDB = async () => {
   return docSnap.exists() && (docSnap.data() as IComedianMap);
 };
 
-export const allComedians: number[] = [];
-
 export const getAllComediansFromDB = async () => {
   const allComediansDocRef = doc(db, 'comedians', 'all');
   const docSnap = await getDoc(allComediansDocRef);
 
   if (docSnap.exists()) {
-    const data = docSnap.data();
-    for (const specialId of Object.keys(data)) {
-      const tmdbId = Number.parseInt(specialId);
-      if (!allComedians.includes(tmdbId)) allComedians.push(tmdbId);
-    }
+    return docSnap.data() as IComedianMap;
   }
-};
-
-export const getAllComedianIdsFromDB = async () => {
-  if (allComedians.length === 0) await getAllComediansFromDB();
-  return allComedians;
 };
 
 //
