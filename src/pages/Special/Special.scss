@@ -1,6 +1,27 @@
 .special {
-  display: flex;
-  gap: 2rem;
+  // display: grid;
+  // grid-template-columns: 1fr 300px;
+
+  > * {
+    margin-bottom: 2rem;
+  }
+
+  &__portrait {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  &__image-portrait {
+    width: 100%;
+    max-height: 50vh;
+    aspect-ratio: 1/1.5;
+  }
+
+  &__landscape {
+    display: grid;
+    gap: 2rem;
+  }
 
   &__overview {
     line-height: 2;
@@ -8,9 +29,21 @@
   }
 
   &__image {
-    width: 50%;
-    max-height: 50vh;
     object-fit: cover;
     border-radius: var(--border-radius-200);
+  }
+}
+
+.other__content {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 1rem;
+
+  &__header {
+    margin-block: 2rem;
+  }
+
+  .comedian-card {
+    height: fit-content;
   }
 }
