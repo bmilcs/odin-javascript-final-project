@@ -268,6 +268,15 @@ export const getTopFavoriteSpecialsFromDB = async () => {
   return docSnap.exists() && (docSnap.data() as ISpecialTopFavoritesMap);
 };
 
+export const getAllSpecialsFromDB = async () => {
+  const allSpecialsDocRef = doc(db, 'specials', 'all');
+  const docSnap = await getDoc(allSpecialsDocRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data() as ISpecialMap;
+  }
+};
+
 //
 // standup specials related functions
 //

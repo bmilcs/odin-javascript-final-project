@@ -1,11 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit';
 import allComediansReducer from '@/features/allComediansSlice/allComediansSlice';
+import allSpecialsReducer from '@/features/allSpecialsSlice/allSpecialsSlice';
 import userReducer from '@/features/userSlice/userSlice';
+import { configureStore } from '@reduxjs/toolkit';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
     allComedians: allComediansReducer,
+    allSpecials: allSpecialsReducer,
   },
 });
 
