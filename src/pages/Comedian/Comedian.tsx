@@ -87,7 +87,7 @@ function Comedian() {
         )}
       </div>
 
-      {specials && specials.length > 0 && <SpecialsGrid data={specials} />}
+      {specials && specials.length > 0 && <SpecialsGrid data={specials} title='Specials' />}
 
       {appearances && appearances.length > 0 && (
         <SpecialsGrid data={appearances} title='Appearances' />
