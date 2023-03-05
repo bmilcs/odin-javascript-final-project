@@ -39,6 +39,9 @@ export const allComediansSlice = createSlice({
       state.data = allComediansData;
       state.comedianIds = allComedianIds;
     });
+    builder.addCase(fetchAllComedians.pending, (state) => {
+      state.loading = 'pending';
+    });
   },
 });
 

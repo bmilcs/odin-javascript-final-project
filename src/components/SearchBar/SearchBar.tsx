@@ -1,50 +1,54 @@
-import {
-  IPersonSearchResult,
-  getTMDBImageURL,
-  parseSearchQuery,
-  searchForPersonURL,
-} from '@/api/TMDB';
+import { getTMDBImageURL, parseSearchQuery } from '@/api/TMDB';
+import { RootState } from '@/app/store';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
+import { IComedian } from '@/firebase/database';
 import useOnClickOutside from '@/hooks/useClickOutside';
-import useFetch from '@/hooks/useFetch';
 import { useEffect, useRef, useState } from 'react';
 import { MdSearch } from 'react-icons/md';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import './SearchBar.scss';
 
 function SearchBar() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filteredComedians, setFilteredComedians] = useState<IComedian[]>([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const { data, isLoading, setUrl } = useFetch('');
   const navigate = useNavigate();
   const searchRef = useRef<HTMLInputElement>(null);
 
+  // NOTE: useAppSelector(), the prefer way to access redux toolkit state in TS,
+  // causes a dependency loop error. (store can't access allComediansReducer before it's initialized)
+  const allComediansData = useSelector((state: RootState) => state.allComedians.data);
+
   // when the input value changes
   useEffect(() => {
-    // wait for the user to stop typing & then make the api call
-    // for the dropdown autocomplete options
-    const delayAutocomplete = setTimeout(() => {
-      if (!searchTerm || searchTerm.length < 3) return;
-      const term = parseSearchQuery(searchTerm);
-      const url = searchForPersonURL(term);
-      setUrl(url);
-    }, 1000);
-
-    return () => clearTimeout(delayAutocomplete);
-  }, [searchTerm]);
+    if (!searchTerm || searchTerm.length < 1) {
+      setFilteredComedians([]);
+      return;
+    }
+    setFilteredComedians(
+      allComediansData
+        .filter((comedian) => {
+          return comedian.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase());
+        })
+        .sort((a, b) => {
+          return a.favorites < b.favorites ? 1 : -1;
+        })
+        .slice(0, 10),
+    );
+  }, [searchTerm, allComediansData]);
 
   // when fetch returns data for autocomplete
   useEffect(() => {
-    if (data && data.results) {
+    if (filteredComedians) {
       setDropdownVisible(true);
     }
-  }, [data]);
+  }, [filteredComedians]);
 
   const clearHideDropDown = () => {
     setSearchTerm('');
     setDropdownVisible(false);
-    setUrl('');
   };
 
   useOnClickOutside(searchRef, () => {
@@ -94,19 +98,13 @@ function SearchBar() {
           <MdSearch size={24} />
         </Button>
 
-        {dropdownVisible && isLoading && <div className='dropdown'>Loading...</div>}
+        {/* {dropdownVisible && <div className='dropdown'>Loading...</div>} */}
 
-        {dropdownVisible && data && data.results && data.length !== 0 && (
+        {dropdownVisible && filteredComedians && filteredComedians.length !== 0 && (
           <div className='dropdown' onClick={(e) => handleMenuClick(e)}>
-            {data.results
-              // sort by popularity
-              .sort((a: IPersonSearchResult, b: IPersonSearchResult) => {
-                return a.popularity > b.popularity ? -1 : 1;
-              })
-              // limit to 10 results
-              .slice(0, 10)
+            {filteredComedians
               // display tiny image & person's name
-              .map((person: IPersonSearchResult) => {
+              .map((person) => {
                 return (
                   <div className='result' data-tmdb={person.id} key={person.id}>
                     {person.profile_path ? (

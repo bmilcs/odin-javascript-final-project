@@ -9,7 +9,10 @@ import { useAppSelector } from '@/app/hooks';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
-import { allComedianIdsArr } from '@/features/allComediansSlice/allComediansSlice';
+import {
+  allComedianIdsArr,
+  allComediansDataArr,
+} from '@/features/allComediansSlice/allComediansSlice';
 import { IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
 import useFetch from '@/hooks/useFetch';
@@ -22,7 +25,8 @@ function SearchResults() {
   const term = parseSearchQuery(searchTerm as string);
   const url = searchForPersonURL(term);
   const { data, isLoading, setUrl } = useFetch<IPersonSearchResultApiResponse>(url);
-  const existingComedianIds = useAppSelector(allComedianIdsArr);
+  const comedianIdsInDB = useAppSelector(allComedianIdsArr);
+  const comediansInDb = useAppSelector(allComediansDataArr);
   const [missingComedians, setMissingComedians] = useState<IPersonSearchResult[]>([]);
   const [existingComedians, setExistingComedians] = useState<IComedian[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -34,21 +38,30 @@ function SearchResults() {
   // once the comedian ids from the db are loaded & search results are fetched,
   // remove comedians that already exist
   useEffect(() => {
-    if (!data || !existingComedianIds) return;
+    if (!data || !comedianIdsInDB) return;
 
-    const results = [...data.results];
+    const tmdbResults = [...data.results];
 
-    const missing = results.filter((person) => {
-      return !existingComedianIds.includes(person.id);
+    const missingFromDB = tmdbResults.filter((person) => {
+      return !comedianIdsInDB.includes(person.id);
     });
 
-    const existing = results.filter((person) => {
-      return existingComedianIds.includes(person.id);
+    const tmdbResultsThatExistInDB = tmdbResults.filter((person) => {
+      return comedianIdsInDB.includes(person.id);
     });
 
-    setMissingComedians(missing);
-    setExistingComedians(existing as IComedian[]);
-  }, [data, existingComedianIds]);
+    const existingButMissingFromTmdbResults = comediansInDb.filter((comedian) => {
+      const isInTmdbResults = tmdbResultsThatExistInDB.some((person) => person.id === comedian.id);
+      const partialNameMatch = comedian.name.toLowerCase().includes(term.toLowerCase());
+      return !isInTmdbResults && partialNameMatch;
+    });
+
+    setMissingComedians(missingFromDB);
+    setExistingComedians([
+      ...tmdbResultsThatExistInDB,
+      ...existingButMissingFromTmdbResults,
+    ] as IComedian[]);
+  }, [data, comedianIdsInDB]);
 
   const handleAddComedian = async (personalId: number) => {
     setAddComedianPending(true);
