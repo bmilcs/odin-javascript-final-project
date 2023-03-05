@@ -7,11 +7,11 @@ type Props = {
   title?: string;
 };
 
-function SpecialsGrid({ data, title = 'Specials' }: Props) {
+function SpecialsGrid({ data, title }: Props) {
   return (
     data && (
       <section className='specials'>
-        <h3 className='specials__header'>{title}</h3>
+        {title && <h3 className='specials__header'>{title}</h3>}
         <div className='specials__grid'>
           {data.map((special) => (
             <SpecialCard data={special} key={special.id} />
