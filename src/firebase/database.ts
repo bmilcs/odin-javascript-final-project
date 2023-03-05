@@ -71,8 +71,15 @@ export const getComedianPageFromDB = async (id: number) => {
 //
 
 export interface ISpecialPageResponse {
+  comedian: ISpecialPageComedianData;
   data: ISpecialPageData;
   otherContent: ISpecialPageOtherContent[];
+}
+
+export interface ISpecialPageComedianData {
+  id: number;
+  name: string;
+  profile_path: string;
 }
 export interface ISpecialPageData {
   comedian: string;

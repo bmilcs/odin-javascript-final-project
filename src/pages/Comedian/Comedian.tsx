@@ -37,11 +37,11 @@ function Comedian() {
         .sort((a, b) => {
           return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
         });
-
       setPersonalData(personalData);
       if (specials) setSpecials(specials);
       if (appearances) setAppearances(appearances);
     };
+
     getDataFromDB();
   }, [personId]);
 

@@ -1,12 +1,14 @@
 import {
   getTMDBImageURL,
   IPersonSearchResult,
+  IPersonSearchResultApiResponse,
   parseSearchQuery,
   searchForPersonURL,
 } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
-import { getAllComedianIdsFromDB } from '@/firebase/database';
+import ComedianCard from '@/components/ComedianCard/ComedianCard';
+import { getAllComedianIdsFromDB, IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
 import useFetch from '@/hooks/useFetch';
 import { useEffect, useState } from 'react';
@@ -17,10 +19,10 @@ function SearchResults() {
   const { searchTerm } = useParams();
   const term = parseSearchQuery(searchTerm as string);
   const url = searchForPersonURL(term);
-  const { data, isLoading, setUrl } = useFetch(url);
+  const { data, isLoading, setUrl } = useFetch<IPersonSearchResultApiResponse>(url);
   const [comedianIdsInDb, setComedianIdsInDb] = useState<number[] | null>(null);
   const [missingComedians, setMissingComedians] = useState<IPersonSearchResult[]>([]);
-  const [existingComedians, setExistingComedians] = useState<IPersonSearchResult[]>([]);
+  const [existingComedians, setExistingComedians] = useState<IComedian[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [modalPersonId, setModalPersonId] = useState<number>();
   const [addComedianPending, setAddComedianPending] = useState<boolean | null>(null);
@@ -114,9 +116,9 @@ function SearchResults() {
                 {/* TODO use firestore data. 
                     Convert IPersonSearchResult > IComedian
                 */}
-                {/* {existingComedians.map((comedian: IComedian) => (
+                {existingComedians.map((comedian) => (
                   <ComedianCard data={comedian} key={comedian.id} />
-                ))} */}
+                ))}
               </div>
             </>
           )}

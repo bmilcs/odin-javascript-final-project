@@ -1,13 +1,18 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
-import { IComedian, IComedianPageSpecialOrAppearance, ISpecial } from '@/firebase/database';
+import {
+  IComedian,
+  IComedianPageSpecialOrAppearance,
+  ISpecial,
+  ISpecialPageComedianData,
+} from '@/firebase/database';
 import { toggleUserFavoriteInDB } from '@/firebase/functions';
 import { MdOutlineFavorite, MdOutlineFavoriteBorder } from 'react-icons/md';
 import './FavoriteIcon.scss';
 
 type Props = {
   category: string;
-  data: ISpecial | IComedian | IComedianPageSpecialOrAppearance;
+  data: ISpecial | IComedian | IComedianPageSpecialOrAppearance | ISpecialPageComedianData;
 };
 
 function FavoriteIcon({ category, data }: Props) {
