@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build && cp ./public/404.html ./dist",
-    "deploy": "firebase deploy --only hosting",
+    "deploy": "firebase deploy",
     "pub": "npm run predeploy && npm run deploy",
     "lint": "eslint src/**/*.{js,jsx,ts,tsx,json}",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx,json}'",
