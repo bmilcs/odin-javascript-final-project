@@ -1,8 +1,6 @@
 .comedians {
-  padding-block: 1rem;
-
   &__header {
-    margin-block: 2rem;
+    margin-bottom: var(--header-spacing);
   }
 
   &__grid {
@@ -10,5 +8,6 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     justify-content: baseline;
     gap: 1rem;
+    margin-bottom: var(--content-spacing);
   }
 }
