@@ -18,7 +18,7 @@ function Comedians() {
 
   return (
     <div className='column'>
-      {allComedians.length !== 0 && <ComedianGrid data={alphabetizedComedians} />}
+      {alphabetizedComedians.length !== 0 && <ComedianGrid data={alphabetizedComedians} />}
     </div>
   );
 }
