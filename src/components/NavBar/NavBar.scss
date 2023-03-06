@@ -1,15 +1,13 @@
 .nav {
-  margin-left: auto;
-
   display: flex;
-  align-items: center;
+  // position: relative;
 
-  &__ul {
+  &__hidden {
+    display: none;
+  }
+
+  &__li {
     list-style: none;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-
     text-transform: uppercase;
   }
 
@@ -20,6 +18,81 @@
 
     &:hover {
       color: var(--clr-primary-200);
+    }
+  }
+
+  //
+  // small screen sizes
+  //
+
+  @media (max-width: 1000px) {
+    &__button {
+      z-index: 1;
+      cursor: pointer;
+      color: inherit;
+      background: none;
+      border: 0;
+      outline: 0;
+    }
+
+    &__icon-open {
+      color: var(--clr-accent-100);
+    }
+
+    &__ul {
+      position: fixed;
+      top: 0;
+      right: 0;
+
+      min-height: 50vh;
+      width: 100vw;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      padding: 1rem;
+
+      color: var(--clr-accent-100);
+      background: var(--clr-neutral-900-transparent);
+      border-bottom: 3px solid var(--clr-neutral-700-transparent);
+
+      font-weight: bold;
+
+      &.nav__hidden {
+        display: none;
+      }
+    }
+
+    &__a,
+    &__a:visited {
+      color: var(--clr-neutral-100);
+      transition: var(--transition-100);
+
+      &:hover {
+        color: var(--clr-primary-200);
+      }
+    }
+
+    &__li {
+      font-size: 1.25rem;
+      padding-block: 1rem;
+    }
+  }
+  // large screens
+  @media (min-width: 1000px) {
+    &__active,
+    &__hidden,
+    button,
+    svg {
+      display: none;
+    }
+
+    &__ul {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
   }
 }

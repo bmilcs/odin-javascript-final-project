@@ -1,19 +1,8 @@
-import { useAppSelector } from '@/app/hooks';
-import Button from '@/components/Button/Button';
 import NavBar from '@/components/NavBar/NavBar';
-import SearchBar from '@/components/SearchBar/SearchBar';
-import { isUserSignedIn } from '@/features/userSlice/userSlice';
-import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
 import { Link } from 'react-router-dom';
 import './Header.scss';
 
 function Header() {
-  const isSignedIn = useAppSelector(isUserSignedIn);
-
-  const signIn = () => {
-    signUserInWithGooglePopup();
-  };
-
   return (
     <header className='header'>
       <div className='column'>
@@ -26,17 +15,7 @@ function Header() {
           </div>
         </Link>
 
-        <SearchBar />
-
         <NavBar />
-
-        {isSignedIn ? (
-          <Button type='outline' onClick={() => signUserOutFromFirebase()}>
-            logout
-          </Button>
-        ) : (
-          <Button onClick={() => signIn()}>login</Button>
-        )}
       </div>
     </header>
   );

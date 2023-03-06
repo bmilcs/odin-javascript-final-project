@@ -64,8 +64,11 @@ h6 {
   --ff-main: 'Roboto', sans-serif;
   --ff-accent: 'Roboto Slab', serif;
   --clr-neutral-900: #1a1b26;
+  --clr-neutral-900-transparent: #1a1b26f0;
   --clr-neutral-800: #24283b;
+  --clr-neutral-800-transparent: #24283bdd;
   --clr-neutral-700: #414868;
+  --clr-neutral-700-transparent: #414868aa;
   --clr-neutral-300: #848692;
   --clr-neutral-200: #d4d6e0;
   --clr-neutral-100: #f1f2f7;
@@ -98,7 +101,7 @@ body {
   .column {
     max-width: 1280px;
     margin-inline: auto;
-    padding-inline: 2rem;
+    padding-inline: 1rem;
   }
 
   // maintain consistent spacing of main content

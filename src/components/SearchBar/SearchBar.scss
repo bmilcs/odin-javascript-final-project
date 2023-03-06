@@ -9,6 +9,9 @@
     grid-template-columns: 1fr max-content;
     place-items: center;
     gap: 0.25rem;
+
+    border: 3px solid var(--clr-neutral-700);
+    border-radius: var(--border-radius-100);
   }
 }
 

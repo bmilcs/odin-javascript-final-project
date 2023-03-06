@@ -5,11 +5,11 @@
 
   padding-block: 1rem;
 
-  background: var(--clr-neutral-800);
-  border-bottom: 2px solid var(--clr-neutral-700);
+  background: var(--clr-neutral-900);
+  // border-bottom: 2px solid var(--clr-neutral-700);
 
   .column {
-    display: grid;
+    display: flex;
     grid-template-columns: max-content max-content max-content min-content;
     justify-content: space-between;
     align-items: center;
