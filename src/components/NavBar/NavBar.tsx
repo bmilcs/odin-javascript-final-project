@@ -1,6 +1,5 @@
 import { useAppSelector } from '@/app/hooks';
 import Button from '@/components/Button/Button';
-import SearchBar from '@/components/SearchBar/SearchBar';
 import { isUserSignedIn } from '@/features/userSlice/userSlice';
 import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
 import useOnClickOutside from '@/hooks/useClickOutside';
