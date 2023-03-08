@@ -1,4 +1,5 @@
 import NavBar from '@/components/NavBar/NavBar';
+import SearchBar from '@/components/SearchBar/SearchBar';
 import { Link } from 'react-router-dom';
 import './Header.scss';
 
@@ -16,6 +17,10 @@ function Header() {
         </Link>
 
         <NavBar />
+
+        <div className='break-column'></div>
+
+        <SearchBar />
       </div>
     </header>
   );

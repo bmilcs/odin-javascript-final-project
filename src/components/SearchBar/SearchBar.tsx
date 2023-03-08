@@ -95,10 +95,8 @@ function SearchBar() {
         />
 
         <Button type='icon' className='search__button'>
-          <MdSearch size={24} />
+          <MdSearch size={28} />
         </Button>
-
-        {/* {dropdownVisible && <div className='dropdown'>Loading...</div>} */}
 
         {dropdownVisible && filteredComedians && filteredComedians.length !== 0 && (
           <div className='dropdown' onClick={(e) => handleMenuClick(e)}>

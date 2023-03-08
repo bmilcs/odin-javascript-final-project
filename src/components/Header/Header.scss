@@ -2,18 +2,63 @@
   position: sticky;
   top: 0;
   z-index: 10;
-
   padding-block: 1rem;
-
   background: var(--clr-neutral-900);
-  // border-bottom: 2px solid var(--clr-neutral-700);
 
   .column {
     display: flex;
-    grid-template-columns: max-content max-content max-content min-content;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: 0.25rem;
+
+    // from 525px to 1000px
+    // hamburger icon: far right
+    > :nth-child(2) {
+      order: 1;
+    }
+
+    // search bar: snuggled against hamburger menu
+    > :nth-child(4) {
+      margin-left: auto;
+    }
+
+    // small screens
+    @media (max-width: 525px) {
+      // search bar: 100% width
+      flex-basis: 100%;
+
+      // move nav to original position
+      > :nth-child(2) {
+        order: 0;
+      }
+      gap: 0.2rem;
+    }
+
+    // used to break search bar on a new line
+    .break-column {
+      flex-basis: 100%;
+      width: 0;
+
+      @media (min-width: 525px) {
+        display: none;
+      }
+    }
+
+    // large screens
+    @media (min-width: 1000px) {
+      > :nth-child(2) {
+        margin-left: auto;
+      }
+
+      > :nth-child(2) {
+        order: 0;
+      }
+
+      > :nth-child(4) {
+        margin-left: none;
+      }
+    }
   }
 
   .title {
@@ -26,7 +71,7 @@
     color: var(--clr-primary-200);
 
     &__text {
-      font-size: 1.75rem;
+      font-size: min(1.75rem, 6vw);
 
       &__db {
         color: var(--clr-neutral-700);
