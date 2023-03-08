@@ -1,6 +1,7 @@
 import { useAppDispatch } from '@/app/hooks';
 import Footer from '@/components/Footer/Footer';
 import Header from '@/components/Header/Header';
+import ScrollToTop from '@/components/ScrollToTop/ScrollToTop';
 import { fetchAllComedians } from '@/features/allComediansSlice/allComediansSlice';
 import Comedian from '@/pages/Comedian/Comedian';
 import Comedians from '@/pages/Comedians/Comedians';
@@ -18,8 +19,8 @@ function App() {
 
   return (
     <div className='app'>
+      <ScrollToTop />
       <Header />
-
       <main>
         <Routes>
           <Route path='/' element={<Home />} />
