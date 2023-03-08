@@ -2,28 +2,75 @@
 
 ## TODO
 
-**Specials Pages**
+### **Backend**
 
-1. improve GUI, add Comedian info & other specials
-1. separate name (small) from special title (large)
-1. handle specials that haven't been released yet
-1. ^ red banner, add to coming soon section on homepage
-1. Hide "Years Ago" if 0
+On a daily+ interval: run a scan on all comedians in the database
 
-**Move from a static list of comedians to database entries**
+- [ ] Fetch TMDB data: all specials per comedian Id
+- [ ] Fetch database data: /specials/all
+- [ ] Filter out existing/duplicate specials
 
-1.  ~~Add mechanism for users to add comedians~~
-2.  Convert display functionality to use the database instead of `src/data/`
+- [ ] **Add missing specials to the db:**
 
-**Refactor: getAllSpecialsFromDB and addSpecialToDB**
+  - [ ] /specials/all/
+  - [ ] /specials/latest and /specials/upcoming
+  - [ ] /specialPages/{id}
+    - [ ] Update _other special pages_ by the same comedian with a link to the new content
 
-~~Users shouldn't be pulling the full list of specials on each visit to determine if a special needs to be added to the database.~~
+- [ ] **Add special to all users who subscribe to the comedian**
 
-- ~~Convert to Cloud Function~~
-- ~~When a user adds a new comedian, trigger a function to add the specials to the db~~
-- On a daily+ interval, run a scan on all comedians in the database
-  - Get all specials
-  - Add missing specials to the db
+  - _Another database collection may be needed to store list of users per comedian_ (**Looping through all user documents will be expensive**)
+  - ie: /userFavorites/{comedianId}/userIds: [];
+  - [ ] If a new special by a favorite comedian is released:
+  - [ ] Add a db entry users/{id}/notifications: []
+  - [ ] Display on the frontend when user logins in / first page render
+
+For email notifications:
+
+- [ ] Setup another database collection for email notifications OR store the info in RAM to execute after fetching all specials
+  - [ ] /notifications/pending/user-email: { specials: [] }
+
+### **Authentication**
+
+- [ ] Add email authentication
+- [ ] Create sign up form
+- [ ] Create a login form
+- [ ] Make a toggle for logging into Google vs Email
+
+### Notifications
+
+- [ ] On login / first render, check /user/{id}/notifications array
+  - [ ] If not empty, pull info & display an overlay
+  - [ ] Show notification badge
+
+### **GUI Improvements**
+
+- [ ] Global Improvements
+
+  - [ ] Add style variations for comedian & standup arrays
+    - [ ] Hero / carousel showcase
+    - [ ] Styled list w/ special images for bullet point
+    - [ ] Different card styles
+  - [ ] Add transitions & transformations
+  - [ ] Add subtle shadows
+
+- [ ] Special Pages
+
+  - [x] add Comedian info & other specials
+  - [ ] separate name (small) from special title (large)
+  - [ ] if date > today, show red banner
+  - [ ] hide "Years Ago" if 0
+
+## **Move from a static list of comedians to database entries**
+
+- [x] Add mechanism for users to add comedians
+- [x] Convert display functionality to use the database instead of `src/data/`
+
+## **Refactor: getAllSpecialsFromDB and addSpecialToDB**
+
+- [x] Users shouldn't be pulling the full list of specials on each visit to determine if a special needs to be added to the database.
+- [x] Convert to Cloud Function
+- [x] When a user adds a new comedian, trigger a function to add the specials to the db
 
 ## High Level Breakdown
 
