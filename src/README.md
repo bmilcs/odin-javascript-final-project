@@ -6,16 +6,16 @@
 
 On a daily+ interval: run a scan on all comedians in the database
 
-- [ ] Fetch TMDB data: all specials per comedian Id
-- [ ] Fetch database data: /specials/all
-- [ ] Filter out existing/duplicate specials
+- [x] Fetch TMDB data: all specials per comedian Id
+- [x] Fetch database data: /specials/all
+- [x] Filter out existing/duplicate specials
 
-- [ ] **Add missing specials to the db:**
+- [x] **Add missing specials to the db:**
 
-  - [ ] /specials/all/
-  - [ ] /specials/latest and /specials/upcoming
-  - [ ] /specialPages/{id}
-    - [ ] Update _other special pages_ by the same comedian with a link to the new content
+  - [x] /specials/all/
+  - [x] /specials/latest and /specials/upcoming
+  - [x] /specialPages/{id}
+    - [x] Update _other special pages_ by the same comedian with a link to the new content
 
 - [ ] **Add special to all users who subscribe to the comedian**
 
