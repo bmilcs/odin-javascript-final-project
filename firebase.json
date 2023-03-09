@@ -17,7 +17,11 @@
   ],
   "hosting": {
     "public": "dist/",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
   },
   "emulators": {
     "auth": {
@@ -33,6 +37,12 @@
       "enabled": true,
       "port": 8888
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "hosting": {
+      "port": 8886
+    },
+    "pubsub": {
+      "port": 8883
+    }
   }
 }
