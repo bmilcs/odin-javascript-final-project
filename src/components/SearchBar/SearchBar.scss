@@ -1,6 +1,5 @@
 .search {
   position: relative;
-  z-index: -1;
 
   display: grid;
   place-items: center;
@@ -12,11 +11,9 @@
   &__form {
     display: grid;
     grid-template-columns: 1fr max-content;
-    // place-items: center;
-    // gap: 0.25rem;
+
     @media (max-width: 525px) {
       width: 100%;
-      // margin-top: 0rem;
     }
 
     input {
