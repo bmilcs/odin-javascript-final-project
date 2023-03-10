@@ -48,6 +48,7 @@ const getLatestComediansData = async () => {
 
 exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
   const userId = context.auth.uid;
+  const userEmail = context.auth.token.email;
 
   // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
   const favoriteId = data.favoriteId;
@@ -58,14 +59,14 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
   const userDocData = userDocResponse.data();
   const userDocFavoritesArr = userDocData.favorites;
 
-  // depending on the arguments: /comedians/all or /specials/all
-  const allContentDocRef = db.collection(category).doc('all');
+  // /comedians/all or /specials/all
+  const contentAllDocRef = db.collection(category).doc('all');
 
   if (userDocFavoritesArr.includes(favoriteId)) {
     // remove favorite from /users/.../favorites: []
     userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
     // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-    allContentDocRef.set(
+    contentAllDocRef.set(
       {
         [tmdbId]: {
           favorites: FieldValue.increment(-1),
@@ -73,13 +74,13 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
       },
       { merge: true },
     );
-    // TODO: Remove favorite count from topFavorites if present
-    // ! on removal of a favorite, /category/all is NOT checked for a new potential top favorite
+
+    if (category === 'comedians') unsubscribeUserToComedian(userId, userEmail, tmdbId);
   } else {
     // add favorite from /users/.../favorites: []
     userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
     // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-    allContentDocRef.set(
+    contentAllDocRef.set(
       {
         [tmdbId]: {
           favorites: FieldValue.increment(1),
@@ -87,14 +88,37 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
       },
       { merge: true },
     );
+    if (category === 'comedians') subscribeUserToComedian(userId, userEmail, tmdbId);
   }
 });
+
+const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
+  console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
+  comedianSubscribersDocRef.set(
+    {
+      [userId]: {
+        id: userId,
+        email: userEmail,
+      },
+    },
+    { merge: true },
+  );
+};
+
+const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
+  console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
+  comedianSubscribersDocRef.update({
+    [userId]: FieldValue.delete(),
+  });
+};
 
 //
 // update top favorite comedians & specials every 24 hours
 //
 
-exports.updateTopFavorites = functions.pubsub.schedule('every 2 hours').onRun(async (context) => {
+exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
   const topComediansLimit = 10;
   const topSpecialsLimit = 10;
 
