@@ -7,6 +7,9 @@ initializeApp();
 const db = getFirestore();
 const API_KEY = functions.config().tmdb.key;
 
+// fetch new specials for all comedians & update top favorite calculations
+const maintenanceSchedule = 'every 24 hours';
+
 //
 // db retrieval functions
 //
@@ -126,10 +129,10 @@ const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
 };
 
 //
-// update top favorite comedians & specials every 24 hours
+// update top favorite comedians & specials on a shedule
 //
 
-exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRun(async () => {
   const topComediansLimit = 10;
   const topSpecialsLimit = 10;
 
@@ -181,11 +184,11 @@ exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(a
 // scheduled function: get new specials for all comedians
 //
 
+// for testing purposes:
+// const getNewSpecialsForAllComedians = async () => {
 exports.getNewSpecialsForAllComedians = functions.pubsub
-  .schedule('every 24 hours')
+  .schedule(maintenanceSchedule)
   .onRun(async () => {
-    // for testing purposes:
-    // const getNewSpecialsForAllComedians = async () => {
     const allComediansDocData = await getFirebaseDoc('comedians', 'all');
     const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
     const allComedianIds = Object.keys(allComediansDocData);
@@ -247,8 +250,8 @@ exports.getNewSpecialsForAllComedians = functions.pubsub
     if (allNewSpecials.length !== 0) await createAllUserNotifications(allNewSpecials);
 
     return null;
-    // }; // testing purposes
   });
+// }; // testing purposes
 
 //
 // notifications are created after fetching new specials data for all comedians
