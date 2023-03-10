@@ -94,7 +94,7 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
 // update top favorite comedians & specials every 24 hours
 //
 
-exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+exports.updateTopFavorites = functions.pubsub.schedule('every 2 hours').onRun(async (context) => {
   const topComediansLimit = 10;
   const topSpecialsLimit = 10;
 
@@ -145,7 +145,7 @@ exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(a
 //
 
 exports.getNewSpecialsForAllComedians = functions.pubsub
-  .schedule('every 24 hours')
+  .schedule('every 2 hours')
   .onRun(async (context) => {
     const allComediansDocData = await getFirebaseDoc('comedians', 'all');
     const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
