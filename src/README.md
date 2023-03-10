@@ -17,12 +17,12 @@ On a daily+ interval: run a scan on all comedians in the database
   - [x] /specialPages/{id}
     - [x] Update _other special pages_ by the same comedian with a link to the new content
 
-- [ ] **Add special to all users who subscribe to the comedian**
+- [x] **Add special to all users who subscribe to the comedian**
 
-  - _Another database collection may be needed to store list of users per comedian_ (**Looping through all user documents will be expensive**)
-  - ie: /userFavorites/{comedianId}/userIds: [];
-  - [ ] If a new special by a favorite comedian is released:
-  - [ ] Add a db entry users/{id}/notifications: []
+  - [x] _Another database collection may be needed to store list of users per comedian_ **Looping through all user documents will be expensive**)
+  - [x] ie: /userFavorites/{comedianId}/userIds: [];
+  - [x] If a new special by a favorite comedian is released:
+  - [x] Add a db entry users/{id}/notifications: []
   - [ ] Display on the frontend when user logins in / first page render
 
 For email notifications:
