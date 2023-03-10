@@ -47,6 +47,17 @@ const getLatestComediansData = async () => {
 //
 
 exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
+  // for testing purposes:
+  // db.collection('specials')
+  //   .doc('all')
+  //   .update({
+  //     [1068114]: FieldValue.delete(),
+  //   })
+  //   .then(() => {
+  //     getNewSpecialsForAllComedians();
+  //   });
+  // return;
+
   const userId = context.auth.uid;
   const userEmail = context.auth.token.email;
 
@@ -158,10 +169,12 @@ exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(a
           console.log('Successfully updated top favorites');
         })
         .catch((e) => {
-          console.log('Failed to update top favorites!');
+          console.log('Failed to update top favorites.');
           console.log(e);
         }),
     );
+
+  return null;
 });
 
 //
@@ -169,21 +182,24 @@ exports.updateTopFavorites = functions.pubsub.schedule('every 24 hours').onRun(a
 //
 
 exports.getNewSpecialsForAllComedians = functions.pubsub
-  .schedule('every 2 hours')
-  .onRun(async (context) => {
+  .schedule('every 24 hours')
+  .onRun(async () => {
+    // for testing purposes:
+    // const getNewSpecialsForAllComedians = async () => {
     const allComediansDocData = await getFirebaseDoc('comedians', 'all');
     const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
     const allComedianIds = Object.keys(allComediansDocData);
     const allSpecialIds = Object.keys(allSpecialsDocData);
+    const allNewSpecials = [];
 
-    allComedianIds.forEach(async (comedianId) => {
+    // forEach runs synchronous, which causes notification creation to fire
+    // immediately (before new specials have been fetched)
+    for (const comedianId of allComedianIds) {
       // determine if the comedian has any missing specials
       const specialsRawData = await fetchTmdbSpecialsData(comedianId);
       const newSpecials = specialsRawData.filter((newSpecial) => {
         let isNew = true;
-
         allSpecialIds.forEach((existingSpecialId) => {
-          // console.log(newSpecial.id, existingSpecialId, Number(newSpecial.id) == existingSpecialId);
           if (Number(newSpecial.id) === Number(existingSpecialId)) {
             isNew = false;
             return;
@@ -192,22 +208,21 @@ exports.getNewSpecialsForAllComedians = functions.pubsub
         return isNew;
       });
 
+      // if no new specials are available, stop here.
       if (newSpecials.length === 0) return;
 
-      // comedian has new specials!
-
+      // comedian has new specials
       try {
         // get fresh data for the comedian's page
         const comedianRawData = await fetchTmdbComedianData(comedianId);
         console.log(`${comedianRawData.name} has ${newSpecials.length} new specials!`);
-        console.log(newSpecials);
 
         // add only new specials to /specials/all
         // this prevents overwriting existing favorite counts (set to 0 on being added)
         await addSpecialsToAllSpecialsDoc(newSpecials);
 
         // add only new specials to .../upcoming and .../latest if applicable
-        // existing specials in the db have already been checked when originally added
+        // existing specials in the db have already been checked
         await addSpecialsToLatestAndUpcomingSpecialsDocs(newSpecials);
 
         // update /comedianPages/{comedianId}/
@@ -216,16 +231,86 @@ exports.getNewSpecialsForAllComedians = functions.pubsub
         // update all /specialPages/ related to comedian
         await addSpecialsPageDocs(comedianRawData, specialsRawData);
 
+        // all updates have been published for comedian
+        newSpecials.forEach((special) => {
+          allNewSpecials.push({ comedianRawData, special });
+        });
+
         console.log(`Successfully updated with ${comedianRawData.name}'s new specials!`);
       } catch (e) {
         console.log(`Failed to add ${comedianRawData.name}'s new specials`);
         console.error(e);
       }
-    });
+    }
+
+    // database has been fully updated
+    if (allNewSpecials.length !== 0) await createAllUserNotifications(allNewSpecials);
+
+    return null;
+    // }; // testing purposes
   });
 
 //
-// add comedian & their specials to the db.
+// notifications are created after fetching new specials data for all comedians
+// - stored in: /users/{uid}/notifications: []
+//
+
+const createAllUserNotifications = async (newSpecials) => {
+  newSpecials.forEach(async (special) => {
+    const specialRawData = special.special;
+    const comedianRawData = special.comedianRawData;
+    const comedianId = comedianRawData.id;
+
+    // get all users subscribed to this comedian
+    const comedianSubscribersDocRef = db
+      .collection('comedianSubscribers')
+      .doc(comedianId.toString());
+    const comedianSubscribersDocResponse = await comedianSubscribersDocRef.get();
+
+    // if no users are subscribed to this comedian, stop here.
+    if (!comedianSubscribersDocResponse.exists) return;
+
+    const comedianSubscribersData = await comedianSubscribersDocResponse.data();
+    const userIds = Object.keys(comedianSubscribersData);
+
+    for (const uid of userIds) {
+      try {
+        await createUserNotification(uid, comedianRawData, specialRawData);
+      } catch (e) {
+        console.error(`Unable to create notification for ${uid}\n${e}`);
+      }
+    }
+  });
+};
+
+const createUserNotification = async (userId, comedianRawData, specialRawData) => {
+  const notification = {
+    [specialRawData.id]: {
+      comedian: {
+        name: comedianRawData.name,
+        id: comedianRawData.id,
+        profile_path: comedianRawData.profile_path,
+      },
+      data: {
+        id: specialRawData.id,
+        title: specialRawData.title,
+        poster_path: specialRawData.poster_path,
+        backdrop_path: specialRawData.backdrop_path,
+        release_date: specialRawData.release_date,
+      },
+    },
+  };
+
+  return await db
+    .collection('users')
+    .doc(userId)
+    .update({
+      notifications: FieldValue.arrayUnion(notification),
+    });
+};
+
+//
+// add comedian & their specials to the db: triggered by client
 //
 
 exports.addComedianAndSpecials = functions.https.onCall(async (data, context) => {
