@@ -1,11 +1,12 @@
 import { RootState } from '@/app/store';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, current } from '@reduxjs/toolkit';
 
-export type UserState = {
+type UserState = {
   id: string;
   name: string;
   email: string;
   favorites: string[];
+  notifications: INotification[];
   isSignedIn?: boolean;
 };
 
@@ -14,8 +15,24 @@ const initialState: UserState = {
   name: '',
   email: '',
   favorites: [],
+  notifications: [],
   isSignedIn: false,
 };
+
+export interface INotification {
+  comedian: {
+    id: number;
+    name: string;
+    profile_path: string;
+  };
+  data: {
+    backdrop_path: string;
+    id: number;
+    poster_path: string;
+    release_date: string;
+    title: string;
+  };
+}
 
 export const userSlice = createSlice({
   name: 'user',
@@ -39,6 +56,19 @@ export const userSlice = createSlice({
       } else {
         state.favorites.push(favoriteId);
       }
+    },
+    setUserNotifications: (state, { payload }) => {
+      state.notifications = payload;
+    },
+    removeUserNotification: (state, { payload: specialId }) => {
+      const notifications = current(state.notifications);
+
+      state.notifications = notifications
+        .slice()
+        .filter((notification) => notification.data.id !== specialId);
+    },
+    clearUserNotifications: (state, { payload }) => {
+      state.notifications = payload;
     },
     setUserName: (state, { payload }) => {
       state.name = payload;
@@ -72,11 +102,15 @@ export const userId = (state: RootState) => state.user.id;
 export const userName = (state: RootState) => state.user.name;
 export const userEmail = (state: RootState) => state.user.email;
 export const userFavorites = (state: RootState) => state.user.favorites;
+export const userNotifications = (state: RootState) => state.user.notifications;
 export const isUserSignedIn = (state: RootState) => state.user.isSignedIn;
 
 export const {
-  addUserFavorite,
   logUserData,
+  addUserFavorite,
+  setUserNotifications,
+  removeUserNotification,
+  clearUserNotifications,
   removeUserFavorite,
   setUserFavorites,
   setUserName,

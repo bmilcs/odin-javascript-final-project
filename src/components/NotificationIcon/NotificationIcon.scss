@@ -1,0 +1,49 @@
+.button.button__icon {
+  .notification__icon-active {
+    color: var(--clr-accent-100);
+  }
+}
+
+.notifications {
+  --spacing: 0.75rem;
+  position: relative;
+
+  &__window {
+    z-index: 10;
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    min-width: max-content;
+
+    background: var(--clr-neutral-800);
+    border-radius: var(--border-radius-100);
+    overflow: hidden;
+    border: 2px solid var(--clr-primary-200-transparent);
+  }
+
+  h5 {
+    padding: var(--spacing);
+    background: var(--clr-neutral-800);
+  }
+
+  &__li {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: start;
+    align-items: center;
+
+    padding: var(--spacing);
+
+    &:hover {
+      background: var(--clr-neutral-700);
+    }
+  }
+
+  &__img {
+    max-width: 5vw;
+    max-height: 30px;
+    object-fit: cover;
+
+    border-radius: var(--border-radius-100);
+  }
+}

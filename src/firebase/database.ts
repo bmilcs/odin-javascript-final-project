@@ -4,6 +4,7 @@ import {
   setUserFavorites,
   setUserId,
   setUserName,
+  setUserNotifications,
   userEmail,
   userFavorites,
   userId,
@@ -148,6 +149,7 @@ const createNewUser = async () => {
     name,
     email,
     favorites,
+    notifications: [],
   });
 };
 
@@ -158,15 +160,19 @@ const loadUserData = async (snapshot: DocumentSnapshot<DocumentData>) => {
     !userData.id ||
     !userData.name ||
     !userData.favorites ||
-    !userData.email
+    !userData.email ||
+    !userData.notifications
   )
     return;
 
-  const { id, name, favorites, email } = userData;
+  console.log('passed test');
+  const { id, email, name, favorites, notifications } = userData;
   store.dispatch(setUserId(id));
   store.dispatch(setUserName(name));
   store.dispatch(setUserFavorites(favorites));
   store.dispatch(setUserEmail(email));
+  store.dispatch(setUserNotifications(notifications));
+
   // store.dispatch(logUserData());
 };
 
