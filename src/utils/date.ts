@@ -1,5 +1,11 @@
 import { differenceInYears, isBefore, parse } from 'date-fns';
 
+export const isAFutureDate = (dateString: string) => {
+  const today = new Date();
+  const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
+  return isBefore(today, parsedDate);
+};
+
 export const formatDateNumberOfYearsPassed = (dateString: string) => {
   const today = new Date();
   const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
