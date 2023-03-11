@@ -8,7 +8,7 @@ import {
   ISpecialPageOtherContent,
   getSpecialOrAppearancePageFromDB,
 } from '@/firebase/database';
-import { formatDateNumberOfYearsPassed, isDateOneBeforeDateTwo } from '@/utils/date';
+import { formatDateNumberOfYearsPassed, isAFutureDate, isDateOneBeforeDateTwo } from '@/utils/date';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './Special.scss';
@@ -135,15 +135,25 @@ function SpecialMainImage({ data }: TSpecialMainImage) {
 type SpecialInformationProps = { data: ISpecialPageData };
 
 function SpecialInformation({ data }: SpecialInformationProps) {
+  const yearsAgo = formatDateNumberOfYearsPassed(data.release_date);
+  const isNotReleasedYet = isAFutureDate(data.release_date);
+
   return (
     <div className='special__data'>
       {data.title && <h2 className='special__title'>{data.title}</h2>}
 
       {data.release_date && (
         <>
-          <p className='special__years_ago'>
-            {formatDateNumberOfYearsPassed(data.release_date)} Years Ago
-          </p>
+          {isNotReleasedYet ? (
+            <p className='special__comingsoon'>Coming soon!</p>
+          ) : (
+            <p className='special__years_ago'>
+              Release:{' '}
+              {yearsAgo === 0
+                ? 'Within the last year'
+                : `${yearsAgo} Year${yearsAgo > 1 && 's'} Ago`}
+            </p>
+          )}
           <p className='special__release_date'>{data.release_date}</p>
         </>
       )}

@@ -22,6 +22,12 @@
     gap: 2rem;
   }
 
+  &__comingsoon {
+    font-weight: bold;
+    color: var(--clr-accent-100);
+    font-size: 1.25rem;
+  }
+
   &__overview {
     line-height: 2;
     margin-block: 1rem;

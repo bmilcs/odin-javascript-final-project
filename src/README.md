@@ -23,12 +23,15 @@ On a daily+ interval: run a scan on all comedians in the database
   - [x] ie: /userFavorites/{comedianId}/userIds: [];
   - [x] If a new special by a favorite comedian is released:
   - [x] Add a db entry users/{id}/notifications: []
-  - [ ] Display on the frontend when user logins in / first page render
 
 For email notifications:
 
 - [ ] Setup another database collection for email notifications OR store the info in RAM to execute after fetching all specials
   - [ ] /notifications/pending/user-email: { specials: [] }
+
+### Segment Favorites & Subscriptions
+
+- [ ] Clearly divide functionality between favorites/subscriptions
 
 ### **Authentication**
 
@@ -39,11 +42,20 @@ For email notifications:
 
 ### Notifications
 
-- [ ] On login / first render, check /user/{id}/notifications array
-  - [ ] If not empty, pull info & display an overlay
-  - [ ] Show notification badge
+- [x] On login / first render, check /user/{id}/notifications array
+  - [x] If not empty, pull info & display an overlay
+  - [x] Show notification badge
 
 ### **GUI Improvements**
+
+- [ ] Search Page
+
+  - [ ] Fix responsiveness
+  - [ ] Fix modal for small screens
+
+- [ ] Search Bar
+
+  - [ ] Show "missing comedian? add here" option
 
 - [ ] Global Improvements
 
@@ -59,7 +71,7 @@ For email notifications:
   - [x] add Comedian info & other specials
   - [ ] separate name (small) from special title (large)
   - [ ] if date > today, show red banner
-  - [ ] hide "Years Ago" if 0
+  - [x] hide "Years Ago" if 0
 
 ## **Move from a static list of comedians to database entries**
 
