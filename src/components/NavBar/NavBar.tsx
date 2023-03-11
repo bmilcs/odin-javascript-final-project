@@ -1,22 +1,13 @@
-import { useAppSelector } from '@/app/hooks';
 import Button from '@/components/Button/Button';
-import { isUserSignedIn } from '@/features/userSlice/userSlice';
-import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
 import useOnClickOutside from '@/hooks/useClickOutside';
 import { useRef, useState } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
-import { MdClose, MdMenu, MdOutlineLogin } from 'react-icons/md';
+import { MdClose, MdMenu } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import './NavBar.scss';
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLUListElement>(null);
-  const isSignedIn = useAppSelector(isUserSignedIn);
-
-  const signIn = () => {
-    signUserInWithGooglePopup();
-  };
 
   const handleMenuClick = (e: React.MouseEvent<HTMLUListElement, MouseEvent>) => {
     if (e.target instanceof HTMLAnchorElement) setIsOpen(false);
@@ -50,25 +41,15 @@ function NavBar() {
             Favorites
           </Link>
         </li>
-
-        {isSignedIn ? (
-          <Button type='icon' onClick={() => signUserOutFromFirebase()}>
-            <FaUserCircle size={26} className='' />
-          </Button>
-        ) : (
-          <Button type='icon' onClick={() => signIn()}>
-            <MdOutlineLogin size={26} className='' />
-          </Button>
-        )}
       </ul>
 
-      <button className='nav__button' onClick={() => setIsOpen(!isOpen)}>
+      <Button type='icon' className='nav__button' onClick={() => setIsOpen(!isOpen)}>
         {isOpen ? (
-          <MdClose size={30} className='nav__icon nav__icon-open' />
+          <MdClose size={28} className='nav__icon nav__icon-open' />
         ) : (
-          <MdMenu size={30} className='nav__icon nav__icon-closed' />
+          <MdMenu size={28} className='nav__icon nav__icon-closed' />
         )}
-      </button>
+      </Button>
     </nav>
   );
 }

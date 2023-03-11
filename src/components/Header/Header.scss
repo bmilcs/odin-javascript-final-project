@@ -12,26 +12,42 @@
     align-items: center;
     gap: 0.25rem;
 
-    // from 525px to 1000px
-    // hamburger icon: far right
-    > :nth-child(2) {
-      order: 1;
+    .user__icons {
+      display: flex;
     }
 
-    // search bar: snuggled against hamburger menu
-    > :nth-child(4) {
+    // medium size screens
+    // user icons
+    > :nth-child(2) {
+      margin-left: auto;
+      order: 4;
+    }
+
+    // navbar
+    > :nth-child(3) {
+      order: 4;
+    }
+
+    // searchbar
+    > :nth-child(5) {
       margin-left: auto;
     }
 
     // small screens
-    @media (max-width: 525px) {
+    @media (max-width: 600px) {
       // search bar: 100% width
       flex-basis: 100%;
 
-      // move nav to original position
+      // navbar
+      > :nth-child(3) {
+        order: 0;
+      }
+
+      // user icons
       > :nth-child(2) {
         order: 0;
       }
+
       gap: 0.2rem;
     }
 
@@ -40,23 +56,27 @@
       flex-basis: 100%;
       width: 0;
 
-      @media (min-width: 525px) {
+      @media (min-width: 600px) {
         display: none;
       }
     }
 
     // large screens
     @media (min-width: 1000px) {
-      > :nth-child(2) {
+      // navbar
+      > :nth-child(3) {
         margin-left: auto;
       }
 
+      // user icons
       > :nth-child(2) {
-        order: 0;
+        order: 5;
       }
 
-      > :nth-child(4) {
-        margin-left: none;
+      // searchbar
+      > :nth-child(5) {
+        order: 6;
+        margin: 0;
       }
     }
   }
