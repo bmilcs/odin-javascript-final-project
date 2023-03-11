@@ -1,13 +1,32 @@
 .comedians {
+  // defaults & larger screen sizes
   &__header {
     margin-bottom: var(--header-spacing);
   }
 
   &__grid {
+    margin-bottom: var(--content-spacing);
+    gap: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     justify-content: baseline;
-    gap: 1rem;
-    margin-bottom: var(--content-spacing);
+  }
+
+  // smaller screens
+  @media (max-width: 500px) {
+    &__header {
+      text-align: center;
+    }
+
+    &__grid {
+      > * {
+        flex-grow: 1;
+        max-width: 160px;
+      }
+
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
   }
 }

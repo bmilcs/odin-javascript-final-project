@@ -1,9 +1,24 @@
 .comedian {
   display: grid;
-  grid-template-columns: min-content 1fr;
+  justify-items: center;
   gap: 2rem;
 
+  @media (min-width: 850px) {
+    grid-template-columns: min-content 1fr;
+  }
+
   margin-bottom: 2rem;
+
+  &__headshot {
+    max-width: 600px;
+    max-height: (max(40vh, 400px));
+    border-radius: var(--border-radius-200);
+  }
+
+  &__svg {
+    width: min(30vw, 300px);
+    aspect-ratio: 1/1;
+  }
 
   &__details > * {
     margin-bottom: 1rem;
@@ -15,16 +30,5 @@
 
   &__birthday {
     font-style: italic;
-  }
-
-  &__headshot {
-    max-width: 600px;
-    max-height: 50vh;
-    border-radius: var(--border-radius-200);
-  }
-
-  &__svg {
-    width: min(30vw, 300px);
-    aspect-ratio: 1/1;
   }
 }

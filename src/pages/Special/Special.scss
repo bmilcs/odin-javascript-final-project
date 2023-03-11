@@ -1,15 +1,14 @@
 .special {
-  // display: grid;
-  // grid-template-columns: 1fr 300px;
-
   > * {
     margin-bottom: 2rem;
   }
 
   &__portrait {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    @media (min-width: 775px) {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   &__image-portrait {
@@ -36,14 +35,24 @@
 
 .other__content {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  flex-wrap: wrap;
   gap: 1rem;
+
+  > :nth-child(1) {
+    justify-self: center;
+  }
+  // justify-items: center;
 
   &__header {
     margin-block: 2rem;
   }
 
-  .comedian-card {
-    height: fit-content;
+  @media (min-width: 775px) {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+
+    .comedian-card {
+      height: fit-content;
+    }
   }
 }
