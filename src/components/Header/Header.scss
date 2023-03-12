@@ -34,7 +34,7 @@
     }
 
     // small screens
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
       // search bar: 100% width
       flex-basis: 100%;
 
@@ -56,7 +56,7 @@
       flex-basis: 100%;
       width: 0;
 
-      @media (min-width: 600px) {
+      @media (min-width: 700px) {
         display: none;
       }
     }
@@ -91,7 +91,7 @@
     color: var(--clr-primary-200);
 
     &__text {
-      font-size: min(1.75rem, 6vw);
+      // font-size: min(1.75rem, 6vw);
 
       &__db {
         color: var(--clr-neutral-700);

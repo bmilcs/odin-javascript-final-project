@@ -1,5 +1,4 @@
-// @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&family=Special+Elite&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700;800&family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 //
 // josh w. comeau's css reset [modified]
@@ -61,8 +60,8 @@ h6 {
 }
 
 :root {
-  --ff-main: 'Roboto', sans-serif;
-  --ff-accent: 'Roboto Slab', serif;
+  --ff-main: 'Inter', sans-serif;
+  --ff-accent: 'Inter', sans-serif;
   --clr-neutral-900: #1a1b26;
   --clr-neutral-900-transparent: #1a1b26f0;
   --clr-neutral-800: #24283b;
@@ -73,7 +72,7 @@ h6 {
   --clr-neutral-200: #d4d6e0;
   --clr-neutral-100: #f1f2f7;
   --clr-primary-200: #bb9af7;
-  --clr-primary-200-transparent: #bb9af7aa;
+  --clr-primary-200-transparent: #bb9af777;
   --clr-primary-100: #a9b1d6;
   --clr-accent-100: #9ece6a;
   --clr-accent-200: #73daca;
@@ -116,27 +115,33 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--ff-main);
+  font-family: var(--ff-accent);
   line-height: 1;
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: min(3rem, 8vw);
+  font-weight: 800;
 }
 
 h2 {
-  font-weight: 900;
-  font-size: 2rem;
+  font-weight: 800;
+  font-size: min(2.25rem, 6vw);
 }
 
 h3 {
-  font-weight: 700;
-  font-size: 1.75rem;
+  font-weight: 800;
+  font-size: min(2rem, 5.5vw);
 }
 
 h4 {
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-weight: 400;
+  font-size: min(1.25rem, 3.5vw);
+}
+
+h5 {
+  font-weight: 800;
+  font-size: min(1rem, 3vw);
 }
 
 a,

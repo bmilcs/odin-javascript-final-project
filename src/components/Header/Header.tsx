@@ -22,9 +22,9 @@ function Header() {
         <Link to='/'>
           <div className='title'>
             {/* <GiMicrophone size={28} className="title__icon" /> */}
-            <h1 className='title__text'>
+            <h3 className='title__text'>
               comedy<span className='title__text__db'>db</span>
-            </h1>
+            </h3>
           </div>
         </Link>
 

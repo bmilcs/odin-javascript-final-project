@@ -7,11 +7,16 @@
 
   text-transform: uppercase;
   font-weight: bold;
+  font-size: min(1.25rem, 3.75vw);
 
   border: 0;
   outline: 0;
 
   transition: var(--transition-100);
+
+  &:hover {
+    cursor: pointer;
+  }
 
   &__standard {
     color: var(--clr-neutral-900);
