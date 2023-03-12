@@ -1,4 +1,5 @@
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
+import Hero from '@/components/Hero/Hero';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import {
   IComedian,
@@ -111,6 +112,8 @@ function Home() {
 
   return (
     <div className='column'>
+      <Hero />
+
       {latestSpecials && latestSpecials.length !== 0 && (
         <SpecialsGrid title='Latest Releases' data={latestSpecials} />
       )}

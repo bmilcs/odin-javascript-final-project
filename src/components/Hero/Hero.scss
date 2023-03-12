@@ -1,0 +1,41 @@
+.hero {
+  display: grid;
+  align-items: center;
+
+  min-height: 40vh;
+  margin-bottom: 2rem;
+  padding: 2rem;
+
+  color: var(--clr-primary-200);
+  // background: var(--clr-neutral-800);
+  background: linear-gradient(
+      var(--clr-neutral-900-transparent),
+      var(--clr-neutral-700-transparent)
+    ),
+    url('/src/assets/jeremy-thomas-E0AHdsENmDg-unsplash.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  border-radius: var(--border-radius-200);
+
+  &__button {
+    min-width: 20ch;
+    padding-block: 0.5rem;
+    font-weight: bolder;
+    font-family: var(--ff-accent);
+
+    @media (max-width: 500px) {
+      width: 100%;
+    }
+  }
+
+  h1 {
+    // font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  h4 {
+    color: var(--clr-neutral-200);
+    margin-bottom: 2rem;
+  }
+}
