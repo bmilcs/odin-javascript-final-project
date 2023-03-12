@@ -1,4 +1,5 @@
 import { useAppSelector } from '@/app/hooks';
+import GoogleImage from '@/assets/google-sign-in.png';
 import Button from '@/components/Button/Button';
 import { isUserSignedIn } from '@/features/userSlice/userSlice';
 import {
@@ -35,8 +36,13 @@ function LoginSignUp({ initialView }: TProps) {
     const [errorMessage, setErrorMessage] = useState('');
 
     const isMatchingPasswords = () => {
+      if (password.length < 8 || password2.length < 8) return;
       password !== password2 ? setErrorMessage('Mismatching passwords') : setErrorMessage('');
     };
+
+    useEffect(() => {
+      isMatchingPasswords();
+    }, [password, password2]);
 
     const handleSignUpAttempt = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -95,7 +101,6 @@ function LoginSignUp({ initialView }: TProps) {
               maxLength={25}
               onChange={(e) => {
                 setPassword(e.target.value);
-                isMatchingPasswords();
               }}
               value={password}
             />
@@ -112,7 +117,6 @@ function LoginSignUp({ initialView }: TProps) {
               maxLength={25}
               onChange={(e) => {
                 setPassword2(e.target.value);
-                isMatchingPasswords();
               }}
               value={password2}
             />
@@ -128,7 +132,7 @@ function LoginSignUp({ initialView }: TProps) {
         </form>
 
         <Button type='icon' onClick={() => googlePopUp()}>
-          <img src={'/src/assets/google-sign-in.png'} alt='' />
+          <img src={GoogleImage} alt='Google Login' />
         </Button>
       </div>
     );
@@ -192,7 +196,7 @@ function LoginSignUp({ initialView }: TProps) {
         </form>
 
         <Button type='icon' onClick={() => googlePopUp()}>
-          <img src={'/src/assets/google-sign-in.png'} alt='' />
+          <img src={GoogleImage} alt='Google Login' />
         </Button>
       </div>
     );
