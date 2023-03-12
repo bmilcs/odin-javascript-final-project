@@ -7,6 +7,7 @@ import Comedian from '@/pages/Comedian/Comedian';
 import Comedians from '@/pages/Comedians/Comedians';
 import Favorites from '@/pages/Favorites/Favorites';
 import Home from '@/pages/Home/Home';
+import LoginSignUp from '@/pages/LoginSignUp/LoginSignUp';
 import SearchResults from '@/pages/SearchResults/SearchResults';
 import Special from '@/pages/Special/Special';
 import Specials from '@/pages/Specials/Specials';
@@ -30,6 +31,8 @@ function App() {
           <Route path={'/specials/:specialId'} element={<Special />} />
           <Route path={'/favorites'} element={<Favorites />} />
           <Route path={'/search/:searchTerm'} element={<SearchResults />} />
+          <Route path={'/login'} element={<LoginSignUp initialView='login' />} />
+          <Route path={'/signup'} element={<LoginSignUp initialView='signup' />} />
         </Routes>
       </main>
 

@@ -4,16 +4,17 @@ import NavBar from '@/components/NavBar/NavBar';
 import NotificationIcon from '@/components/NotificationIcon/NotificationIcon';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { isUserSignedIn } from '@/features/userSlice/userSlice';
-import { signUserInWithGooglePopup, signUserOutFromFirebase } from '@/firebase/authentication';
+import { signUserOutFromFirebase } from '@/firebase/authentication';
 import { MdOutlineLogin, MdPerson } from 'react-icons/md';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Header.scss';
 
 function Header() {
+  const navigate = useNavigate();
   const isSignedIn = useAppSelector(isUserSignedIn);
 
   const signIn = () => {
-    signUserInWithGooglePopup();
+    navigate('/login');
   };
 
   return (

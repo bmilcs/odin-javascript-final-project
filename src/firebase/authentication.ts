@@ -7,8 +7,11 @@ import {
 } from '@/features/userSlice/userSlice';
 import {
   GoogleAuthProvider,
+  connectAuthEmulator,
+  createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
@@ -17,6 +20,12 @@ import { connectUserToDB } from './database';
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
+const mode = import.meta.env.VITE_MODE as 'dev' | 'prod';
+
+if (mode === 'dev') {
+  console.log('dev mode: auth emulator');
+  connectAuthEmulator(auth, 'http://localhost:8882');
+}
 
 // handle auth changes
 
@@ -27,14 +36,27 @@ onAuthStateChanged(auth, (user) => {
     store.dispatch(setUserEmail(user.email));
     store.dispatch(setUserName(user.displayName));
     connectUserToDB();
-    // console.log(user.toJSON());
   } else {
-    // user signed out
     store.dispatch(setUserAsSignedOut());
   }
 });
 
+export const createEmailUser = async (email: string, password: string, name: string) =>
+  await createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      store.dispatch(setUserName(name));
+    })
+    .catch((error) => {
+      throw error;
+    });
+
+export const signInEmailUser = async (email: string, password: string) =>
+  await signInWithEmailAndPassword(auth, email, password).catch((error) => {
+    throw error;
+  });
+
 export const signUserInWithGooglePopup = () => signInWithPopup(auth, provider);
+
 // .then((result) => {
 // if (result === null) throw Error('--> Google Signin failed.');
 // google access token: access the Google API
@@ -47,20 +69,15 @@ export const signUserInWithGooglePopup = () => signInWithPopup(auth, provider);
 // console.log(additionalInfo);
 // })
 // .catch((error) => {
-// Handle Errors here.
 // const errorCode = error.code;
 // const errorMessage = error.message;
-// // The email of the user's account used.
 // const email = error.customData.email;
 // // The AuthCredential type that was used.
 // const credential = GoogleAuthProvider.credentialFromError(error);
-// ...
 // });
 
 export const signUserOutFromFirebase = () => signOut(auth);
 // .then(() => {
-//   // Sign-out successful.
 // })
 // .catch((error) => {
-//   // An error happened.
 // });

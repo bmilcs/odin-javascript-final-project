@@ -76,6 +76,7 @@ h6 {
   --clr-primary-100: #a9b1d6;
   --clr-accent-100: #9ece6a;
   --clr-accent-200: #73daca;
+  --clr-accent-300: #da7373;
   --transition-100: all 0.2s ease-in-out;
   --transition-200: all 0.3s ease-in-out;
   --border-radius-100: 0.25rem;
@@ -101,6 +102,10 @@ body {
     max-width: 1280px;
     margin-inline: auto;
     padding-inline: 1rem;
+
+    &__fullheight {
+      min-height: 100%;
+    }
   }
 
   // maintain consistent spacing of main content
@@ -142,6 +147,10 @@ h4 {
 h5 {
   font-weight: 800;
   font-size: min(1rem, 3vw);
+}
+
+p {
+  color: var(--clr-neutral-200);
 }
 
 a,
