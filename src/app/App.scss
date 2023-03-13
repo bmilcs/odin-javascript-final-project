@@ -159,7 +159,18 @@ a:hover,
 a:active {
   text-decoration: none;
   font: inherit;
-  color: inherit;
+}
+
+a,
+a:visited {
+  font-weight: bold;
+  color: var(--clr-accent-200);
+}
+
+a:hover,
+a:active {
+  font-weight: bold;
+  color: var(--clr-neutral-200);
 }
 
 //
