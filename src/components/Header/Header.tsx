@@ -4,7 +4,6 @@ import NavBar from '@/components/NavBar/NavBar';
 import NotificationIcon from '@/components/NotificationIcon/NotificationIcon';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { isUserSignedIn } from '@/features/userSlice/userSlice';
-import { signUserOutFromFirebase } from '@/firebase/authentication';
 import { MdOutlineLogin, MdPerson } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.scss';
@@ -15,6 +14,10 @@ function Header() {
 
   const signIn = () => {
     navigate('/login');
+  };
+
+  const favorites = () => {
+    navigate('/favorites');
   };
 
   return (
@@ -33,7 +36,7 @@ function Header() {
           {isSignedIn ? (
             <>
               <NotificationIcon />
-              <Button type='icon' onClick={() => signUserOutFromFirebase()}>
+              <Button type='icon' onClick={() => favorites()}>
                 <MdPerson size={26} className='' />
               </Button>
             </>
