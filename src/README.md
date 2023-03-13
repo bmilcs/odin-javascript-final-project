@@ -36,9 +36,9 @@ For email notifications:
 ### **Authentication**
 
 - [ ] Add email authentication
-- [ ] Create sign up form
-- [ ] Create a login form
-- [ ] Make a toggle for logging into Google vs Email
+- [x] Create sign up form
+- [x] Create a login form
+- [x] Make a toggle for logging into Google vs Email
 
 ### Notifications
 
