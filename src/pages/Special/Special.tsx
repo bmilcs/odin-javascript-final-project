@@ -1,6 +1,7 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
+import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import {
   ISpecialPageComedianData,
@@ -60,30 +61,20 @@ function Special() {
       <>
         {specialData && (
           <>
-            {mainImageOrientation === 'landscape' && (
-              <div className='special'>
-                <div className='special__landscape'>
-                  {specialData && <SpecialMainImage data={specialData} />}
-                  {specialData && <SpecialInformation data={specialData} />}
-                </div>
+            <div className='special'>
+              <div
+                className={
+                  mainImageOrientation === 'landscape'
+                    ? 'special__landscape'
+                    : mainImageOrientation === 'portrait'
+                    ? 'special__portrait'
+                    : 'missing'
+                }
+              >
+                {specialData && <SpecialMainImage data={specialData} />}
+                {specialData && <SpecialInformation data={specialData} />}
               </div>
-            )}
-            {mainImageOrientation === 'portrait' && (
-              <div className='special'>
-                <div className='special__portrait'>
-                  {specialData && <SpecialMainImage data={specialData} />}
-                  {specialData && <SpecialInformation data={specialData} />}
-                </div>
-              </div>
-            )}
-            {mainImageOrientation === 'missing' && (
-              <div className='special'>
-                <div className='special__missing'>
-                  {specialData && <SpecialMainImage data={specialData} />}
-                  {specialData && <SpecialInformation data={specialData} />}
-                </div>
-              </div>
-            )}
+            </div>
           </>
         )}
 
@@ -163,6 +154,8 @@ function SpecialInformation({ data }: SpecialInformationProps) {
       {data.status && data.status !== 'Released' && (
         <p className='special__status'>{data.status}</p>
       )}
+
+      {data.id && <FavoriteIcon category='specials' data={data} />}
 
       {data.overview && <p className='special__overview'>{data.overview}</p>}
 
