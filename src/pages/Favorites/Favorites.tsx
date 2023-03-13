@@ -3,15 +3,24 @@ import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import { allComediansDataArr } from '@/features/allComediansSlice/allComediansSlice';
 import { allSpecialsDataArr, fetchAllSpecials } from '@/features/allSpecialsSlice/allSpecialsSlice';
-import { userFavorites } from '@/features/userSlice/userSlice';
+import { isUserSignedIn, userFavorites } from '@/features/userSlice/userSlice';
 import { IComedian, ISpecial } from '@/firebase/database';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Favorites.scss';
 
 // const userFavorites = useAppSelector((state) => state.user.favorites);
 
 function Favorites() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const isUserLoggedIn = useAppSelector(isUserSignedIn);
+
+  useEffect(() => {
+    if (isUserLoggedIn) return;
+    navigate('/login');
+  }, [isUserLoggedIn]);
+
   const allSpecials = useAppSelector(allSpecialsDataArr);
   const allComedians = useAppSelector(allComediansDataArr);
   const favorites = useAppSelector(userFavorites);

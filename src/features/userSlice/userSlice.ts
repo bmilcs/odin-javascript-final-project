@@ -87,6 +87,8 @@ export const userSlice = createSlice({
       state.isSignedIn = false;
       state.email = '';
       state.name = '';
+      state.favorites = [];
+      state.notifications = [];
     },
     logUserData: (state) => {
       console.log('name:', state.name);

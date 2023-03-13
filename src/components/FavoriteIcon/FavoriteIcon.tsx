@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import Button from '@/components/Button/Button';
 import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
 import {
   IComedian,
@@ -25,18 +26,24 @@ function FavoriteIcon({ category, data }: Props) {
   const isFavorite = favorites.includes(favoriteId);
 
   const handleToggleFavorite = () => {
+    if (!isUserLoggedIn) return;
+
     dispatch(toggleUserFavorite(favoriteId));
-    if (isUserLoggedIn) toggleUserFavoriteInDB({ favoriteId, data });
+    toggleUserFavoriteInDB({ favoriteId, data });
   };
 
   return (
-    <div className='heart' onClick={() => handleToggleFavorite()}>
-      {isFavorite ? (
-        <MdOutlineFavorite size={22} className='heart__full' />
+    <Button type='icon' className='heart' onClick={() => handleToggleFavorite()}>
+      {isUserLoggedIn ? (
+        isFavorite ? (
+          <MdOutlineFavorite size={22} className='heart__full' />
+        ) : (
+          <MdOutlineFavoriteBorder size={22} className='heart__empty' />
+        )
       ) : (
-        <MdOutlineFavoriteBorder size={22} className='heart__empty' />
+        <MdOutlineFavoriteBorder size={22} className='heart__empty-loggedout' />
       )}
-    </div>
+    </Button>
   );
 }
 

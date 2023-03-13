@@ -7,6 +7,10 @@
 
   &__empty {
     color: var(--clr-primary-200);
+
+    &-loggedout {
+      color: var(--clr-neutral-700);
+    }
   }
 
   &:hover {
