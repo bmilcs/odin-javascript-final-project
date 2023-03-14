@@ -1,16 +1,18 @@
-import { store } from '@/app/store';
 import {
   setUserAsSignedIn,
   setUserAsSignedOut,
   setUserEmail,
   setUserName,
-} from '@/features/userSlice/userSlice';
+  store,
+} from '@/app/store';
 import {
   GoogleAuthProvider,
+  browserLocalPersistence,
   connectAuthEmulator,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -27,7 +29,7 @@ if (mode === 'dev') {
   connectAuthEmulator(auth, 'http://localhost:8882');
 }
 
-// handle auth changes
+setPersistence(auth, browserLocalPersistence);
 
 onAuthStateChanged(auth, (user) => {
   const isSignedIn = user;
