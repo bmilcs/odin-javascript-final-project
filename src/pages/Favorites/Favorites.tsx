@@ -46,7 +46,6 @@ function Favorites() {
     const favoriteSpecialIds = favorites
       .filter((fav) => fav.includes('specials'))
       .map((special) => special.split('-')[1]);
-    if (favoriteSpecialIds.length === 0) return;
     const sorted = allSpecials
       .filter((special) => favoriteSpecialIds.includes(`${special.id}`))
       .sort((a, b) => (a.title > b.title ? 1 : -1));
@@ -58,7 +57,6 @@ function Favorites() {
     const favoriteComedianIds = favorites
       .filter((fav) => fav.includes('comedians'))
       .map((comedian) => comedian.split('-')[1]);
-    if (favoriteComedianIds.length === 0) return;
     const sorted = allComedians
       .filter((comedian) => favoriteComedianIds.includes(`${comedian.id}`))
       .sort((a, b) => (a.name > b.name ? 1 : -1));
@@ -76,10 +74,16 @@ function Favorites() {
         </p>
 
         {sortedComedians.length === 0 && (
-          <a href='/comedians'>Find your favorite comedians here.</a>
+          <Button type='text-only' onClick={() => navigate('/comedians')}>
+            Find your favorite comedians here.
+          </Button>
         )}
 
-        {sortedComedians.length === 0 && <a href='/specials'>Find your favorite specials here.</a>}
+        {sortedSpecials.length === 0 && (
+          <Button type='text-only' onClick={() => navigate('/specials')}>
+            Find your favorite specials here.
+          </Button>
+        )}
       </div>
 
       {sortedComedians.length !== 0 && (

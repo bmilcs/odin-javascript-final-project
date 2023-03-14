@@ -1,9 +1,11 @@
 .favorites__header {
   > * {
-    margin: 1rem;
+    margin-bottom: 1rem;
   }
 
-  a {
+  button {
     display: block;
+    color: var(--clr-accent-200);
+    font-weight: bold;
   }
 }

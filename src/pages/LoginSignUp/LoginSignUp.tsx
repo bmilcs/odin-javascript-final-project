@@ -126,9 +126,9 @@ function LoginSignUp({ initialView }: TProps) {
 
           <Button>Sign Up</Button>
 
-          <a className='swap__link' href='/login'>
+          <Button type='text-only' className='swap__link' onClick={() => navigate('/login')}>
             Already signed up? Login here.
-          </a>
+          </Button>
         </form>
 
         <Button type='icon' onClick={() => googlePopUp()}>
@@ -190,9 +190,9 @@ function LoginSignUp({ initialView }: TProps) {
 
           {errorMessage && <span className='error'>{errorMessage}</span>}
 
-          <a className='swap__link' href='/signup'>
+          <Button type='text-only' className='swap__link' onClick={() => navigate('/signup')}>
             Need an account? Sign up here.
-          </a>
+          </Button>
         </form>
 
         <Button type='icon' onClick={() => googlePopUp()}>
