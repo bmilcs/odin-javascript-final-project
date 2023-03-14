@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { allSpecialsDataArr, fetchAllSpecials } from '@/app/store';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
-import { allSpecialsDataArr, fetchAllSpecials } from '@/features/allSpecialsSlice/allSpecialsSlice';
 import { ISpecial } from '@/firebase/database';
 import { useEffect, useState } from 'react';
 import './Specials.scss';

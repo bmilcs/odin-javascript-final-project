@@ -1,7 +1,7 @@
 import { useAppSelector } from '@/app/hooks';
+import { isUserSignedIn } from '@/app/store';
 import GoogleImage from '@/assets/google-sign-in.png';
 import Button from '@/components/Button/Button';
-import { isUserSignedIn } from '@/features/userSlice/userSlice';
 import {
   createEmailUser,
   signInEmailUser,

@@ -1,9 +1,9 @@
 import { useAppSelector } from '@/app/hooks';
+import { isUserSignedIn } from '@/app/store';
 import Button from '@/components/Button/Button';
 import NavBar from '@/components/NavBar/NavBar';
 import NotificationIcon from '@/components/NotificationIcon/NotificationIcon';
 import SearchBar from '@/components/SearchBar/SearchBar';
-import { isUserSignedIn } from '@/features/userSlice/userSlice';
 import { MdOutlineLogin, MdPerson } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.scss';

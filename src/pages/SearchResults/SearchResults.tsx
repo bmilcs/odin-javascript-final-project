@@ -6,14 +6,10 @@ import {
   searchForPersonURL,
 } from '@/api/TMDB';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { allComedianIdsArr, allComediansDataArr, fetchAllComedians } from '@/app/store';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
-import {
-  allComedianIdsArr,
-  allComediansDataArr,
-  fetchAllComedians,
-} from '@/features/allComediansSlice/allComediansSlice';
 import { IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
 import useFetch from '@/hooks/useFetch';

@@ -3,6 +3,10 @@ import allSpecialsReducer from '@/features/allSpecialsSlice/allSpecialsSlice';
 import userReducer from '@/features/userSlice/userSlice';
 import { configureStore } from '@reduxjs/toolkit';
 
+export * from '@/features/allComediansSlice/allComediansSlice';
+export * from '@/features/allSpecialsSlice/allSpecialsSlice';
+export * from '@/features/userSlice/userSlice';
+
 export const store = configureStore({
   reducer: {
     user: userReducer,

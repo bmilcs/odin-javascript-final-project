@@ -1,8 +1,8 @@
 import { useAppDispatch } from '@/app/hooks';
+import { fetchAllComedians } from '@/app/store';
 import Footer from '@/components/Footer/Footer';
 import Header from '@/components/Header/Header';
 import ScrollToTop from '@/components/ScrollToTop/ScrollToTop';
-import { fetchAllComedians } from '@/features/allComediansSlice/allComediansSlice';
 import Comedian from '@/pages/Comedian/Comedian';
 import Comedians from '@/pages/Comedians/Comedians';
 import Favorites from '@/pages/Favorites/Favorites';
@@ -15,6 +15,7 @@ import { Route, Routes } from 'react-router-dom';
 import './App.scss';
 
 function App() {
+  // allComedians data is used for search bar autocomplete & /comedians page
   const dispatch = useAppDispatch();
   dispatch(fetchAllComedians());
 

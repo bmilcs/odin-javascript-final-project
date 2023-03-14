@@ -10,20 +10,20 @@ export const fetchAllComedians = createAsyncThunk('allComedians/fetchAllComedian
 export type allComediansState = {
   data: IComedian[];
   comedianIds: number[];
-  loading: 'idle' | 'pending' | 'succeeded' | 'failed';
+  isLoading: boolean;
 };
 
 const initialState: allComediansState = {
   data: [],
   comedianIds: [],
-  loading: 'pending',
+  isLoading: true,
 };
 
 export const allComediansSlice = createSlice({
   name: 'allComedians',
   initialState,
   reducers: {},
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder.addCase(fetchAllComedians.fulfilled, (state, action) => {
       const comediansMap = action.payload;
       if (!comediansMap) return;
@@ -38,9 +38,13 @@ export const allComediansSlice = createSlice({
 
       state.data = allComediansData;
       state.comedianIds = allComedianIds;
+      state.isLoading = false;
+    });
+    builder.addCase(fetchAllComedians.rejected, (state) => {
+      state.isLoading = false;
     });
     builder.addCase(fetchAllComedians.pending, (state) => {
-      state.loading = 'pending';
+      state.isLoading = true;
     });
   },
 });

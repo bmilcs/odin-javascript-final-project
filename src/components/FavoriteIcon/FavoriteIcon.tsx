@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/app/store';
 import Button from '@/components/Button/Button';
-import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/features/userSlice/userSlice';
 import {
   IComedian,
   IComedianPageSpecialOrAppearance,

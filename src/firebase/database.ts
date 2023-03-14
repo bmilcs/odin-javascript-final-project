@@ -1,15 +1,15 @@
-import { store } from '@/app/store';
 import {
   setUserEmail,
   setUserFavorites,
   setUserId,
   setUserName,
   setUserNotifications,
+  store,
   userEmail,
   userFavorites,
   userId,
   userName,
-} from '@/features/userSlice/userSlice';
+} from '@/app/store';
 import {
   DocumentData,
   DocumentReference,
@@ -148,7 +148,7 @@ const createNewUser = async () => {
     id,
     name,
     email,
-    favorites,
+    favorites: [],
     notifications: [],
   });
 };
@@ -165,15 +165,12 @@ const loadUserData = async (snapshot: DocumentSnapshot<DocumentData>) => {
   )
     return;
 
-  console.log('passed test');
   const { id, email, name, favorites, notifications } = userData;
   store.dispatch(setUserId(id));
   store.dispatch(setUserName(name));
   store.dispatch(setUserFavorites(favorites));
   store.dispatch(setUserEmail(email));
   store.dispatch(setUserNotifications(notifications));
-
-  // store.dispatch(logUserData());
 };
 
 //

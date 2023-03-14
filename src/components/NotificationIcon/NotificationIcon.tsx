@@ -1,7 +1,7 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { INotification, removeUserNotification } from '@/app/store';
 import Button from '@/components/Button/Button';
-import { INotification, removeUserNotification } from '@/features/userSlice/userSlice';
 import useOnClickOutside from '@/hooks/useClickOutside';
 import { useEffect, useRef, useState } from 'react';
 import { MdNotificationsActive, MdNotificationsNone } from 'react-icons/md';

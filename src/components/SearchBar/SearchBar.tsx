@@ -1,12 +1,12 @@
 import { getTMDBImageURL, parseSearchQuery } from '@/api/TMDB';
-import { RootState } from '@/app/store';
+import { useAppSelector } from '@/app/hooks';
+import { allComediansDataArr } from '@/app/store';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
 import { IComedian } from '@/firebase/database';
 import useOnClickOutside from '@/hooks/useClickOutside';
 import { useEffect, useRef, useState } from 'react';
 import { MdSearch } from 'react-icons/md';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import './SearchBar.scss';
 
@@ -16,17 +16,17 @@ function SearchBar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLInputElement>(null);
-
-  // NOTE: useAppSelector(), the prefer way to access redux toolkit state in TS,
-  // causes a dependency loop error. (store can't access allComediansReducer before it's initialized)
-  const allComediansData = useSelector((state: RootState) => state.allComedians.data);
+  const allComediansData = useAppSelector(allComediansDataArr);
 
   // when the input value changes
   useEffect(() => {
+    if (allComediansData.length === 0) return;
+
     if (!searchTerm || searchTerm.length < 1) {
       setFilteredComedians([]);
       return;
     }
+
     setFilteredComedians(
       allComediansData
         .filter((comedian) => {

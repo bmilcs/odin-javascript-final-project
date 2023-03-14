@@ -1,9 +1,15 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import {
+  allComediansDataArr,
+  allSpecialsDataArr,
+  fetchAllSpecials,
+  isUserSignedIn,
+  userFavorites,
+  userName,
+} from '@/app/store';
+import Button from '@/components/Button/Button';
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
-import { allComediansDataArr } from '@/features/allComediansSlice/allComediansSlice';
-import { allSpecialsDataArr, fetchAllSpecials } from '@/features/allSpecialsSlice/allSpecialsSlice';
-import { isUserSignedIn, userFavorites } from '@/features/userSlice/userSlice';
 import { IComedian, ISpecial } from '@/firebase/database';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -15,15 +21,16 @@ function Favorites() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isUserLoggedIn = useAppSelector(isUserSignedIn);
+  const allSpecials = useAppSelector(allSpecialsDataArr);
+  const allComedians = useAppSelector(allComediansDataArr);
+  const favorites = useAppSelector(userFavorites);
+  const name = useAppSelector(userName);
 
   useEffect(() => {
     if (isUserLoggedIn) return;
     navigate('/login');
   }, [isUserLoggedIn]);
 
-  const allSpecials = useAppSelector(allSpecialsDataArr);
-  const allComedians = useAppSelector(allComediansDataArr);
-  const favorites = useAppSelector(userFavorites);
   const [sortedSpecials, setSortedSpecials] = useState<ISpecial[]>([]);
   const [sortedComedians, setSortedComedians] = useState<IComedian[]>([]);
 
@@ -39,8 +46,9 @@ function Favorites() {
     const favoriteSpecialIds = favorites
       .filter((fav) => fav.includes('specials'))
       .map((special) => special.split('-')[1]);
+    if (favoriteSpecialIds.length === 0) return;
     const sorted = allSpecials
-      .filter((special) => favoriteSpecialIds.includes(special.id.toString()))
+      .filter((special) => favoriteSpecialIds.includes(`${special.id}`))
       .sort((a, b) => (a.title > b.title ? 1 : -1));
     setSortedSpecials(sorted);
   }, [allSpecials, favorites]);
@@ -50,18 +58,34 @@ function Favorites() {
     const favoriteComedianIds = favorites
       .filter((fav) => fav.includes('comedians'))
       .map((comedian) => comedian.split('-')[1]);
+    if (favoriteComedianIds.length === 0) return;
     const sorted = allComedians
-      .filter((comedian) => favoriteComedianIds.includes(comedian.id.toString()))
+      .filter((comedian) => favoriteComedianIds.includes(`${comedian.id}`))
       .sort((a, b) => (a.name > b.name ? 1 : -1));
     setSortedComedians(sorted);
   }, [allComedians, favorites]);
 
   return (
     <div className='column'>
-      {sortedComedians && sortedComedians.length !== 0 && (
+      <div className='favorites__header'>
+        <h3>{name}'s Favorites</h3>
+        <p>
+          To add comedians & their work to your favorites, browse the site and click on the heart
+          icons associated with the content you like. That's it! You can access your favorites later
+          by clicking on the "Favorites" or "Bookmarks" tab.
+        </p>
+
+        {sortedComedians.length === 0 && (
+          <a href='/comedians'>Find your favorite comedians here.</a>
+        )}
+
+        {sortedComedians.length === 0 && <a href='/specials'>Find your favorite specials here.</a>}
+      </div>
+
+      {sortedComedians.length !== 0 && (
         <ComedianGrid title='Favorite Comedians' data={sortedComedians} />
       )}
-      {sortedSpecials && sortedSpecials.length !== 0 && (
+      {sortedSpecials.length !== 0 && (
         <SpecialsGrid title='Favorite Specials' data={sortedSpecials} />
       )}
     </div>
