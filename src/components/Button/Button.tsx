@@ -4,7 +4,7 @@ interface Props {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void | Promise<void>;
-  type?: 'icon' | 'standard' | 'outline';
+  type?: 'icon' | 'standard' | 'outline' | 'text-only';
 }
 
 function Button({ children, className, onClick, type = 'standard' }: Props) {
@@ -16,7 +16,9 @@ function Button({ children, className, onClick, type = 'standard' }: Props) {
           ? 'button__standard'
           : type === 'outline'
           ? 'button__outline'
-          : 'button__icon'
+          : type === 'icon'
+          ? 'button__icon'
+          : 'button__text-only'
       }${className ? ` ${className}` : ''}`}
     >
       {children}

@@ -1,14 +1,4 @@
 .button {
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--border-radius-100);
-
-  display: grid;
-  place-items: center;
-
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: min(1.25rem, 3.75vw);
-
   border: 0;
   outline: 0;
 
@@ -16,6 +6,26 @@
 
   &:hover {
     cursor: pointer;
+  }
+
+  &__text-only {
+    background: none;
+    text-align: left;
+
+    &:hover {
+      color: var(--clr-accent-200);
+    }
+  }
+
+  &:not(&__text-only) {
+    display: grid;
+    place-items: center;
+
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: min(1.25rem, 3.75vw);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-100);
   }
 
   &__standard {
