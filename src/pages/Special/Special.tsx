@@ -135,17 +135,16 @@ function SpecialInformation({ data }: SpecialInformationProps) {
 
       {data.release_date && (
         <>
+          <p className='special__release_date'>{data.release_date}</p>
           {isNotReleasedYet ? (
             <p className='special__comingsoon'>Coming soon!</p>
           ) : (
             <p className='special__years_ago'>
-              Release:{' '}
               {yearsAgo === 0
-                ? 'Within the last year'
-                : `${yearsAgo} Year${yearsAgo > 1 && 's'} Ago`}
+                ? 'Less than a year old'
+                : `${yearsAgo} Year${yearsAgo > 1 && 's'} Old`}
             </p>
           )}
-          <p className='special__release_date'>{data.release_date}</p>
         </>
       )}
 
