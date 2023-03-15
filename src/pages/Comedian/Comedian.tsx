@@ -1,5 +1,7 @@
 import { getIMDBPersonURL, getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
+import Button from '@/components/Button/Button';
+import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import {
   IComedianPagePersonalData,
@@ -9,7 +11,7 @@ import {
 import { formatDateNumberOfYearsPassed, isDateOneBeforeDateTwo } from '@/utils/date';
 import { useEffect, useState } from 'react';
 import { FaImdb } from 'react-icons/fa';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './Comedian.scss';
 
 function Comedian() {
@@ -17,6 +19,7 @@ function Comedian() {
   const [personalData, setPersonalData] = useState<IComedianPagePersonalData>();
   const [specials, setSpecials] = useState<IComedianPageSpecialOrAppearance[]>();
   const [appearances, setAppearances] = useState<IComedianPageSpecialOrAppearance[]>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getDataFromDB = async () => {
@@ -75,13 +78,17 @@ function Comedian() {
                   visiting their themoviedb.org page and write one for them!
                 </p>
               )}
-              {personalData.imdb_id && (
-                <p className='comedian__imdb'>
-                  <a href={getIMDBPersonURL(personalData.imdb_id)}>
+              <div className='comedian__icons'>
+                <FavoriteIcon data={personalData} category='comedian' />
+                {personalData.imdb_id && (
+                  <Button
+                    type='icon'
+                    onClick={() => navigate(getIMDBPersonURL(personalData.imdb_id))}
+                  >
                     <FaImdb size={28} />
-                  </a>
-                </p>
-              )}
+                  </Button>
+                )}
+              </div>
             </div>
           </>
         )}

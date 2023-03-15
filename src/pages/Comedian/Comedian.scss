@@ -3,20 +3,24 @@
   justify-items: center;
   gap: 2rem;
 
-  @media (min-width: 850px) {
+  @media (min-width: 53.125rem) {
     grid-template-columns: min-content 1fr;
   }
 
   margin-bottom: 2rem;
 
   &__headshot {
-    max-width: 600px;
-    max-height: (max(40vh, 400px));
+    max-width: 37.5rem;
+    max-height: (max(40vh, 25rem));
     border-radius: var(--border-radius-200);
   }
 
+  &__icons {
+    display: flex;
+  }
+
   &__svg {
-    width: min(30vw, 300px);
+    width: min(30vw, 18.75rem);
     aspect-ratio: 1/1;
   }
 
