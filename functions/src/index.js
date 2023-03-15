@@ -54,10 +54,12 @@ exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
   // db.collection('specials')
   //   .doc('all')
   //   .update({
-  //     [1068114]: FieldValue.delete(),
+  //     1043110: FieldValue.delete(),
+  //     150879: FieldValue.delete(),
   //   })
-  //   .then(() => {
-  //     getNewSpecialsForAllComedians();
+  //   .then(async () => {
+  //     await getNewSpecialsForAllComedians();
+  //     console.log('test complete');
   //   });
   // return;
 
@@ -129,7 +131,7 @@ const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
 };
 
 //
-// update top favorite comedians & specials on a shedule
+// update top favorite comedians & specials on a schedule
 //
 
 exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRun(async () => {
@@ -184,84 +186,71 @@ exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRu
 // scheduled function: get new specials for all comedians
 //
 
-// for testing purposes:
-// const getNewSpecialsForAllComedians = async () => {
 exports.getNewSpecialsForAllComedians = functions.pubsub
   .schedule(maintenanceSchedule)
   .onRun(async () => {
-    const allComediansDocData = await getFirebaseDoc('comedians', 'all');
-    const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
-    const allComedianIds = Object.keys(allComediansDocData);
-    const allSpecialIds = Object.keys(allSpecialsDocData);
-    const allNewSpecials = [];
-
-    // forEach runs synchronous, which causes notification creation to fire
-    // immediately (before new specials have been fetched)
-    for (const comedianId of allComedianIds) {
-      // determine if the comedian has any missing specials
-      const specialsRawData = await fetchTmdbSpecialsData(comedianId);
-      const newSpecials = specialsRawData.filter((newSpecial) => {
-        let isNew = true;
-        allSpecialIds.forEach((existingSpecialId) => {
-          if (Number(newSpecial.id) === Number(existingSpecialId)) {
-            isNew = false;
-            return;
-          }
-        });
-        return isNew;
-      });
-
-      // if no new specials are available, stop here.
-      if (newSpecials.length === 0) return;
-
-      // comedian has new specials
-      try {
-        // get fresh data for the comedian's page
-        const comedianRawData = await fetchTmdbComedianData(comedianId);
-        console.log(`${comedianRawData.name} has ${newSpecials.length} new specials!`);
-
-        // add only new specials to /specials/all
-        // this prevents overwriting existing favorite counts (set to 0 on being added)
-        await addSpecialsToAllSpecialsDoc(newSpecials);
-
-        // add only new specials to .../upcoming and .../latest if applicable
-        // existing specials in the db have already been checked
-        await addSpecialsToLatestAndUpcomingSpecialsDocs(newSpecials);
-
-        // update /comedianPages/{comedianId}/
-        await addComedianPageDoc(comedianRawData, specialsRawData);
-
-        // update all /specialPages/ related to comedian
-        await addSpecialsPageDocs(comedianRawData, specialsRawData);
-
-        // all updates have been published for comedian
-        newSpecials.forEach((special) => {
-          allNewSpecials.push({ comedianRawData, special });
-        });
-
-        console.log(`Successfully updated with ${comedianRawData.name}'s new specials!`);
-      } catch (e) {
-        console.log(`Failed to add ${comedianRawData.name}'s new specials`);
-        console.error(e);
-      }
-    }
-
-    // database has been fully updated
-    if (allNewSpecials.length !== 0) await createAllUserNotifications(allNewSpecials);
-
-    return null;
+    await getNewSpecialsForAllComedians();
   });
-// }; // testing purposes
+
+const getNewSpecialsForAllComedians = async () => {
+  const allComediansDocData = await getFirebaseDoc('comedians', 'all');
+  const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
+  const allComedianIds = Object.keys(allComediansDocData);
+  const allExistingSpecialIds = Object.keys(allSpecialsDocData);
+
+  for (const comedianId of allComedianIds) {
+    const specialsRawData = await fetchTmdbSpecialsData(comedianId);
+    // determine if the comedian has any new specials
+    const newSpecials = specialsRawData.filter((newSpecial) => {
+      return allExistingSpecialIds.some(
+        (existingSpecialId) => Number(newSpecial.id) === Number(existingSpecialId),
+      )
+        ? false
+        : true;
+    });
+
+    // if no new specials are available, stop here.
+    if (newSpecials.length === 0) return;
+
+    // comedian has new specials
+    try {
+      // get fresh data for the comedian's page
+      const comedianRawData = await fetchTmdbComedianData(comedianId);
+      console.log(`${comedianRawData.name} has ${newSpecials.length} new specials!`);
+
+      // add only new specials to /specials/all
+      // this prevents overwriting existing favorite counts (set to 0 on being added)
+      await addSpecialsToAllSpecialsDoc(newSpecials);
+
+      // add only new specials to .../upcoming and .../latest if applicable
+      // existing specials in the db have already been checked
+      await addSpecialsToLatestAndUpcomingSpecialsDocs(newSpecials);
+
+      // update /comedianPages/{comedianId}/
+      await addComedianPageDoc(comedianRawData, specialsRawData);
+
+      // update all /specialPages/ related to comedian
+      await addSpecialsPageDocs(comedianRawData, specialsRawData);
+
+      // create notifications for all users who like this comedian
+      await createAllUserNotifications(comedianRawData, newSpecials);
+
+      console.log(`Successfully updated with ${comedianRawData.name}'s new specials!`);
+    } catch (e) {
+      console.log(`Failed to add ${comedianRawData.name}'s new specials`);
+      console.error(e);
+    }
+  }
+  return null;
+};
 
 //
 // notifications are created after fetching new specials data for all comedians
 // - stored in: /users/{uid}/notifications: []
 //
 
-const createAllUserNotifications = async (newSpecials) => {
-  newSpecials.forEach(async (special) => {
-    const specialRawData = special.special;
-    const comedianRawData = special.comedianRawData;
+const createAllUserNotifications = async (comedianRawData, newSpecials) => {
+  newSpecials.forEach(async (specialRawData) => {
     const comedianId = comedianRawData.id;
 
     // get all users subscribed to this comedian
@@ -287,20 +276,19 @@ const createAllUserNotifications = async (newSpecials) => {
 };
 
 const createUserNotification = async (userId, comedianRawData, specialRawData) => {
+  // console.log('Creating notification object');
   const notification = {
-    [specialRawData.id]: {
-      comedian: {
-        name: comedianRawData.name,
-        id: comedianRawData.id,
-        profile_path: comedianRawData.profile_path,
-      },
-      data: {
-        id: specialRawData.id,
-        title: specialRawData.title,
-        poster_path: specialRawData.poster_path,
-        backdrop_path: specialRawData.backdrop_path,
-        release_date: specialRawData.release_date,
-      },
+    comedian: {
+      name: comedianRawData.name,
+      id: comedianRawData.id,
+      profile_path: comedianRawData.profile_path,
+    },
+    data: {
+      id: specialRawData.id,
+      title: specialRawData.title,
+      poster_path: specialRawData.poster_path,
+      backdrop_path: specialRawData.backdrop_path,
+      release_date: specialRawData.release_date,
     },
   };
 
@@ -316,7 +304,7 @@ const createUserNotification = async (userId, comedianRawData, specialRawData) =
 // add comedian & their specials to the db: triggered by client
 //
 
-exports.addComedianAndSpecials = functions.https.onCall(async (data, context) => {
+exports.addComedianAndSpecials = functions.https.onCall(async (data) => {
   const { id } = data;
   if (!id) return;
 
