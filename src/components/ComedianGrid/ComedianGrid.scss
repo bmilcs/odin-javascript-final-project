@@ -8,12 +8,12 @@
     margin-bottom: var(--content-spacing);
     gap: 1rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
     justify-content: baseline;
   }
 
   // smaller screens
-  @media (max-width: 500px) {
+  @media (max-width: 31.25rem) {
     &__header {
       text-align: center;
     }
@@ -21,7 +21,7 @@
     &__grid {
       > * {
         flex-grow: 1;
-        max-width: 160px;
+        max-width: 10rem;
       }
 
       display: flex;

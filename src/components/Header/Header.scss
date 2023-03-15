@@ -34,7 +34,7 @@
     }
 
     // small screens
-    @media (max-width: 700px) {
+    @media (max-width: 43.75rem) {
       // search bar: 100% width
       flex-basis: 100%;
 
@@ -56,27 +56,32 @@
       flex-basis: 100%;
       width: 0;
 
-      @media (min-width: 700px) {
+      @media (min-width: 43.75rem) {
         display: none;
       }
     }
 
     // large screens
-    @media (min-width: 1000px) {
+    @media (min-width: 65.625rem) {
       // navbar
       > :nth-child(3) {
-        margin-left: auto;
+        margin: auto;
       }
 
       // user icons
       > :nth-child(2) {
         order: 5;
+        margin: 0;
       }
 
       // searchbar
       > :nth-child(5) {
         order: 6;
         margin: 0;
+      }
+
+      .nav__button {
+        display: none;
       }
     }
   }

@@ -30,7 +30,7 @@
   // small screen sizes
   //
 
-  @media (max-width: 1000px) {
+  @media (max-width: 65.625rem) {
     &__button {
       z-index: 1;
       cursor: pointer;
@@ -90,7 +90,7 @@
   // large screens
   //
 
-  @media (min-width: 1000px) {
+  @media (min-width: 65.625rem) {
     &__active,
     &__icon,
     &__button {
