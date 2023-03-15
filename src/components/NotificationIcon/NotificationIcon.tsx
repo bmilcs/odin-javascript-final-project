@@ -1,6 +1,7 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { INotification, removeUserNotification } from '@/app/store';
+import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
 import useOnClickOutside from '@/hooks/useClickOutside';
 import { useEffect, useRef, useState } from 'react';
@@ -59,11 +60,21 @@ function NotificationIcon() {
                   key={notification.data.id}
                   onClick={() => handleSpecialClick(notification.data.id)}
                 >
-                  <img
-                    className='notifications__img'
-                    src={getTMDBImageURL(notification.data.backdrop_path)}
-                    alt={notification.data.title}
-                  />
+                  {notification.data.backdrop_path ? (
+                    <img
+                      className='notifications__img'
+                      src={getTMDBImageURL(notification.data.backdrop_path)}
+                      alt={notification.data.title}
+                    />
+                  ) : notification.data.poster_path ? (
+                    <img
+                      className='notifications__img'
+                      src={getTMDBImageURL(notification.data.poster_path)}
+                      alt={notification.data.title}
+                    />
+                  ) : (
+                    <MicrophoneSVG />
+                  )}
                   <p className='notifications__title'>{notification.data.title}</p>
                 </li>
               );

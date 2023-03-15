@@ -6,14 +6,23 @@
 
 .notifications {
   --spacing: 0.75rem;
-  position: relative;
+  // position: relative;
 
   &__window {
     z-index: 10;
     position: absolute;
     top: calc(100% + 0.35rem);
-    right: 0;
+
+    @media (min-width: 65.625rem) {
+      right: 0;
+    }
+
+    @media (max-width: 65.625rem) {
+      transform: translateX(-50%);
+    }
+
     min-width: max-content;
+    max-width: 95vw;
 
     background: var(--clr-neutral-800);
     border-radius: var(--border-radius-100);
@@ -24,6 +33,10 @@
   h5 {
     padding: var(--spacing);
     background: var(--clr-neutral-800);
+  }
+
+  p {
+    font-size: min(1rem, 4vw);
   }
 
   &__li {
@@ -41,7 +54,7 @@
 
   &__img {
     max-width: 5vw;
-    max-height: 30px;
+    max-height: 1.875rem;
     object-fit: cover;
 
     border-radius: var(--border-radius-100);
