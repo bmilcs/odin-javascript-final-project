@@ -79,7 +79,7 @@ function Comedian() {
                 </p>
               )}
               <div className='comedian__icons'>
-                <FavoriteIcon data={personalData} category='comedian' />
+                <FavoriteIcon data={personalData} category='comedians' />
                 {personalData.imdb_id && (
                   <Button
                     type='icon'
