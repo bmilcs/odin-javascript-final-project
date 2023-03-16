@@ -29,13 +29,28 @@ For email notifications:
 - [ ] Setup another database collection for email notifications OR store the info in RAM to execute after fetching all specials
   - [ ] /notifications/pending/user-email: { specials: [] }
 
+Additional notifications:
+
+- [ ] Check release date of specials: if release date = today, send notification
+
+### Fix Appearances/Specials Overwriting One Another
+
+Some specials are incorrectly associated with a comedian from tmdb.
+
+Some specials have multiple comedians associated with them and their specialPages are overwritten with the last comedian to add the special page.
+
+- [ ] On creating specialPages, check if special page already exists
+  - [ ] If it does, add an additional comedian to it
+  - [ ] OR remove appearances altogether from the site
+    - [ ] Focus on main specials only
+
 ### Segment Favorites & Subscriptions
 
 - [ ] Clearly divide functionality between favorites/subscriptions
 
 ### **Authentication**
 
-- [ ] Add email authentication
+- [x] Add email authentication
 - [x] Create sign up form
 - [x] Create a login form
 - [x] Make a toggle for logging into Google vs Email

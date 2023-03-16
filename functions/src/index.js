@@ -1,4 +1,5 @@
 const functions = require('firebase-functions');
+const nodemailer = require('nodemailer');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { parseISO, isAfter } = require('date-fns');
@@ -6,6 +7,8 @@ const { parseISO, isAfter } = require('date-fns');
 initializeApp();
 const db = getFirestore();
 const API_KEY = functions.config().tmdb.key;
+const GMAIL_EMAIL = functions.config().gmail.email;
+const GMAIL_PASSWORD = functions.config().gmail.password;
 
 // fetch new specials for all comedians & update top favorite calculations
 const maintenanceSchedule = 'every 24 hours';
@@ -250,7 +253,7 @@ const getNewSpecialsForAllComedians = async () => {
 //
 
 const createAllUserNotifications = async (comedianRawData, newSpecials) => {
-  newSpecials.forEach(async (specialRawData) => {
+  await newSpecials.forEach(async (specialRawData) => {
     const comedianId = comedianRawData.id;
 
     // get all users subscribed to this comedian
@@ -264,19 +267,28 @@ const createAllUserNotifications = async (comedianRawData, newSpecials) => {
 
     const comedianSubscribersData = await comedianSubscribersDocResponse.data();
     const userIds = Object.keys(comedianSubscribersData);
+    const userEmails = Object.keys(comedianSubscribersData).reduce((prev, id) => {
+      return `${prev}${comedianSubscribersData[id].email},`;
+    }, '');
+
+    try {
+      await sendEmailNotification(userEmails, specialRawData, comedianRawData);
+    } catch (e) {
+      console.log(`Email notification fail: ${e}`);
+    }
 
     for (const uid of userIds) {
       try {
-        await createUserNotification(uid, comedianRawData, specialRawData);
+        await createFrontendUserNotification(uid, comedianRawData, specialRawData);
       } catch (e) {
-        console.error(`Unable to create notification for ${uid}\n${e}`);
+        console.error(`Unable to create front end notification for ${uid}\n${e}`);
       }
     }
   });
+  console.log('Successfully created frontend user notifications');
 };
 
-const createUserNotification = async (userId, comedianRawData, specialRawData) => {
-  // console.log('Creating notification object');
+const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
   const notification = {
     comedian: {
       name: comedianRawData.name,
@@ -298,6 +310,27 @@ const createUserNotification = async (userId, comedianRawData, specialRawData) =
     .update({
       notifications: FieldValue.arrayUnion(notification),
     });
+};
+
+// TODO: Create an aesthetic HTML/CSS e-mail notification
+const sendEmailNotification = async (emailList, specialRawData, comedianRawData) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
+  });
+
+  const message = {
+    from: GMAIL_EMAIL,
+    to: emailList,
+    subject: `${comedianRawData.name} released a new comedy special!`,
+    html: `<a href="https://comedy.bmilcs.com/specials/${specialRawData.id}"><h1>${
+      specialRawData.title
+    }</h1></a><img alt=${specialRawData.title} src=${getTMDBImageURL(
+      specialRawData.poster_path,
+    )} />`,
+  };
+
+  return await transporter.sendMail(message);
 };
 
 //
@@ -645,6 +678,10 @@ const fetchTmdbSpecialsData = async (comedianId) => {
   const specialsUrl = getAllSpecialsForPersonURL(comedianId);
   const { results: specialsData } = await fetchData(specialsUrl);
   return specialsData;
+};
+
+const getTMDBImageURL = (path) => {
+  return `https://image.tmdb.org/t/p/original/${path}`;
 };
 
 const getAllSpecialsForPersonURL = function (personId) {
