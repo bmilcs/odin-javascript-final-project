@@ -24,11 +24,6 @@ On a daily+ interval: run a scan on all comedians in the database
   - [x] If a new special by a favorite comedian is released:
   - [x] Add a db entry users/{id}/notifications: []
 
-For email notifications:
-
-- [ ] Setup another database collection for email notifications OR store the info in RAM to execute after fetching all specials
-  - [ ] /notifications/pending/user-email: { specials: [] }
-
 Additional notifications:
 
 - [ ] Check release date of specials: if release date = today, send notification
@@ -58,15 +53,19 @@ Some specials have multiple comedians associated with them and their specialPage
 ### Notifications
 
 - [x] On login / first render, check /user/{id}/notifications array
+
   - [x] If not empty, pull info & display an overlay
   - [x] Show notification badge
+
+- [x] Add email notifications
 
 ### **GUI Improvements**
 
 - [ ] Search Page
 
+  - [ ] Move add new comedian to registered users only
   - [ ] Fix responsiveness
-  - [ ] Fix modal for small screens
+  - [ ] Fix modal size
 
 - [ ] Search Bar
 

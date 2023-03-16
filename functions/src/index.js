@@ -52,64 +52,77 @@ const getLatestComediansData = async () => {
 // - updates content favorite count: /comedians/all/{comedianId}: favorites: +/-1; (or /specials/all)
 //
 
-exports.toggleUserFavorite = functions.https.onCall(async (data, context) => {
-  // for testing purposes:
-  // db.collection('specials')
-  //   .doc('all')
-  //   .update({
-  //     1043110: FieldValue.delete(),
-  //     150879: FieldValue.delete(),
-  //   })
-  //   .then(async () => {
-  //     await getNewSpecialsForAllComedians();
-  //     console.log('test complete');
-  //   });
-  // return;
+exports.toggleUserFavorite = functions
+  .runWith({
+    enforceAppCheck: true,
+  })
+  .https.onCall(async (data, context) => {
+    // for testing purposes:
+    // db.collection('specials')
+    //   .doc('all')
+    //   .update({
+    //     1043110: FieldValue.delete(),
+    //     150879: FieldValue.delete(),
+    //     654123: FieldValue.delete(),
+    //   })
+    //   .then(async () => {
+    //     await getNewSpecialsForAllComedians();
+    //     console.log('test complete');
+    //   });
+    // return;
 
-  const userId = context.auth.uid;
-  const userEmail = context.auth.token.email;
+    // app check w/ recaptcha v3
+    if (context.app == undefined) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'This function must be called from an App Check verified app.',
+      );
+    }
 
-  // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
-  const favoriteId = data.favoriteId;
-  const [category, tmdbId] = favoriteId.split('-');
+    const userId = context.auth.uid;
+    const userEmail = context.auth.token.email;
 
-  const userDocRef = db.collection('users').doc(userId);
-  const userDocResponse = await userDocRef.get();
-  const userDocData = userDocResponse.data();
-  const userDocFavoritesArr = userDocData.favorites;
+    // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
+    const favoriteId = data.favoriteId;
+    const [category, tmdbId] = favoriteId.split('-');
 
-  // /comedians/all or /specials/all
-  const contentAllDocRef = db.collection(category).doc('all');
+    const userDocRef = db.collection('users').doc(userId);
+    const userDocResponse = await userDocRef.get();
+    const userDocData = userDocResponse.data();
+    const userDocFavoritesArr = userDocData.favorites;
 
-  if (userDocFavoritesArr.includes(favoriteId)) {
-    // remove favorite from /users/.../favorites: []
-    userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
-    // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-    contentAllDocRef.set(
-      {
-        [tmdbId]: {
-          favorites: FieldValue.increment(-1),
+    // /comedians/all or /specials/all
+    const contentAllDocRef = db.collection(category).doc('all');
+
+    if (userDocFavoritesArr.includes(favoriteId)) {
+      // remove favorite from /users/.../favorites: []
+      userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
+      // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+      contentAllDocRef.set(
+        {
+          [tmdbId]: {
+            favorites: FieldValue.increment(-1),
+          },
         },
-      },
-      { merge: true },
-    );
+        { merge: true },
+      );
 
-    if (category === 'comedians') unsubscribeUserToComedian(userId, userEmail, tmdbId);
-  } else {
-    // add favorite from /users/.../favorites: []
-    userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
-    // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-    contentAllDocRef.set(
-      {
-        [tmdbId]: {
-          favorites: FieldValue.increment(1),
+      if (category === 'comedians') unsubscribeUserToComedian(userId, userEmail, tmdbId);
+    } else {
+      // add favorite from /users/.../favorites: []
+      userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
+      // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+      contentAllDocRef.set(
+        {
+          [tmdbId]: {
+            favorites: FieldValue.increment(1),
+          },
         },
-      },
-      { merge: true },
-    );
-    if (category === 'comedians') subscribeUserToComedian(userId, userEmail, tmdbId);
-  }
-});
+        { merge: true },
+      );
+      if (category === 'comedians') subscribeUserToComedian(userId, userEmail, tmdbId);
+    }
+  });
 
 const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
   console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
@@ -337,40 +350,52 @@ const sendEmailNotification = async (emailList, specialRawData, comedianRawData)
 // add comedian & their specials to the db: triggered by client
 //
 
-exports.addComedianAndSpecials = functions.https.onCall(async (data) => {
-  const { id } = data;
-  if (!id) return;
-
-  const specialsRawData = await fetchTmdbSpecialsData(id);
-  const comedianRawData = await fetchTmdbComedianData(id);
-
-  if (
-    !comedianRawData.id ||
-    comedianRawData.success === false ||
-    specialsRawData.success === false
-  ) {
-    throw new functions.https.HttpsError(
-      'Fail',
-      `Unable to add the comedian at this time. Something went wrong when fetching TMDB data for Person ID #${id}`,
-    );
-  }
-
-  return addComedianPageDoc(comedianRawData, specialsRawData)
-    .then(() => addSpecialsPageDocs(comedianRawData, specialsRawData))
-    .then(() => addComedianToAllComediansDoc(comedianRawData))
-    .then(() => addComedianToLatestComediansDoc(comedianRawData))
-    .then(() => addSpecialsToAllSpecialsDoc(specialsRawData))
-    .then(() => addSpecialsToLatestAndUpcomingSpecialsDocs(specialsRawData))
-    .catch((error) => {
-      console.log(error);
+exports.addComedianAndSpecials = functions
+  .runWith({
+    enforceAppCheck: true,
+  })
+  .https.onCall(async (data) => {
+    // app check w/ recaptcha v3
+    if (context.app == undefined) {
       throw new functions.https.HttpsError(
-        'Something went wrong while setting up the new comedian database entries.',
-        {
-          ...error,
-        },
+        'failed-precondition',
+        'This function must be called from an App Check verified app.',
       );
-    });
-});
+    }
+
+    const { id } = data;
+    if (!id) return;
+
+    const specialsRawData = await fetchTmdbSpecialsData(id);
+    const comedianRawData = await fetchTmdbComedianData(id);
+
+    if (
+      !comedianRawData.id ||
+      comedianRawData.success === false ||
+      specialsRawData.success === false
+    ) {
+      throw new functions.https.HttpsError(
+        'Fail',
+        `Unable to add the comedian at this time. Something went wrong when fetching TMDB data for Person ID #${id}`,
+      );
+    }
+
+    return addComedianPageDoc(comedianRawData, specialsRawData)
+      .then(() => addSpecialsPageDocs(comedianRawData, specialsRawData))
+      .then(() => addComedianToAllComediansDoc(comedianRawData))
+      .then(() => addComedianToLatestComediansDoc(comedianRawData))
+      .then(() => addSpecialsToAllSpecialsDoc(specialsRawData))
+      .then(() => addSpecialsToLatestAndUpcomingSpecialsDocs(specialsRawData))
+      .catch((error) => {
+        console.log(error);
+        throw new functions.https.HttpsError(
+          'Something went wrong while setting up the new comedian database entries.',
+          {
+            ...error,
+          },
+        );
+      });
+  });
 
 //
 // firestore: /comedianPages/{comedianId}/
