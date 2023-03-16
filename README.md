@@ -15,6 +15,7 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
   - `date-fns`
   - `sass`
   - `gh-pages`
+  - `node-mailer`
 
 ## Links
 
