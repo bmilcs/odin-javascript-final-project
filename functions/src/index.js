@@ -11,7 +11,7 @@ const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
 
 // fetch new specials for all comedians & update top favorite calculations
-const maintenanceSchedule = 'every 24 hours';
+const maintenanceSchedule = 'every 12 hours';
 
 //
 // db retrieval functions
@@ -205,7 +205,7 @@ exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRu
 exports.getNewSpecialsForAllComedians = functions.pubsub
   .schedule(maintenanceSchedule)
   .onRun(async () => {
-    await getNewSpecialsForAllComedians();
+    return await getNewSpecialsForAllComedians();
   });
 
 const getNewSpecialsForAllComedians = async () => {
@@ -354,7 +354,7 @@ exports.addComedianAndSpecials = functions
   .runWith({
     enforceAppCheck: true,
   })
-  .https.onCall(async (data) => {
+  .https.onCall(async (data, context) => {
     // app check w/ recaptcha v3
     if (context.app == undefined) {
       throw new functions.https.HttpsError(
