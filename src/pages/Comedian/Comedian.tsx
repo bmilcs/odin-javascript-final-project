@@ -1,6 +1,5 @@
 import { getIMDBPersonURL, getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
-import Button from '@/components/Button/Button';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import {
@@ -81,12 +80,9 @@ function Comedian() {
               <div className='comedian__icons'>
                 <FavoriteIcon data={personalData} category='comedians' />
                 {personalData.imdb_id && (
-                  <Button
-                    type='icon'
-                    onClick={() => navigate(getIMDBPersonURL(personalData.imdb_id))}
-                  >
-                    <FaImdb size={28} />
-                  </Button>
+                  <a href={getIMDBPersonURL(personalData.imdb_id)} target='_blank' rel='noreferrer'>
+                    <FaImdb size={26} />
+                  </a>
                 )}
               </div>
             </div>

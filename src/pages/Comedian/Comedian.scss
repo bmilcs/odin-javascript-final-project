@@ -35,4 +35,15 @@
   &__birthday {
     font-style: italic;
   }
+
+  &__icons {
+    display: flex;
+    align-content: center;
+
+    a {
+      padding: 0.25rem 0.5rem;
+      display: flex;
+      align-content: center;
+    }
+  }
 }
