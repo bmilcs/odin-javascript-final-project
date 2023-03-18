@@ -17,8 +17,12 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 
 ## Links
 
-- [Live Demo](https://bmilcs.com/odin-javascript-final-project)
+- [Live Demo](https://comedy.bmilcs.com)
 - [My Odin Project Progress](https://github.com/bmilcs/odin-project)
+
+> desktop: home (more screenshots available below)
+
+![Screenshot: Desktop home](screenshots/desktop_home.png)
 
 ## Summary
 
@@ -209,10 +213,6 @@ This project is far from perfect. The instructions provided by the Odin Project 
 > tablet: search bar
 
 ![Screenshot: Tablet searchbar](screenshots/tablet_searchbar.png)
-
-> desktop: home
-
-![Screenshot: Desktop home](screenshots/desktop_home.png)
 
 > desktop: comedian
 
