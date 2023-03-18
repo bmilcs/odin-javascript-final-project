@@ -27,6 +27,12 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
 
+declare global {
+  // eslint-disable-next-line no-var
+  var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
+}
+self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
 const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(RECAPTCHA_V3_SITE_KEY),
   isTokenAutoRefreshEnabled: true,
