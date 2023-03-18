@@ -10,6 +10,7 @@ import {
 import Button from '@/components/Button/Button';
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
+import { signUserOutFromFirebase } from '@/firebase/authentication';
 import { IComedian, ISpecial } from '@/firebase/database';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -70,17 +71,25 @@ function Favorites() {
         <p>
           To add comedians & their work to your favorites, browse the site and click on the heart
           icons associated with the content you like. That's it! You can access your favorites later
-          by clicking on the "Favorites" or "Bookmarks" tab.
+          by clicking on the "Favorites".
+        </p>
+        <p>
+          Any time a favorite comedian releases a new special, you will receive an e-mail
+          notification.
         </p>
 
+        <Button type='standard' onClick={() => signUserOutFromFirebase()}>
+          Log Out
+        </Button>
+
         {sortedComedians.length === 0 && (
-          <Button type='text-only' onClick={() => navigate('/comedians')}>
+          <Button type='text-only' className='link__button' onClick={() => navigate('/comedians')}>
             Find your favorite comedians here.
           </Button>
         )}
 
         {sortedSpecials.length === 0 && (
-          <Button type='text-only' onClick={() => navigate('/specials')}>
+          <Button type='text-only' className='link__button' onClick={() => navigate('/specials')}>
             Find your favorite specials here.
           </Button>
         )}
