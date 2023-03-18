@@ -11,10 +11,8 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
   - `@reduxjs/toolkit` (`@types/react-redux`)
   - `react-router-dom`
   - `react-icons` (`@types/react-icons`)
-  - `uuid` (`@types/uuid`)
   - `date-fns`
   - `sass`
-  - `gh-pages`
   - `node-mailer`
 
 ## Links
@@ -24,7 +22,103 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 
 ## Summary
 
-In progress...
+This project was a doozy with many painful lessons learned along the way. For my final JavaScript project, I opted to solve a problem that interests me. Standup comedy is a passion of mine and I wanted a way to stay on track of my favorite comedians' work. With the countless streaming platforms out there, it's challenging to stay up to date and not miss out when a comedian releases new a special.
+
+Standup comedy is a fairly small community, but I wanted users to be able to effortlessly add their favorite comedians to the site if missing from the database. In addition, e-mail notifications were a must. Nobody wants to check a website everyday for content that's released as infrequently as standup specials are. The most prolific comedians release a special once a year, but usually there are several years in between.
+
+## High Level Breakdown
+
+All content from the site is sourced from [TMDB (the movie database)](https://www.themoviedb.org/?language=en-US). My initial plan of fetching TMDB API data directly on the frontend didn't work out (explained below).
+
+On the frontend, users can search for comedians in the header of the page. If they don't exist, they're presented with TMDB person search results. After clicking on their image in the search results, a second API query fetches that person's "movie" releases and the results are filtered by the standup comedy keyword. If the standup keyword exists, the user is able to add them to the site:
+
+Using Firebase as my backend, a cloud function is invoked and it processes the fresh comedian personal data & special data from TMDB. It creates the following data structure:
+
+```sh
+#
+# FIREBASE FIRESTORE DB STRUCTURE
+#
+
+/comedianPages/{comedianId}/ # for comedian pages: personal data & all specials
+
+/comedianSubscribers/{comedianId} # for notifications: contains list of user id's/email addresses subscribed to a comedian
+
+/comedians/all/ # used for search, all comedians page & favorite count tracking
+/comedians/latest/ # used to track latest 10 comedians added to the site (by timestamp)
+/comedians/topFavorites/ # used to track top 10 of all user favorites
+
+
+/specialPages/{specialId} # for special pages: summary, comedian's info & other specials by comedian
+
+/specials/all/  # all specials page & favorite count tracking
+/specials/latest/ # latest 10 specials (by release date)
+/specials/topFavorites/ # top 10 user favorite specials
+/specials/upcoming/ # specials with a release_date > today
+
+
+```
+
+> Firebase uses NoSQL for their databases, which prefers de-normalized data. In other words, this concept calls calls for **data duplication** in order to limit the number of read calls and to optimize for read speed.
+
+I tried to lean out each database entry to fit the requirements needed for the frontend. For example, the latest comedians data was reduced to:
+
+- `id`: used for a data-attribute on the frontend: links to the `/comedians/109708` page
+- `name`: display on the front end
+- `profile_path`: displays on the frontend
+- `dateAdded`: for sorting by the frontend
+
+![Firestore Comedians Latest](screenshots/firestore_comedians_latest.png)
+
+If de-normalization wasn't utilized, retrieving a comedian's page would have required multiple TMDB API calls and extra data processing on the frontend. Instead, a single call to firestore yields a consistent, type-safe & leaned out set of data:
+
+![Firestore Comedian Pages](screenshots/firestore_comedianPages.png)
+
+## PubSub Scheduled Updates
+
+To retrieve new specials for comedians in the database, a function `getNewSpecialsForAllComedians()` is ran in the backend on a 12 hour interval.
+
+Specials are released very infrequently, so when one is found, the same utility functions responsible for creating the database structure on adding a new comedian are called. This way, older special pages by the same comedian are also re-created to contain a link to the comedian's new special.
+
+Due to de-normalization, the favorite count for the existing specials aren't lost. Favorite counts are stored in a separate db collection (`/specials/all`) and they're not affected on an update.
+
+## User Data & Notifications
+
+Users can favorite specials and comedians. They're stored in an array in the users collection: `/users/{userId}/favorites: []` by `category-tmdbId` (ie: `specials-1234567`, `comedians-123456`).
+
+When a comedian is added to a user's favorites, the user's id & email address are stored in another database collection `/comedianSubscribers/{comedianId}` and the comedian's favorite count is updated in `/comedians/all/`.
+
+User notifications were vital in this app. When new specials are found during the scheduled maintenance function call, all users who favorited the comedian (`/comedianSubscribers/{comedianId}`) receive the following:
+
+- An e-mail notification via `node-mailer` npm package
+- An update to their `/users/{userId}/notifications: []` array with the new special's data
+
+On the next login, the user's notification bell turns green and they're able to visit the new special's page.
+
+## Responsive Design
+
+Most of the page is fully responsive. The sticky header, in particular, is fairly complex and the order of the elements change depending on the viewport width.
+
+- Large screens: title > nav links > login icon > search bar
+- Medium screens: title > search bar > login icon > hamburger menu/drop down
+- Small screens: title > login icon > hamburger menu & full width search bar on the next line
+
+In order to get the search bar to move to a new line, a CSS trick was used:
+
+```jsx
+// used to break search bar on a new line
+<div className='break-column'></div>
+```
+
+```css
+.break-column {
+  flex-basis: 100%;
+  width: 0;
+
+  @media (min-width: 43.75rem) {
+    display: none;
+  }
+}
+```
 
 ## Challenges Overcame
 
@@ -68,17 +162,23 @@ Previous projects utilizing `react-router-dom` caused 404 errors when any path (
 
 The fix required adding a custom 404 page (`public/404.html`) and a script to my index.html (`src/index.html`).
 
-### "Specials" API Responses: Missing Comedian ID
+### API Limitations & Lack of Experience
 
-When directly visiting `/specials/{tmdbId}`, the id of the special is retrieved from the url via `useParams()`, which is then used to fetch the data from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work in a "View this comedian's other work" section.
+My initial strategy for this site was to use the TMDB api directly from the frontend. My vision for the search field was to query TMDB for people who have media containing the standup comedy keyword. Unfortunately, TMDB People Search API doesn't allow you to filter by anything other than the search query (person's name).
 
-> To be continued
+When directly visiting `/specials/{tmdbId}` on my site, the id of the special was retrieved from the url via `useParams()`, which then triggered a fetch from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work.
 
-### Adding New Comedians & TMDB People Search API
+These issues, among others, forced me to completely scrap my original plan.
 
-My goal for the search field on the site was to query TMDB for people who have media that contains the standup comedy keyword. Unfortunately, TMDB People Search API doesn't allow you to filter by anything other than the search query (person's name).
+## Future Plans & Ideas
 
-> To be continued
+This project is far from perfect. The instructions provided by the Odin Project said to get 80% of the way there, and I believe I accomplished that. Here are some things I'd like to accomplish in the future:
+
+- Clearly separate favorites from comedian subscriptions, so users can opt in/out of e-mail notifications
+- User settings page: change e-mail, password, etc.
+- Add podcast integrations & notifications: most comedians release podcasts on a regularly basis via YouTube, Spotify, etc.
+- Add frontend display variations: sliding carousels, decorative lists, animations, etc.
+- Add a user community: comments & messaging
 
 ## Screenshots
 
