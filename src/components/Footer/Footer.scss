@@ -1,4 +1,24 @@
 .footer {
   margin-top: auto;
+  padding: 0.5rem;
   background: var(--clr-neutral-800);
+
+  .column {
+    a {
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+
+      font-weight: normal;
+      color: var(--clr-neutral-200);
+
+      &:hover {
+        color: var(--clr-accent-200);
+      }
+
+      span {
+        font-weight: bold;
+      }
+    }
+  }
 }

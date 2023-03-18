@@ -22,7 +22,7 @@ Welcome to Bryan Miller's JavaScript Final Project, the [twenty third assignment
 
 ## Summary
 
-This project was a doozy with many painful lessons learned along the way. For my final JavaScript project, I opted to solve a problem that interests me. Standup comedy is a passion of mine and I wanted a way to stay on track of my favorite comedians' work. With the countless streaming platforms out there, it's challenging to stay up to date and not miss out when a comedian releases new a special.
+For my final JavaScript project, I opted to solve a problem that interests me. Standup comedy is a passion of mine and I wanted a way to stay on track of my favorite comedians' work. With the countless streaming platforms out there, it's challenging to stay up to date and not miss out when a comedian releases new a special.
 
 Standup comedy is a fairly small community, but I wanted users to be able to effortlessly add their favorite comedians to the site if missing from the database. In addition, e-mail notifications were a must. Nobody wants to check a website everyday for content that's released as infrequently as standup specials are. The most prolific comedians release a special once a year, but usually there are several years in between.
 
