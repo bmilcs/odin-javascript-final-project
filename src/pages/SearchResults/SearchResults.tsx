@@ -118,7 +118,7 @@ function SearchResults() {
                   The following comedians already exist in the database.
                 </p>
               </div>
-              <div className='searchpage__grid-existing'>
+              <div className='searchpage__grid'>
                 {existingComedians.map((comedian) => (
                   <ComedianCard data={comedian} key={comedian.id} />
                 ))}
@@ -130,7 +130,7 @@ function SearchResults() {
                 <h3 className='result__header__h3'>No Comedians Found</h3>
                 <p className='result__header__p'>We cannot find {term} in our database.</p>
               </div>
-              <div className='searchpage__grid-tmdb'>
+              <div className='searchpage__grid'>
                 {existingComedians.map((comedian) => (
                   <ComedianCard data={comedian} key={comedian.id} />
                 ))}
