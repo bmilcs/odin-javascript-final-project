@@ -8,6 +8,7 @@
   gap: 1rem;
 
   max-width: 25rem;
+  min-width: 300px;
 
   background: var(--clr-neutral-900);
   padding: 2rem;
@@ -17,9 +18,15 @@
     position: relative;
   }
 
-  &__image {
+  &__image,
+  &__svg {
     max-width: 100%;
     border-radius: var(--border-radius-200);
+  }
+
+  // fix name overlap: looks unappealing
+  &__svg {
+    padding-bottom: 4rem;
   }
 
   &__warning {
@@ -51,6 +58,19 @@
   &__grid {
     display: flex;
     gap: 1rem;
+  }
+
+  &__appearances,
+  &__specials {
+    h4 {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  &__found {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   &__not-comedian {

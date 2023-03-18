@@ -1,8 +1,8 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
-import SpecialsList from '@/components/SpecialsList/SpecialsList';
 import useFetchPersonalAndSpecialsData from '@/hooks/useFetchPersonalAndSpecialsData';
+import { BsCheckLg } from 'react-icons/bs';
 import './AddComedianModal.scss';
 
 function AddComedianModal({
@@ -36,15 +36,23 @@ function AddComedianModal({
         // person has a special or appearance
         <>
           {specials.length > 0 && (
-            <>
-              <h3>Specials</h3>
-              <SpecialsList data={specials} />
-            </>
+            <div className='modal__specials'>
+              <h4>Specials</h4>
+              <div className='modal__found'>
+                <BsCheckLg size={14} className='specials__li__bullet' />
+                <p>{specials.length} Specials Found!</p>
+              </div>
+            </div>
           )}
           {appearances.length > 0 && (
             <>
-              <h3>Appearances</h3>
-              <SpecialsList data={appearances} />
+              <div className='modal__appearances'>
+                <h4>Appearances</h4>
+                <div className='modal__found'>
+                  <BsCheckLg size={14} className='specials__li__bullet' />
+                  <p>{appearances.length} Appearances Found!</p>
+                </div>
+              </div>
             </>
           )}
 
