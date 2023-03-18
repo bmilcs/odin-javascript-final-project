@@ -539,10 +539,11 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
       },
     };
   }, {});
+
   const batch = db.batch();
   for (const special in specials) {
     const pageData = {
-      ...comedian,
+      comedian,
       ...specials[special],
     };
     const docRef = db.collection('specialPages').doc(special);
