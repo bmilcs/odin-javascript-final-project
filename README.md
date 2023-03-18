@@ -182,7 +182,45 @@ This project is far from perfect. The instructions provided by the Odin Project 
 
 ## Screenshots
 
-In progress...
+> mobile: home
+
+![Screenshot: Mobile home](screenshots/mobile_home.png)
+
+> mobile: special
+
+![Screenshot: Mobile special page](screenshots/mobile_comedian.png)
+
+> mobile: login
+
+![Screenshot: Mobile login](screenshots/mobile_login.png)
+
+> mobile: favorites
+
+![Screenshot: Mobile favorites page](screenshots/mobile_favorites.png)
+
+> mobile: add comedian modal
+
+![Screenshot: Mobile add comedian](screenshots/mobile_addcomedian.png)
+
+> tablet: notifications
+
+![Screenshot: Tablet notifications](screenshots/tablet_notifications.png)
+
+> tablet: search bar
+
+![Screenshot: Tablet searchbar](screenshots/tablet_searchbar.png)
+
+> desktop: home
+
+![Screenshot: Desktop home](screenshots/desktop_home.png)
+
+> desktop: comedian
+
+![Screenshot: Desktop comedian page](screenshots/desktop_comedian.png)
+
+> desktop: special
+
+![Screenshot: Desktop special page](screenshots/desktop_special.png)
 
 ## Deployment
 
