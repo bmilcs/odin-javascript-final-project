@@ -57,20 +57,6 @@ exports.toggleUserFavorite = functions
     enforceAppCheck: true,
   })
   .https.onCall(async (data, context) => {
-    // for testing purposes:
-    // db.collection('specials')
-    //   .doc('all')
-    //   .update({
-    //     1043110: FieldValue.delete(),
-    //     150879: FieldValue.delete(),
-    //     654123: FieldValue.delete(),
-    //   })
-    //   .then(async () => {
-    //     await getNewSpecialsForAllComedians();
-    //     console.log('test complete');
-    //   });
-    // return;
-
     // app check w/ recaptcha v3
     if (context.app == undefined) {
       throw new functions.https.HttpsError(
@@ -78,6 +64,22 @@ exports.toggleUserFavorite = functions
         'This function must be called from an App Check verified app.',
       );
     }
+
+    // testing purposes: new special retrieval w/ notifications
+    // db.collection('specials')
+    //   .doc('all')
+    //   .update({
+    //     1043110: FieldValue.delete(),
+    //     150879: FieldValue.delete(),
+    //     654123: FieldValue.delete(),
+    //     191489: FieldValue.delete(),
+    //     421854: FieldValue.delete(),
+    //   })
+    //   .then(async () => {
+    //     await getNewSpecialsForAllComedians();
+    //     console.log('test complete');
+    //   });
+    // return;
 
     const userId = context.auth.uid;
     const userEmail = context.auth.token.email;
@@ -345,6 +347,37 @@ const sendEmailNotification = async (emailList, specialRawData, comedianRawData)
 
   return await transporter.sendMail(message);
 };
+
+exports.deleteUserNotification = functions
+  .runWith({ enforceAppCheck: true })
+  .https.onCall(async (data, context) => {
+    // appcheck w/ recaptchav3
+    if (context.app == undefined) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'This function must be called from an App Check verified app.',
+      );
+    }
+
+    const userId = context.auth.uid;
+    const specialId = data.id;
+
+    try {
+      const userData = await getFirebaseDoc('users', userId);
+      const userNotifications = userData.notifications;
+
+      const updatedUserNotifications = userNotifications.filter(
+        (notification) => notification.data.id !== specialId,
+      );
+
+      return await db.collection('users').doc(userId).update({
+        notifications: updatedUserNotifications,
+      });
+    } catch (e) {
+      console.log('Unable to remove user notification');
+      console.log(e);
+    }
+  });
 
 //
 // add comedian & their specials to the db: triggered by client

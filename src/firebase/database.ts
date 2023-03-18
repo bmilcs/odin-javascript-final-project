@@ -148,7 +148,7 @@ const createNewUser = async () => {
     id,
     name,
     email,
-    favorites: [],
+    favorites,
     notifications: [],
   });
 };
@@ -279,23 +279,3 @@ export const getAllSpecialsFromDB = async () => {
     return docSnap.data() as ISpecialMap;
   }
 };
-
-//
-// standup specials related functions
-//
-
-// const allSpecials: number[] = [];
-// const allSpecialsDocRef = doc(db, 'specials', 'all');
-
-// export const getAllSpecialsFromDB = async () => {
-//   const docSnap = await getDoc(allSpecialsDocRef);
-
-//   if (docSnap.exists()) {
-//     const data = docSnap.data();
-
-//     for (const specialId of Object.keys(data)) {
-//       const tmdbId = Number.parseInt(specialId);
-//       if (!allSpecials.includes(tmdbId)) allSpecials.push(tmdbId);
-//     }
-//   }
-// };

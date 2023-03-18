@@ -15,3 +15,5 @@ if (mode === 'dev') {
 export const addComedianToDB = httpsCallable(functions, 'addComedianAndSpecials');
 
 export const toggleUserFavoriteInDB = httpsCallable(functions, 'toggleUserFavorite');
+
+export const deleteUserNotificationInDB = httpsCallable(functions, 'deleteUserNotification');

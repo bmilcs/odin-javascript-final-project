@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { INotification, removeUserNotification } from '@/app/store';
 import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
+import { deleteUserNotificationInDB } from '@/firebase/functions';
 import useOnClickOutside from '@/hooks/useClickOutside';
 import { useEffect, useRef, useState } from 'react';
 import { MdNotificationsActive, MdNotificationsNone } from 'react-icons/md';
@@ -34,6 +35,7 @@ function NotificationIcon() {
     navigate(`/specials/${specialId}`);
     setIsWindowOpen(false);
     dispatch(removeUserNotification(specialId));
+    deleteUserNotificationInDB({ id: specialId });
   };
 
   return (
