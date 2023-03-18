@@ -1,5 +1,3 @@
-import { getTMDBImageURL } from '@/api/TMDB';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Button from '@/components/Button/Button';
 import useFetchPersonalAndSpecialsData from '@/hooks/useFetchPersonalAndSpecialsData';
 import { BsCheckLg } from 'react-icons/bs';
@@ -16,21 +14,7 @@ function AddComedianModal({
 
   return (
     <div className='modal' onClick={(e) => e.stopPropagation()}>
-      {personalData && (
-        <div className='modal__personal'>
-          {personalData.profile_path ? (
-            <img
-              src={getTMDBImageURL(personalData.profile_path)}
-              alt={`${personalData.name} Headshot`}
-              className='modal__image'
-            />
-          ) : (
-            <MicrophoneSVG className='modal__image modal__svg' />
-          )}
-
-          <h4 className='modal__name'>{personalData.name}</h4>
-        </div>
-      )}
+      {personalData && <h3 className='modal__name'>{personalData.name}</h3>}
 
       {specials && appearances && personalData && personalData.name && specials.length !== 0 ? (
         // person has a special or appearance
@@ -39,7 +23,7 @@ function AddComedianModal({
             <div className='modal__specials'>
               <h4>Specials</h4>
               <div className='modal__found'>
-                <BsCheckLg size={14} className='specials__li__bullet' />
+                <BsCheckLg size={14} className='modal__found-bullet' />
                 <p>{specials.length} Specials Found!</p>
               </div>
             </div>
@@ -49,7 +33,7 @@ function AddComedianModal({
               <div className='modal__appearances'>
                 <h4>Appearances</h4>
                 <div className='modal__found'>
-                  <BsCheckLg size={14} className='specials__li__bullet' />
+                  <BsCheckLg size={14} className='modal__found-bullet' />
                   <p>{appearances.length} Appearances Found!</p>
                 </div>
               </div>

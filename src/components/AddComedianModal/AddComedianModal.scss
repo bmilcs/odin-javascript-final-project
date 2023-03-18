@@ -5,29 +5,14 @@
   transform: translate(-50%, -50%);
 
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
 
-  max-width: 25rem;
+  max-width: 400px;
   min-width: 300px;
 
   background: var(--clr-neutral-900);
   padding: 2rem;
   border-radius: var(--border-radius-200);
-
-  &__personal {
-    position: relative;
-  }
-
-  &__image,
-  &__svg {
-    max-width: 100%;
-    border-radius: var(--border-radius-200);
-  }
-
-  // fix name overlap: looks unappealing
-  &__svg {
-    padding-bottom: 4rem;
-  }
 
   &__warning {
     color: var(--clr-accent-200);
@@ -40,19 +25,8 @@
   }
 
   &__name {
-    position: absolute;
-    bottom: 0rem;
-    left: 0rem;
-
     text-align: center;
-
-    padding: 0.75rem 1rem;
-    width: 100%;
-
-    font-size: 1.25rem;
-    background: var(--clr-neutral-700);
-
-    border-radius: 0 0 var(--border-radius-200) var(--border-radius-200);
+    color: var(--clr-primary-200);
   }
 
   &__grid {
@@ -64,6 +38,7 @@
   &__specials {
     h4 {
       margin-bottom: 0.25rem;
+      font-weight: bold;
     }
   }
 
@@ -71,6 +46,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+
+    &-bullet {
+      color: var(--clr-accent-100);
+    }
   }
 
   &__not-comedian {

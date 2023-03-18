@@ -110,7 +110,7 @@ function SearchResults() {
       {/* display results of the search */}
       {!showError && !addComedianPending && (
         <>
-          {existingComedians.length !== 0 && (
+          {existingComedians.length !== 0 ? (
             <>
               <div className='result__header'>
                 <h3 className='result__header__h3'>Existing Comedians</h3>
@@ -118,10 +118,19 @@ function SearchResults() {
                   The following comedians already exist in the database.
                 </p>
               </div>
-              <div className='searchpage__grid'>
-                {/* TODO use firestore data. 
-                    Convert IPersonSearchResult > IComedian
-                */}
+              <div className='searchpage__grid-existing'>
+                {existingComedians.map((comedian) => (
+                  <ComedianCard data={comedian} key={comedian.id} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className='result__header'>
+                <h3 className='result__header__h3'>No Comedians Found</h3>
+                <p className='result__header__p'>We cannot find {term} in our database.</p>
+              </div>
+              <div className='searchpage__grid-tmdb'>
                 {existingComedians.map((comedian) => (
                   <ComedianCard data={comedian} key={comedian.id} />
                 ))}
@@ -165,7 +174,7 @@ function SearchResults() {
                       ) : (
                         <MicrophoneSVG className='comedian-card__image comedian-card__svg' />
                       )}
-                      <h3 className='searchpage__name'>{person.name}</h3>
+                      <h4 className='searchpage__name'>{person.name}</h4>
                     </div>
                   ))}
               </div>
