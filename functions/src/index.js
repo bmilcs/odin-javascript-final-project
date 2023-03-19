@@ -9,9 +9,24 @@ const db = getFirestore();
 const API_KEY = functions.config().tmdb.key;
 const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
-
 // fetch new specials for all comedians & update top favorite calculations
-const maintenanceSchedule = 'every 12 hours';
+const MAINTENANCE_SCHEDULE = 'every 12 hours';
+
+//
+// maintenance function calls
+//
+
+exports.updateDbAndIssueNotifications = functions.pubsub
+  .schedule(MAINTENANCE_SCHEDULE)
+  .onRun(async () => {
+    await updateDbAndIssueNotifications();
+    return null;
+  });
+
+exports.updateTopFavorites = functions.pubsub.schedule(MAINTENANCE_SCHEDULE).onRun(async () => {
+  await updateTopFavorites();
+  return null;
+});
 
 //
 // db retrieval functions
@@ -49,7 +64,7 @@ const getLatestComediansData = async () => {
 //
 // user favorite toggling
 // - updates personal favorites: /users/{userId}/favorites: [] array
-// - updates content favorite count: /comedians/all/{comedianId}: favorites: +/-1; (or /specials/all)
+// - updates content favorite count: /comedians/all/{comedianId} (or /specials/all): favorites: +/-1;
 //
 
 exports.toggleUserFavorite = functions
@@ -65,69 +80,60 @@ exports.toggleUserFavorite = functions
       );
     }
 
-    // testing purposes: new special retrieval w/ notifications
-    // db.collection('specials')
-    //   .doc('all')
-    //   .update({
-    //     1043110: FieldValue.delete(),
-    //     150879: FieldValue.delete(),
-    //     654123: FieldValue.delete(),
-    //     191489: FieldValue.delete(),
-    //     421854: FieldValue.delete(),
-    //   })
-    //   .then(async () => {
-    //     await getNewSpecialsForAllComedians();
-    //     console.log('test complete');
-    //   });
-    // return;
-
     const userId = context.auth.uid;
     const userEmail = context.auth.token.email;
+    const userDocRef = db.collection('users').doc(userId);
 
     // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
     const favoriteId = data.favoriteId;
     const [category, tmdbId] = favoriteId.split('-');
 
-    const userDocRef = db.collection('users').doc(userId);
-    const userDocResponse = await userDocRef.get();
-    const userDocData = userDocResponse.data();
-    const userDocFavoritesArr = userDocData.favorites;
+    try {
+      const userDocResponse = await userDocRef.get();
+      const userDocData = userDocResponse.data();
+      const userDocFavoritesArr = userDocData.favorites;
 
-    // /comedians/all or /specials/all
-    const contentAllDocRef = db.collection(category).doc('all');
+      // /comedians/all or /specials/all
+      const contentAllDocRef = db.collection(category).doc('all');
 
-    if (userDocFavoritesArr.includes(favoriteId)) {
-      // remove favorite from /users/.../favorites: []
-      userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
-      // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-      contentAllDocRef.set(
-        {
-          [tmdbId]: {
-            favorites: FieldValue.increment(-1),
+      if (userDocFavoritesArr.includes(favoriteId)) {
+        // remove favorite from /users/.../favorites: []
+        userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
+        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+        await contentAllDocRef.set(
+          {
+            [tmdbId]: {
+              favorites: FieldValue.increment(-1),
+            },
           },
-        },
-        { merge: true },
-      );
+          { merge: true },
+        );
 
-      if (category === 'comedians') unsubscribeUserToComedian(userId, userEmail, tmdbId);
-    } else {
-      // add favorite from /users/.../favorites: []
-      userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
-      // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-      contentAllDocRef.set(
-        {
-          [tmdbId]: {
-            favorites: FieldValue.increment(1),
+        if (category === 'comedians') await unsubscribeUserToComedian(userId, userEmail, tmdbId);
+      } else {
+        // add favorite from /users/.../favorites: []
+        userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
+        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+        await contentAllDocRef.set(
+          {
+            [tmdbId]: {
+              favorites: FieldValue.increment(1),
+            },
           },
-        },
-        { merge: true },
+          { merge: true },
+        );
+        if (category === 'comedians') await subscribeUserToComedian(userId, userEmail, tmdbId);
+      }
+    } catch (e) {
+      throw new functions.https.HttpsError(
+        'failed-favorite-toggle',
+        'User favorite toggle failed.',
       );
-      if (category === 'comedians') subscribeUserToComedian(userId, userEmail, tmdbId);
     }
   });
 
 const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
-  console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   comedianSubscribersDocRef.set(
     {
@@ -141,7 +147,7 @@ const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
 };
 
 const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
-  console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   comedianSubscribersDocRef.update({
     [userId]: FieldValue.delete(),
@@ -152,27 +158,9 @@ const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
 // update top favorite comedians & specials on a schedule
 //
 
-exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRun(async () => {
+const updateTopFavorites = async () => {
   const topComediansLimit = 10;
   const topSpecialsLimit = 10;
-
-  const getNewTopFavorites = (allComediansOrAllSpecialsDocData, favoriteCountLimit) => {
-    return Object.keys(allComediansOrAllSpecialsDocData)
-      .map((id) => {
-        const data = allComediansOrAllSpecialsDocData[id];
-        return { ...data };
-      })
-      .sort((a, b) => (a.favorites < b.favorites ? 1 : -1))
-      .splice(0, favoriteCountLimit)
-      .reduce((prev, curr) => {
-        return {
-          ...prev,
-          [curr.id]: {
-            ...curr,
-          },
-        };
-      }, {});
-  };
 
   const comediansAllDocData = await getFirebaseDoc('comedians', 'all');
   const specialsAllDocData = await getFirebaseDoc('specials', 'all');
@@ -196,28 +184,43 @@ exports.updateTopFavorites = functions.pubsub.schedule(maintenanceSchedule).onRu
           console.log(e);
         }),
     );
+};
 
-  return null;
-});
+const getNewTopFavorites = (allComediansOrAllSpecialsDocData, favoriteCountLimit) => {
+  return Object.keys(allComediansOrAllSpecialsDocData)
+    .map((id) => {
+      const data = allComediansOrAllSpecialsDocData[id];
+      return { ...data };
+    })
+    .sort((a, b) => (a.favorites < b.favorites ? 1 : -1))
+    .splice(0, favoriteCountLimit)
+    .reduce((prev, curr) => {
+      return {
+        ...prev,
+        [curr.id]: {
+          ...curr,
+        },
+      };
+    }, {});
+};
 
 //
 // scheduled function: get new specials for all comedians
+// - create frontend user notifications
+// - send email notifications
 //
 
-exports.getNewSpecialsForAllComedians = functions.pubsub
-  .schedule(maintenanceSchedule)
-  .onRun(async () => {
-    return await getNewSpecialsForAllComedians();
-  });
-
-const getNewSpecialsForAllComedians = async () => {
+const updateDbAndIssueNotifications = async () => {
   const allComediansDocData = await getFirebaseDoc('comedians', 'all');
   const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
   const allComedianIds = Object.keys(allComediansDocData);
   const allExistingSpecialIds = Object.keys(allSpecialsDocData);
 
+  console.log('Getting new specials');
+
   for (const comedianId of allComedianIds) {
     const specialsRawData = await fetchTmdbSpecialsData(comedianId);
+
     // determine if the comedian has any new specials
     const newSpecials = specialsRawData.filter((newSpecial) => {
       return allExistingSpecialIds.some(
@@ -251,7 +254,7 @@ const getNewSpecialsForAllComedians = async () => {
       await addSpecialsPageDocs(comedianRawData, specialsRawData);
 
       // create notifications for all users who like this comedian
-      await createAllUserNotifications(comedianRawData, newSpecials);
+      await issueAllUserNotifications(comedianRawData, newSpecials);
 
       console.log(`Successfully updated with ${comedianRawData.name}'s new specials!`);
     } catch (e) {
@@ -259,7 +262,6 @@ const getNewSpecialsForAllComedians = async () => {
       console.error(e);
     }
   }
-  return null;
 };
 
 //
@@ -267,7 +269,7 @@ const getNewSpecialsForAllComedians = async () => {
 // - stored in: /users/{uid}/notifications: []
 //
 
-const createAllUserNotifications = async (comedianRawData, newSpecials) => {
+const issueAllUserNotifications = async (comedianRawData, newSpecials) => {
   await newSpecials.forEach(async (specialRawData) => {
     const comedianId = comedianRawData.id;
 
@@ -275,13 +277,15 @@ const createAllUserNotifications = async (comedianRawData, newSpecials) => {
     const comedianSubscribersDocRef = db
       .collection('comedianSubscribers')
       .doc(comedianId.toString());
+
     const comedianSubscribersDocResponse = await comedianSubscribersDocRef.get();
 
     // if no users are subscribed to this comedian, stop here.
     if (!comedianSubscribersDocResponse.exists) return;
 
     const comedianSubscribersData = await comedianSubscribersDocResponse.data();
-    const userIds = Object.keys(comedianSubscribersData);
+
+    // issue e-mail notifications
     const userEmails = Object.keys(comedianSubscribersData).reduce((prev, id) => {
       return `${prev}${comedianSubscribersData[id].email},`;
     }, '');
@@ -291,6 +295,9 @@ const createAllUserNotifications = async (comedianRawData, newSpecials) => {
     } catch (e) {
       console.log(`Email notification fail: ${e}`);
     }
+
+    // create frontend user notifications
+    const userIds = Object.keys(comedianSubscribersData);
 
     for (const uid of userIds) {
       try {
@@ -327,7 +334,6 @@ const createFrontendUserNotification = async (userId, comedianRawData, specialRa
     });
 };
 
-// TODO: Create an aesthetic HTML/CSS e-mail notification
 const sendEmailNotification = async (emailList, specialRawData, comedianRawData) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -380,7 +386,7 @@ exports.deleteUserNotification = functions
   });
 
 //
-// add comedian & their specials to the db: triggered by client
+// add new comedian & their specials to the db: triggered by client
 //
 
 exports.addComedianAndSpecials = functions
@@ -443,6 +449,8 @@ const addComedianPageDoc = (comedianRawData, specialsRawData) => {
     birthday: comedianRawData.birthday,
     imdb_id: comedianRawData.imdb_id,
   };
+
+  // content is categorized by "special" and "appearance"
   const categorizedContent = specialsRawData.reduce(
     (prev, special) => {
       if (isSpecial(comedianRawData.name, special.title)) {
@@ -479,10 +487,12 @@ const addComedianPageDoc = (comedianRawData, specialsRawData) => {
     },
     { specials: {}, appearances: {} },
   );
+
   const pageData = {
     personalData: { ...comedian },
     ...categorizedContent,
   };
+
   const comedianId = comedianRawData.id;
   return db.collection('comedianPages').doc(comedianId.toString()).set(pageData);
 };
@@ -499,10 +509,10 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
   };
 
   const specials = specialsRawData.reduce((prev, special, index) => {
-    // each special page features the details of the special
-    // and provides links to other specials by the same comedian
+    // each special page features the details of the targeted special
+    // and provides links to the comedian & other content by the same comedian
 
-    const otherSpecialsByComedian = specialsRawData
+    const otherContentByComedian = specialsRawData
       .filter((x, i) => i !== index)
       .map((other) => {
         return {
@@ -535,7 +545,7 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
           ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
           ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
         },
-        otherContent: otherSpecialsByComedian,
+        otherContent: otherContentByComedian,
       },
     };
   }, {});
@@ -549,6 +559,7 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
     const docRef = db.collection('specialPages').doc(special);
     batch.set(docRef, pageData);
   }
+
   return await batch.commit();
 };
 
@@ -565,6 +576,7 @@ const addComedianToAllComediansDoc = (comedianRawData) => {
       favorites: 0,
     },
   };
+
   return db.collection('comedians').doc('all').set(comedian, { merge: true });
 };
 
@@ -586,6 +598,7 @@ const addSpecialsToAllSpecialsDoc = (specialsRawData) => {
       },
     };
   }, {});
+
   return db.collection('specials').doc('all').set(specials, { merge: true });
 };
 
@@ -603,11 +616,16 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
       dateAdded: FieldValue.serverTimestamp(),
     },
   };
+
+  // if no latest comedians exist, return empty obj
   let latestComedians = await getLatestComediansData().catch(() => {
     return {};
   });
+
   latestComedians = { ...latestComedians, ...comedian };
+
   const latestTenComedians = reduceLatestCountToNum(latestComedians, 10, 'dateAdded');
+
   return db.collection('comedians').doc('latest').set(latestTenComedians);
 };
 
@@ -629,18 +647,22 @@ const addSpecialsToLatestAndUpcomingSpecialsDocs = async (specialsRawData) => {
       },
     };
   }, {});
+
   let latest = await getLatestSpecialsData().catch(() => {
     return {};
   });
+
   let upcoming = await getUpcomingSpecialsData().catch(() => {
     return {};
   });
+
   // for each special, check the dateField
   // - if not released yet, add to /specials/upcoming
   // - if newer than one of the latest 10, add to /specials/latest
   for (const specialId in specials) {
     const specialData = specials[specialId];
     const isNotReleasedYet = isSpecialNotOutYet(specialData);
+
     if (isNotReleasedYet) {
       upcoming = {
         ...upcoming,
@@ -656,7 +678,9 @@ const addSpecialsToLatestAndUpcomingSpecialsDocs = async (specialsRawData) => {
       }
     }
   }
+
   const latestTenSpecials = reduceLatestCountToNum(latest, 10, 'release_date');
+
   return db
     .collection('specials')
     .doc('latest')
@@ -708,9 +732,11 @@ const isSpecialALatestRelease = (special, latestSpecialsObj) => {
 // limit the results to "num"
 const reduceLatestCountToNum = (dataObj, num, dateField) => {
   const array = [];
+
   for (const data in dataObj) {
     array.push(dataObj[data]);
   }
+
   return array
     .sort((a, b) => {
       const aDate = parseISO(a[dateField]);

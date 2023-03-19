@@ -79,11 +79,13 @@ If de-normalization wasn't utilized, retrieving a comedian's page would have req
 
 ## PubSub Scheduled Updates
 
-To retrieve new specials for comedians in the database, a function `getNewSpecialsForAllComedians()` is ran in the backend on a 12 hour interval.
+To retrieve new specials for comedians in the database, a function `updateDbAndIssueNotifications()` is ran in the backend on a 12 hour interval.
 
 Specials are released very infrequently, so when one is found, the same utility functions responsible for creating the database structure on adding a new comedian are called. This way, older special pages by the same comedian are also re-created to contain a link to the comedian's new special.
 
 Due to de-normalization, the favorite count for the existing specials aren't lost. Favorite counts are stored in a separate db collection (`/specials/all`) and they're not affected on an update.
+
+Another function,`updateTopFavorites()` is called on a schedule. This determines the top ten favorited specials & comedians. I chose to separate this from user favorite toggling because of the excessive reads, writes & calculations required. Every time a user toggles a favorite, the total favorite count is updated in `/comedians/all/` and `/users/{userId}/favorites`. Having to compare all specials/comedian's favorite count and then updating `/comedians/topFavorites` every time a user clicked a heart didn't make sense from a cost perspective.
 
 ## User Data & Notifications
 
@@ -192,7 +194,7 @@ This project is far from perfect. The instructions provided by the Odin Project 
 
 > mobile: special
 
-![Screenshot: Mobile special page](screenshots/mobile_comedian.png)
+![Screenshot: Mobile special page](screenshots/mobile_special.png)
 
 > mobile: login
 
