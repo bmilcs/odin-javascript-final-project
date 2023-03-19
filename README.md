@@ -126,6 +126,37 @@ In order to get the search bar to move to a new line, a CSS trick was used:
 }
 ```
 
+## Emulation & Dev/Production Modes
+
+Firebase emulation suite was used heavily in the development of this app. In order to toggle between production & development modes, I used an environmental variable:
+
+```bash
+# dev | prod
+VITE_MODE=prod
+```
+
+When set to `dev`, conditional statements in `/src/firebase/` files launch the emulators:
+
+```ts
+// authentication.ts
+if (mode === 'dev') {
+  console.log('dev mode: auth emulator');
+  connectAuthEmulator(auth, 'http://localhost:8882');
+}
+
+// database.ts
+if (mode === 'dev') {
+  console.log('dev mode: connecting firestore emulator');
+  connectFirestoreEmulator(db, 'localhost', 8880);
+}
+
+// functions.ts
+if (mode === 'dev') {
+  console.log('dev mode: connecting function emulator');
+  connectFunctionsEmulator(functions, 'localhost', 8881);
+}
+```
+
 ## Challenges Overcame
 
 ### Async Thunk & Circular Dependencies Issue
@@ -172,7 +203,7 @@ The fix required adding a custom 404 page (`public/404.html`) and a script to my
 
 My initial strategy for this site was to use the TMDB api directly from the frontend. My vision for the search field was to query TMDB for people who have media containing the standup comedy keyword. Unfortunately, TMDB People Search API doesn't allow you to filter by anything other than the search query (person's name).
 
-When directly visiting `/specials/{tmdbId}` on my site, the id of the special was retrieved from the url via `useParams()`, which then triggered a fetch from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work.
+When directly visiting `/specials/{tmdbId}` on my site, the id of the special was originally retrieved from the url via `useParams()`, which then triggered a fetch from TMDB. However, the TMDB Discovery API's response doesn't contain the comedian's ID. This presented a problem: if a user directly visits a standup special URL, the app wouldn't be able to fetch the comedian's information & other work.
 
 These issues, among others, forced me to completely scrap my original plan.
 
@@ -234,6 +265,38 @@ cd javascript-final-project
 # install all dependencies
 npm install
 
+# copy .env-example to .env
+cp .env-example .env
+```
+
+Fill out the `.env` variables:
+
+```sh
+# .env
+
+# run mode:
+# "dev": firebase emulation
+# "prod": production, live database
+VITE_MODE=dev
+
+# themoviedb.org api
+VITE_TMDB_API_KEY=XXX
+
+# firebase api config settings
+VITE_FIREBASE_API_KEY=XXX
+VITE_FIREBASE_AUTH_DOMAIN=XXX
+VITE_FIREBASE_PROJECT_ID=XXX
+VITE_FIREBASE_STORAGE_BUCKET=XXX
+VITE_FIREBASE_MESSAGING_SENDER_ID=XXX
+VITE_FIREBASE_APP_ID=XXX
+VITE_FIREBASE_MEASUREMENT_ID=XXX
+
+# recaptcha v3 key (app check)
+VITE_RECAPTCHA_V3_SITE_KEY=XXX
+VITE_RECAPTCHA_V3_DEBUG_TOKEN=XXX
+```
+
+```sh
 # run app
 npm start
 ```
