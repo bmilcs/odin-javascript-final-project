@@ -3,6 +3,8 @@ import { getAnalytics } from 'firebase/analytics';
 import { initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
+const mode = import.meta.env.VITE_MODE as 'dev' | 'prod';
+
 // firebase configuration
 
 const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
@@ -31,7 +33,10 @@ declare global {
   // eslint-disable-next-line no-var
   var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
 }
-self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+if (mode === 'dev') {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
 
 const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(RECAPTCHA_V3_SITE_KEY),
