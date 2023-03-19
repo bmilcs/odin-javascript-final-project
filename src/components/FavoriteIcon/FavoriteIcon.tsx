@@ -8,6 +8,7 @@ import {
   ISpecialPageComedianData,
 } from '@/firebase/database';
 import { toggleUserFavoriteInDB } from '@/firebase/functions';
+import { useState } from 'react';
 import { MdOutlineFavorite, MdOutlineFavoriteBorder } from 'react-icons/md';
 import './FavoriteIcon.scss';
 
@@ -20,16 +21,25 @@ function FavoriteIcon({ category, data }: Props) {
   const dispatch = useAppDispatch();
   const isUserLoggedIn = useAppSelector(isUserSignedIn);
   const favorites = useAppSelector(userFavorites);
+  const [isPending, setIsPending] = useState(false);
 
   // favorites are classified by category-id in /users/.../favorites: []
   const favoriteId = `${category}-${data.id}`;
   const isFavorite = favorites.includes(favoriteId);
 
-  const handleToggleFavorite = () => {
-    if (!isUserLoggedIn) return;
+  const handleToggleFavorite = async () => {
+    if (!isUserLoggedIn || isPending) return;
 
+    setIsPending(true);
     dispatch(toggleUserFavorite(favoriteId));
-    toggleUserFavoriteInDB({ favoriteId, data });
+
+    try {
+      await toggleUserFavoriteInDB({ favoriteId, data });
+    } catch (e) {
+      console.log(e);
+    }
+
+    setIsPending(false);
   };
 
   return (
