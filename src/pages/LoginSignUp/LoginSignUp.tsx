@@ -95,7 +95,7 @@ function LoginSignUp({ initialView }: TProps) {
             <input
               type='password'
               id='password'
-              placeholder='*******'
+              placeholder='password'
               required
               minLength={8}
               maxLength={25}
@@ -111,7 +111,7 @@ function LoginSignUp({ initialView }: TProps) {
             <input
               type='password'
               id='password2'
-              placeholder='*******'
+              placeholder='password'
               required
               minLength={8}
               maxLength={25}
@@ -176,7 +176,7 @@ function LoginSignUp({ initialView }: TProps) {
             <input
               type='password'
               id='password'
-              placeholder='*******'
+              placeholder='password'
               required
               minLength={8}
               maxLength={25}

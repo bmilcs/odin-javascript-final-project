@@ -82,7 +82,7 @@ function SearchBar() {
           type='text'
           id='search-input'
           className='search-input'
-          placeholder='Bill Burr'
+          placeholder='comedian name'
           autoComplete='off'
           minLength={3}
           maxLength={64}
