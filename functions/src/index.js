@@ -216,9 +216,9 @@ const updateDbAndIssueNotifications = async () => {
   const allComedianIds = Object.keys(allComediansDocData);
   const allExistingSpecialIds = Object.keys(allSpecialsDocData);
 
-  console.log('Getting new specials');
+  console.log('Updating DB & Issuing Notifications');
 
-  for (const comedianId of allComedianIds) {
+  allComedianIds.forEach(async (comedianId) => {
     const specialsRawData = await fetchTmdbSpecialsData(comedianId);
 
     // determine if the comedian has any new specials
@@ -237,7 +237,7 @@ const updateDbAndIssueNotifications = async () => {
     try {
       // get fresh data for the comedian's page
       const comedianRawData = await fetchTmdbComedianData(comedianId);
-      console.log(`${comedianRawData.name} has ${newSpecials.length} new specials!`);
+      console.log(`--> ${comedianRawData.name} has ${newSpecials.length} new specials!`);
 
       // add only new specials to /specials/all
       // this prevents overwriting existing favorite counts (set to 0 on being added)
@@ -256,12 +256,12 @@ const updateDbAndIssueNotifications = async () => {
       // create notifications for all users who like this comedian
       await issueAllUserNotifications(comedianRawData, newSpecials);
 
-      console.log(`Successfully updated with ${comedianRawData.name}'s new specials!`);
+      console.log(`--> Successfully updated with ${comedianRawData.name}'s new specials!`);
     } catch (e) {
-      console.log(`Failed to add ${comedianRawData.name}'s new specials`);
+      console.log(`--> Failed to add ${comedianRawData.name}'s new specials`);
       console.error(e);
     }
-  }
+  });
 };
 
 //
@@ -307,7 +307,7 @@ const issueAllUserNotifications = async (comedianRawData, newSpecials) => {
       }
     }
   });
-  console.log('Successfully created frontend user notifications');
+  console.log('--> Successfully created frontend user notifications');
 };
 
 const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
