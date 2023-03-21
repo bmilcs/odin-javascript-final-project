@@ -1,19 +1,19 @@
-const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
+const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { parseISO, isAfter } = require('date-fns');
 
 initializeApp();
 const db = getFirestore();
+
 const API_KEY = functions.config().tmdb.key;
 const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
-// fetch new specials for all comedians & update top favorite calculations
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
 
 //
-// maintenance function calls
+// maintenance
 //
 
 exports.updateDbAndIssueNotifications = functions.pubsub
@@ -29,185 +29,8 @@ exports.updateTopFavorites = functions.pubsub.schedule(MAINTENANCE_SCHEDULE).onR
 });
 
 //
-// db retrieval functions
-//
-
-const getFirebaseDoc = async (collection, doc) => {
-  return db
-    .collection(collection)
-    .doc(doc)
-    .get()
-    .then((document) => {
-      if (!(document && document.exists)) throw Error(`--> /${collection}/${doc} doesn't exist`);
-      return document.data();
-    })
-    .then((data) => {
-      return { ...data };
-    });
-};
-
-// retrieve "specials/latest" doc
-const getLatestSpecialsData = async () => {
-  return getFirebaseDoc('specials', 'latest');
-};
-
-// retrieve "/specials/latest" doc
-const getUpcomingSpecialsData = async () => {
-  return getFirebaseDoc('specials', 'upcoming');
-};
-
-// retrieve "/comedians/latest" doc
-const getLatestComediansData = async () => {
-  return getFirebaseDoc('comedians', 'latest');
-};
-
-//
-// user favorite toggling
-// - updates personal favorites: /users/{userId}/favorites: [] array
-// - updates content favorite count: /comedians/all/{comedianId} (or /specials/all): favorites: +/-1;
-//
-
-exports.toggleUserFavorite = functions
-  .runWith({
-    enforceAppCheck: true,
-  })
-  .https.onCall(async (data, context) => {
-    // app check w/ recaptcha v3
-    if (context.app == undefined) {
-      throw new functions.https.HttpsError(
-        'failed-precondition',
-        'This function must be called from an App Check verified app.',
-      );
-    }
-
-    const userId = context.auth.uid;
-    const userEmail = context.auth.token.email;
-    const userDocRef = db.collection('users').doc(userId);
-
-    // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
-    const favoriteId = data.favoriteId;
-    const [category, tmdbId] = favoriteId.split('-');
-
-    try {
-      const userDocResponse = await userDocRef.get();
-      const userDocData = userDocResponse.data();
-      const userDocFavoritesArr = userDocData.favorites;
-
-      // /comedians/all or /specials/all
-      const contentAllDocRef = db.collection(category).doc('all');
-
-      if (userDocFavoritesArr.includes(favoriteId)) {
-        // remove favorite from /users/.../favorites: []
-        userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
-        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-        await contentAllDocRef.set(
-          {
-            [tmdbId]: {
-              favorites: FieldValue.increment(-1),
-            },
-          },
-          { merge: true },
-        );
-
-        if (category === 'comedians') await unsubscribeUserToComedian(userId, userEmail, tmdbId);
-      } else {
-        // add favorite from /users/.../favorites: []
-        userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
-        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
-        await contentAllDocRef.set(
-          {
-            [tmdbId]: {
-              favorites: FieldValue.increment(1),
-            },
-          },
-          { merge: true },
-        );
-        if (category === 'comedians') await subscribeUserToComedian(userId, userEmail, tmdbId);
-      }
-    } catch (e) {
-      throw new functions.https.HttpsError(
-        'failed-favorite-toggle',
-        'User favorite toggle failed.',
-      );
-    }
-  });
-
-const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
-  // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
-  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
-  comedianSubscribersDocRef.set(
-    {
-      [userId]: {
-        id: userId,
-        email: userEmail,
-      },
-    },
-    { merge: true },
-  );
-};
-
-const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
-  // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
-  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
-  comedianSubscribersDocRef.update({
-    [userId]: FieldValue.delete(),
-  });
-};
-
-//
-// update top favorite comedians & specials on a schedule
-//
-
-const updateTopFavorites = async () => {
-  const topComediansLimit = 10;
-  const topSpecialsLimit = 10;
-
-  const comediansAllDocData = await getFirebaseDoc('comedians', 'all');
-  const specialsAllDocData = await getFirebaseDoc('specials', 'all');
-
-  const updatedTopComediansData = getNewTopFavorites(comediansAllDocData, topComediansLimit);
-  const updatedTopSpecialsData = getNewTopFavorites(specialsAllDocData, topSpecialsLimit);
-
-  db.collection('comedians')
-    .doc('topFavorites')
-    .set(updatedTopComediansData)
-    .then(() =>
-      db
-        .collection('specials')
-        .doc('topFavorites')
-        .set(updatedTopSpecialsData)
-        .then(() => {
-          console.log('Successfully updated top favorites');
-        })
-        .catch((e) => {
-          console.log('Failed to update top favorites.');
-          console.log(e);
-        }),
-    );
-};
-
-const getNewTopFavorites = (allComediansOrAllSpecialsDocData, favoriteCountLimit) => {
-  return Object.keys(allComediansOrAllSpecialsDocData)
-    .map((id) => {
-      const data = allComediansOrAllSpecialsDocData[id];
-      return { ...data };
-    })
-    .sort((a, b) => (a.favorites < b.favorites ? 1 : -1))
-    .splice(0, favoriteCountLimit)
-    .reduce((prev, curr) => {
-      return {
-        ...prev,
-        [curr.id]: {
-          ...curr,
-        },
-      };
-    }, {});
-};
-
-//
-// scheduled function: get new specials for all comedians
-// - create frontend user notifications
-// - send email notifications
+// scheduled function call: gets new specials for all comedians,
+// creates frontend user notifications & sends email notifications
 //
 
 const updateDbAndIssueNotifications = async () => {
@@ -215,99 +38,130 @@ const updateDbAndIssueNotifications = async () => {
   const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
   const allComedianIds = Object.keys(allComediansDocData);
   const allExistingSpecialIds = Object.keys(allSpecialsDocData);
+  const allNewSpecials = [];
 
-  console.log('Updating DB & Issuing Notifications');
+  // promises allow us to execute all db updates first and then issue updates
+  // a traditional forEach loop executes & doesn't wait for async code to run
+  const updateDbWithNewSpecials = allComedianIds.reduce(async (accumulatorPromise, comedianId) => {
+    return accumulatorPromise.then(() => {
+      return updateDbWithAComediansNewSpecials(comedianId, allExistingSpecialIds).then(
+        (newSpecials) => {
+          if (!newSpecials) return;
+          newSpecials.forEach((newSpecial) => allNewSpecials.push(newSpecial));
+        },
+      );
+    });
+  }, Promise.resolve());
 
-  allComedianIds.forEach(async (comedianId) => {
-    const specialsRawData = await fetchTmdbSpecialsData(comedianId);
+  console.log('--> Updating DB');
+
+  return updateDbWithNewSpecials
+    .then(() => {
+      console.log('--> Successfully updated DB');
+      // email & frontend notifications are issued together to reduce db reads
+      issueAllUserNotifications(allNewSpecials);
+    })
+    .then(() => {
+      console.log('--> Successfully issued notifications\n--> Update complete!');
+    });
+};
+
+// resolves with null if no new specials are present OR an array
+// of { comedianData, specialData } for each new special found
+const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) => {
+  return new Promise(async (resolve, reject) => {
+    const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
 
     // determine if the comedian has any new specials
-    const newSpecials = specialsRawData.filter((newSpecial) => {
-      return allExistingSpecialIds.some(
-        (existingSpecialId) => Number(newSpecial.id) === Number(existingSpecialId),
-      )
-        ? false
-        : true;
+    const missingSpecialsRawData = fetchedSpecialsRawData.filter((fetchedSpecial) => {
+      return !allExistingSpecialIds.some(
+        (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
+      );
     });
 
-    // if no new specials are available, stop here.
-    if (newSpecials.length === 0) return;
+    const hasNoNewSpecials = missingSpecialsRawData.length === 0;
+    if (hasNoNewSpecials) return resolve(null);
 
-    // comedian has new specials
+    // comedian has new specials:
     try {
       // get fresh data for the comedian's page
       const comedianRawData = await fetchTmdbComedianData(comedianId);
-      console.log(`--> ${comedianRawData.name} has ${newSpecials.length} new specials!`);
 
       // add only new specials to /specials/all
-      // this prevents overwriting existing favorite counts (set to 0 on being added)
-      await addSpecialsToAllSpecialsDoc(newSpecials);
+      // this prevents overwriting existing favorite counts (set to 0 when added)
+      await addSpecialsToAllSpecialsDoc(missingSpecialsRawData);
 
       // add only new specials to .../upcoming and .../latest if applicable
       // existing specials in the db have already been checked
-      await addSpecialsToLatestAndUpcomingSpecialsDocs(newSpecials);
+      await addSpecialsToLatestOrUpcomingSpecialsDocs(missingSpecialsRawData);
 
       // update /comedianPages/{comedianId}/
-      await addComedianPageDoc(comedianRawData, specialsRawData);
+      await addComedianPageDoc(comedianRawData, fetchedSpecialsRawData);
 
       // update all /specialPages/ related to comedian
-      await addSpecialsPageDocs(comedianRawData, specialsRawData);
+      await addSpecialsPageDocs(comedianRawData, fetchedSpecialsRawData);
 
-      // create notifications for all users who like this comedian
-      await issueAllUserNotifications(comedianRawData, newSpecials);
+      console.log(
+        `--> ${comedianRawData.name} updated: ${missingSpecialsRawData.length} new special(s)!`,
+      );
 
-      console.log(`--> Successfully updated with ${comedianRawData.name}'s new specials!`);
+      // addedSpecials are used to issue notifications from the parent function call
+      const addedSpecials = missingSpecialsRawData.map((special) => {
+        return { specialRawData: special, comedianRawData };
+      });
+
+      return resolve(addedSpecials);
     } catch (e) {
-      console.log(`--> Failed to add ${comedianRawData.name}'s new specials`);
-      console.error(e);
+      console.log(`--> ERROR: ${comedianRawData.name}'s new specials NOT updated.`);
+      return reject(e);
     }
   });
 };
 
 //
-// notifications are created after fetching new specials data for all comedians
+// notifications are created after new specials are found (via updateDbAndIssueNotifications())
 // - stored in: /users/{uid}/notifications: []
 //
 
-const issueAllUserNotifications = async (comedianRawData, newSpecials) => {
-  await newSpecials.forEach(async (specialRawData) => {
+const issueAllUserNotifications = async (allNewSpecials) => {
+  return await allNewSpecials.forEach(async ({ comedianRawData, specialRawData }) => {
     const comedianId = comedianRawData.id;
 
-    // get all users subscribed to this comedian
     const comedianSubscribersDocRef = db
       .collection('comedianSubscribers')
       .doc(comedianId.toString());
 
     const comedianSubscribersDocResponse = await comedianSubscribersDocRef.get();
+    const areUsersSubscribed = comedianSubscribersDocResponse.exists;
 
-    // if no users are subscribed to this comedian, stop here.
-    if (!comedianSubscribersDocResponse.exists) return;
+    if (!areUsersSubscribed) return;
 
     const comedianSubscribersData = await comedianSubscribersDocResponse.data();
 
     // issue e-mail notifications
-    const userEmails = Object.keys(comedianSubscribersData).reduce((prev, id) => {
+
+    const subscriberEmailBccList = Object.keys(comedianSubscribersData).reduce((prev, id) => {
       return `${prev}${comedianSubscribersData[id].email},`;
     }, '');
 
     try {
-      await sendEmailNotification(userEmails, specialRawData, comedianRawData);
+      await sendEmailNotification(subscriberEmailBccList, specialRawData, comedianRawData);
     } catch (e) {
       console.log(`Email notification fail: ${e}`);
     }
 
     // create frontend user notifications
+
     const userIds = Object.keys(comedianSubscribersData);
 
-    for (const uid of userIds) {
+    for await (const userId of userIds) {
       try {
-        await createFrontendUserNotification(uid, comedianRawData, specialRawData);
+        await createFrontendUserNotification(userId, comedianRawData, specialRawData);
       } catch (e) {
-        console.error(`Unable to create front end notification for ${uid}\n${e}`);
+        console.error(`Unable to create front end notification for ${userId}\n${e}`);
       }
     }
   });
-  console.log('--> Successfully created frontend user notifications');
 };
 
 const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
@@ -334,7 +188,7 @@ const createFrontendUserNotification = async (userId, comedianRawData, specialRa
     });
 };
 
-const sendEmailNotification = async (emailList, specialRawData, comedianRawData) => {
+const sendEmailNotification = async (subscriberEmailBccList, specialRawData, comedianRawData) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
@@ -342,7 +196,7 @@ const sendEmailNotification = async (emailList, specialRawData, comedianRawData)
 
   const message = {
     from: GMAIL_EMAIL,
-    to: emailList,
+    bcc: subscriberEmailBccList,
     subject: `${comedianRawData.name} released a new comedy special!`,
     html: `<a href="https://comedy.bmilcs.com/specials/${specialRawData.id}"><h1>${
       specialRawData.title
@@ -381,7 +235,7 @@ exports.deleteUserNotification = functions
       });
     } catch (e) {
       console.log('Unable to remove user notification');
-      console.log(e);
+      throw new functions.https.HttpsError('failed-frontend-notification', e);
     }
   });
 
@@ -424,7 +278,7 @@ exports.addComedianAndSpecials = functions
       .then(() => addComedianToAllComediansDoc(comedianRawData))
       .then(() => addComedianToLatestComediansDoc(comedianRawData))
       .then(() => addSpecialsToAllSpecialsDoc(specialsRawData))
-      .then(() => addSpecialsToLatestAndUpcomingSpecialsDocs(specialsRawData))
+      .then(() => addSpecialsToLatestOrUpcomingSpecialsDocs(specialsRawData))
       .catch((error) => {
         console.log(error);
         throw new functions.https.HttpsError(
@@ -634,7 +488,7 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
 //
 
 // add recently released specials to /specials/latest & upcoming specials to /specials/upcoming
-const addSpecialsToLatestAndUpcomingSpecialsDocs = async (specialsRawData) => {
+const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -686,6 +540,163 @@ const addSpecialsToLatestAndUpcomingSpecialsDocs = async (specialsRawData) => {
     .doc('latest')
     .set(latestTenSpecials)
     .then(() => db.collection('specials').doc('upcoming').set(upcoming));
+};
+
+//
+// user favorite toggling
+// - updates personal favorites: /users/{userId}/favorites: [] array
+// - updates content favorite count: /comedians/all/{comedianId} (or /specials/all): favorites: +/-1;
+//
+
+exports.toggleUserFavorite = functions
+  .runWith({
+    enforceAppCheck: true,
+  })
+  .https.onCall(async (data, context) => {
+    // app check w/ recaptcha v3
+    if (context.app == undefined) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'This function must be called from an App Check verified app.',
+      );
+    }
+
+    // // testing purposes only:
+    // await db
+    //   .collection('specials')
+    //   .doc('all')
+    //   .update({ 191489: FieldValue.delete() })
+    //   .then(() => updateDbAndIssueNotifications())
+    //   .then(() => console.log('test done'));
+    // return;
+
+    const userId = context.auth.uid;
+    const userEmail = context.auth.token.email;
+    const userDocRef = db.collection('users').doc(userId);
+
+    // favoriteId: "category-tmdbId" (ie: "comedians-123456789", "specials-123456789")
+    const favoriteId = data.favoriteId;
+    const [category, tmdbId] = favoriteId.split('-');
+
+    try {
+      const userDocResponse = await userDocRef.get();
+      const userDocData = userDocResponse.data();
+      const userDocFavoritesArr = userDocData.favorites;
+
+      // /comedians/all or /specials/all
+      const contentAllDocRef = db.collection(category).doc('all');
+
+      if (userDocFavoritesArr.includes(favoriteId)) {
+        // remove favorite from /users/.../favorites: []
+        userDocRef.set({ favorites: FieldValue.arrayRemove(favoriteId) }, { merge: true });
+        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+        await contentAllDocRef.set(
+          {
+            [tmdbId]: {
+              favorites: FieldValue.increment(-1),
+            },
+          },
+          { merge: true },
+        );
+
+        if (category === 'comedians') await unsubscribeUserToComedian(userId, userEmail, tmdbId);
+      } else {
+        // add favorite from /users/.../favorites: []
+        userDocRef.set({ favorites: FieldValue.arrayUnion(favoriteId) }, { merge: true });
+        // update content's favorite count: /{comedians/specials}/all/id: {favorites: # }
+        await contentAllDocRef.set(
+          {
+            [tmdbId]: {
+              favorites: FieldValue.increment(1),
+            },
+          },
+          { merge: true },
+        );
+        if (category === 'comedians') await subscribeUserToComedian(userId, userEmail, tmdbId);
+      }
+    } catch (e) {
+      throw new functions.https.HttpsError(
+        'failed-favorite-toggle',
+        'User favorite toggle failed.',
+      );
+    }
+
+    return {
+      status: 'complete',
+    };
+  });
+
+const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
+  // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
+  return comedianSubscribersDocRef.set(
+    {
+      [userId]: {
+        id: userId,
+        email: userEmail,
+      },
+    },
+    { merge: true },
+  );
+};
+
+const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
+  // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
+  const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
+  return comedianSubscribersDocRef.update({
+    [userId]: FieldValue.delete(),
+  });
+};
+
+//
+// update top favorite comedians & specials on a schedule
+//
+
+const updateTopFavorites = async () => {
+  const topComediansLimit = 10;
+  const topSpecialsLimit = 10;
+
+  const comediansAllDocData = await getFirebaseDoc('comedians', 'all');
+  const specialsAllDocData = await getFirebaseDoc('specials', 'all');
+
+  const updatedTopComediansData = getNewTopFavorites(comediansAllDocData, topComediansLimit);
+  const updatedTopSpecialsData = getNewTopFavorites(specialsAllDocData, topSpecialsLimit);
+
+  return db
+    .collection('comedians')
+    .doc('topFavorites')
+    .set(updatedTopComediansData)
+    .then(() =>
+      db
+        .collection('specials')
+        .doc('topFavorites')
+        .set(updatedTopSpecialsData)
+        .then(() => {
+          console.log('Successfully updated top favorites');
+        })
+        .catch((e) => {
+          console.log('Failed to update top favorites.');
+          console.log(e);
+        }),
+    );
+};
+
+const getNewTopFavorites = (allComediansOrAllSpecialsDocData, favoriteCountLimit) => {
+  return Object.keys(allComediansOrAllSpecialsDocData)
+    .map((id) => {
+      const data = allComediansOrAllSpecialsDocData[id];
+      return { ...data };
+    })
+    .sort((a, b) => (a.favorites < b.favorites ? 1 : -1))
+    .splice(0, favoriteCountLimit)
+    .reduce((prev, curr) => {
+      return {
+        ...prev,
+        [curr.id]: {
+          ...curr,
+        },
+      };
+    }, {});
 };
 
 const isSpecial = (comedianName, title) => {
@@ -747,6 +758,39 @@ const reduceLatestCountToNum = (dataObj, num, dateField) => {
     .reduce((prev, curr) => {
       return { ...prev, [curr.id]: { ...curr } };
     }, {});
+};
+
+//
+// db retrieval functions
+//
+
+const getFirebaseDoc = async (collection, doc) => {
+  return db
+    .collection(collection)
+    .doc(doc)
+    .get()
+    .then((document) => {
+      if (!(document && document.exists)) throw Error(`--> /${collection}/${doc} doesn't exist`);
+      return document.data();
+    })
+    .then((data) => {
+      return { ...data };
+    });
+};
+
+// retrieve "specials/latest" doc
+const getLatestSpecialsData = async () => {
+  return getFirebaseDoc('specials', 'latest');
+};
+
+// retrieve "/specials/latest" doc
+const getUpcomingSpecialsData = async () => {
+  return getFirebaseDoc('specials', 'upcoming');
+};
+
+// retrieve "/comedians/latest" doc
+const getLatestComediansData = async () => {
+  return getFirebaseDoc('comedians', 'latest');
 };
 
 //
