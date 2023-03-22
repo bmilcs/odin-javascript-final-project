@@ -12,14 +12,18 @@ const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
 
-//
 // maintenance
-//
 
 exports.updateDbAndIssueNotifications = functions.pubsub
   .schedule(MAINTENANCE_SCHEDULE)
   .onRun(async () => {
-    await updateDbAndIssueNotifications();
+    try {
+      const allNewSpecials = await getAllNewSpecialsAndUpdateDB();
+      await issueAllNotifications(allNewSpecials);
+      console.log('--> Update complete!');
+    } catch (e) {
+      console.log(e);
+    }
     return null;
   });
 
@@ -28,20 +32,14 @@ exports.updateTopFavorites = functions.pubsub.schedule(MAINTENANCE_SCHEDULE).onR
   return null;
 });
 
-//
-// scheduled function call: gets new specials for all comedians,
-// creates frontend user notifications & sends email notifications
-//
-
-const updateDbAndIssueNotifications = async () => {
+const getAllNewSpecialsAndUpdateDB = async () => {
   const allComediansDocData = await getFirebaseDoc('comedians', 'all');
   const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
   const allComedianIds = Object.keys(allComediansDocData);
   const allExistingSpecialIds = Object.keys(allSpecialsDocData);
   const allNewSpecials = [];
 
-  // promises allow us to execute all db updates first and then issue updates
-  // a traditional forEach loop executes & doesn't wait for async code to run
+  // promises allow us to execute all db updates before issuing notifications
   const updateDbWithNewSpecials = allComedianIds.reduce(async (accumulatorPromise, comedianId) => {
     return accumulatorPromise.then(() => {
       return updateDbWithAComediansNewSpecials(comedianId, allExistingSpecialIds).then(
@@ -53,17 +51,11 @@ const updateDbAndIssueNotifications = async () => {
     });
   }, Promise.resolve());
 
-  console.log('--> Updating DB');
-
-  return updateDbWithNewSpecials
-    .then(() => {
-      console.log('--> Successfully updated DB');
-      // email & frontend notifications are issued together to reduce db reads
-      issueAllUserNotifications(allNewSpecials);
-    })
-    .then(() => {
-      console.log('--> Successfully issued notifications\n--> Update complete!');
-    });
+  console.log('--> Starting DB Update...');
+  return await updateDbWithNewSpecials.then(() => {
+    console.log('--> Successfully updated DB');
+    return allNewSpecials;
+  });
 };
 
 // resolves with null if no new specials are present OR an array
@@ -72,23 +64,21 @@ const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) =>
   return new Promise(async (resolve, reject) => {
     const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
 
-    // determine if the comedian has any new specials
     const missingSpecialsRawData = fetchedSpecialsRawData.filter((fetchedSpecial) => {
       return !allExistingSpecialIds.some(
         (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
       );
     });
 
-    const hasNoNewSpecials = missingSpecialsRawData.length === 0;
-    if (hasNoNewSpecials) return resolve(null);
+    const hasNewSpecials = missingSpecialsRawData.length > 0;
+    if (!hasNewSpecials) return resolve(null);
 
-    // comedian has new specials:
     try {
       // get fresh data for the comedian's page
       const comedianRawData = await fetchTmdbComedianData(comedianId);
 
       // add only new specials to /specials/all
-      // this prevents overwriting existing favorite counts (set to 0 when added)
+      // this prevents overwriting existing special favorite counts (set to 0 when added)
       await addSpecialsToAllSpecialsDoc(missingSpecialsRawData);
 
       // add only new specials to .../upcoming and .../latest if applicable
@@ -98,14 +88,14 @@ const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) =>
       // update /comedianPages/{comedianId}/
       await addComedianPageDoc(comedianRawData, fetchedSpecialsRawData);
 
-      // update all /specialPages/ related to comedian
+      // update all /specialPages/ related to comedian, adding a link to this new special
       await addSpecialsPageDocs(comedianRawData, fetchedSpecialsRawData);
 
       console.log(
-        `--> ${comedianRawData.name} updated: ${missingSpecialsRawData.length} new special(s)!`,
+        `--> New Special Added! ${comedianRawData.name} (qty: ${missingSpecialsRawData.length})`,
       );
 
-      // addedSpecials are used to issue notifications from the parent function call
+      // used to issue notifications from the parent function call
       const addedSpecials = missingSpecialsRawData.map((special) => {
         return { specialRawData: special, comedianRawData };
       });
@@ -118,13 +108,11 @@ const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) =>
   });
 };
 
-//
-// notifications are created after new specials are found (via updateDbAndIssueNotifications())
+// notifications are created after new specials are found during updates
 // - stored in: /users/{uid}/notifications: []
-//
 
-const issueAllUserNotifications = async (allNewSpecials) => {
-  return await allNewSpecials.forEach(async ({ comedianRawData, specialRawData }) => {
+const issueAllNotifications = async (allNewSpecials) => {
+  await allNewSpecials.forEach(async ({ comedianRawData, specialRawData }) => {
     const comedianId = comedianRawData.id;
 
     const comedianSubscribersDocRef = db
@@ -132,39 +120,39 @@ const issueAllUserNotifications = async (allNewSpecials) => {
       .doc(comedianId.toString());
 
     const comedianSubscribersDocResponse = await comedianSubscribersDocRef.get();
-    const areUsersSubscribed = comedianSubscribersDocResponse.exists;
-
-    if (!areUsersSubscribed) return;
+    const hasHadASubscriber = comedianSubscribersDocResponse.exists;
+    if (!hasHadASubscriber) return;
 
     const comedianSubscribersData = await comedianSubscribersDocResponse.data();
-
-    // issue e-mail notifications
+    const hasActiveSubscribers = comedianSubscribersData.length > 0;
+    if (!hasActiveSubscribers) return;
 
     const subscriberEmailBccList = Object.keys(comedianSubscribersData).reduce((prev, id) => {
       return `${prev}${comedianSubscribersData[id].email},`;
     }, '');
 
     try {
-      await sendEmailNotification(subscriberEmailBccList, specialRawData, comedianRawData);
+      await sendEmailNotifications(subscriberEmailBccList, specialRawData, comedianRawData);
     } catch (e) {
-      console.log(`Email notification fail: ${e}`);
+      console.log(`--> ERROR: Email notification fail: ${e}`);
     }
 
-    // create frontend user notifications
+    const allSubscriberUserIds = Object.keys(comedianSubscribersData);
 
-    const userIds = Object.keys(comedianSubscribersData);
-
-    for await (const userId of userIds) {
+    for await (const userId of allSubscriberUserIds) {
       try {
-        await createFrontendUserNotification(userId, comedianRawData, specialRawData);
+        await createFrontendNotifications(userId, comedianRawData, specialRawData);
       } catch (e) {
-        console.error(`Unable to create front end notification for ${userId}\n${e}`);
+        console.error(`--> ERROR: Unable to create front end notification for ${userId}\n${e}`);
       }
     }
   });
+
+  console.log('--> Successfully issued notifications');
+  return;
 };
 
-const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
+const createFrontendNotifications = async (userId, comedianRawData, specialRawData) => {
   const notification = {
     comedian: {
       name: comedianRawData.name,
@@ -188,7 +176,7 @@ const createFrontendUserNotification = async (userId, comedianRawData, specialRa
     });
 };
 
-const sendEmailNotification = async (subscriberEmailBccList, specialRawData, comedianRawData) => {
+const sendEmailNotifications = async (subscriberEmailBccList, specialRawData, comedianRawData) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
@@ -207,6 +195,8 @@ const sendEmailNotification = async (subscriberEmailBccList, specialRawData, com
 
   return await transporter.sendMail(message);
 };
+
+// notifications are deleted when a user clicks on the notification dropdown link
 
 exports.deleteUserNotification = functions
   .runWith({ enforceAppCheck: true })
@@ -239,9 +229,7 @@ exports.deleteUserNotification = functions
     }
   });
 
-//
-// add new comedian & their specials to the db: triggered by client
-//
+// add a new comedian & their specials to the db: triggered by client (search results page)
 
 exports.addComedianAndSpecials = functions
   .runWith({
@@ -290,9 +278,7 @@ exports.addComedianAndSpecials = functions
       });
   });
 
-//
 // firestore: /comedianPages/{comedianId}/
-//
 
 const addComedianPageDoc = (comedianRawData, specialsRawData) => {
   const comedian = {
@@ -351,9 +337,7 @@ const addComedianPageDoc = (comedianRawData, specialsRawData) => {
   return db.collection('comedianPages').doc(comedianId.toString()).set(pageData);
 };
 
-//
 // firestore: /specialPages/{id}
-//
 
 const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
   const comedian = {
@@ -417,11 +401,9 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
   return await batch.commit();
 };
 
-//
 // firestore: /comedians/all
-//
 
-const addComedianToAllComediansDoc = (comedianRawData) => {
+const addComedianToAllComediansDoc = async (comedianRawData) => {
   const comedian = {
     [comedianRawData.id]: {
       name: comedianRawData.name,
@@ -431,14 +413,12 @@ const addComedianToAllComediansDoc = (comedianRawData) => {
     },
   };
 
-  return db.collection('comedians').doc('all').set(comedian, { merge: true });
+  return await db.collection('comedians').doc('all').set(comedian, { merge: true });
 };
 
-//
 // firestore: /specials/all
-//
 
-const addSpecialsToAllSpecialsDoc = (specialsRawData) => {
+const addSpecialsToAllSpecialsDoc = async (specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -453,14 +433,11 @@ const addSpecialsToAllSpecialsDoc = (specialsRawData) => {
     };
   }, {});
 
-  return db.collection('specials').doc('all').set(specials, { merge: true });
+  return await db.collection('specials').doc('all').set(specials, { merge: true });
 };
 
-//
 // firestore: /comedians/latest
-//
 
-// add comedian to /comedians/latest & restrict latest count to a finite #
 const addComedianToLatestComediansDoc = async (comedianRawData) => {
   const comedian = {
     [comedianRawData.id]: {
@@ -480,14 +457,11 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
 
   const latestTenComedians = reduceLatestCountToNum(latestComedians, 10, 'dateAdded');
 
-  return db.collection('comedians').doc('latest').set(latestTenComedians);
+  return await db.collection('comedians').doc('latest').set(latestTenComedians);
 };
 
-//
 // firestore: /specials/latest & /specials/upcoming
-//
 
-// add recently released specials to /specials/latest & upcoming specials to /specials/upcoming
 const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
@@ -535,18 +509,16 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
 
   const latestTenSpecials = reduceLatestCountToNum(latest, 10, 'release_date');
 
-  return db
+  return await db
     .collection('specials')
     .doc('latest')
     .set(latestTenSpecials)
     .then(() => db.collection('specials').doc('upcoming').set(upcoming));
 };
 
-//
 // user favorite toggling
 // - updates personal favorites: /users/{userId}/favorites: [] array
 // - updates content favorite count: /comedians/all/{comedianId} (or /specials/all): favorites: +/-1;
-//
 
 exports.toggleUserFavorite = functions
   .runWith({
@@ -561,13 +533,7 @@ exports.toggleUserFavorite = functions
       );
     }
 
-    // // testing purposes only:
-    // await db
-    //   .collection('specials')
-    //   .doc('all')
-    //   .update({ 191489: FieldValue.delete() })
-    //   .then(() => updateDbAndIssueNotifications())
-    //   .then(() => console.log('test done'));
+    // testGetAllNewSpecialsAndUpdateDb();
     // return;
 
     const userId = context.auth.uid;
@@ -648,9 +614,7 @@ const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
   });
 };
 
-//
 // update top favorite comedians & specials on a schedule
-//
 
 const updateTopFavorites = async () => {
   const topComediansLimit = 10;
@@ -739,8 +703,8 @@ const isSpecialALatestRelease = (special, latestSpecialsObj) => {
   return false;
 };
 
-// given a object of comedians or specials, sort by "dateField" &
-// limit the results to "num"
+// given a object of comedians or specials, sort by "dateField" & limit the results to "num"
+
 const reduceLatestCountToNum = (dataObj, num, dateField) => {
   const array = [];
 
@@ -760,9 +724,7 @@ const reduceLatestCountToNum = (dataObj, num, dateField) => {
     }, {});
 };
 
-//
 // db retrieval functions
-//
 
 const getFirebaseDoc = async (collection, doc) => {
   return db
@@ -793,9 +755,7 @@ const getLatestComediansData = async () => {
   return getFirebaseDoc('comedians', 'latest');
 };
 
-//
 // tmdb-related functions
-//
 
 const fetchTmdbComedianData = async (comedianId) => {
   const comedianUrl = getPersonDetailsURL(comedianId);
@@ -830,3 +790,69 @@ const fetchData = async function (url) {
     return err;
   }
 };
+
+// tests
+
+// this test deletes random specials from the database & runs an update.
+// it checks that the deleted specials are found & added back to the db
+const testGetAllNewSpecialsAndUpdateDb = async () => {
+  console.log('--> TEST START');
+
+  const allSpecialsInDb = await getFirebaseDoc('specials', 'all');
+  const allSpecialIdsInDb = Object.keys(allSpecialsInDb);
+  const randomSpecialsToDelete = [];
+
+  // delete 3 random specials from the db
+  for (let x = 0; x < 3; x++) {
+    const randomIndex = getRandomInt(allSpecialIdsInDb.length);
+    const specialId = allSpecialIdsInDb[randomIndex];
+    const specialTitle = allSpecialsInDb[specialId].title;
+    randomSpecialsToDelete.push({ id: specialId, title: specialTitle });
+  }
+
+  await db
+    .collection('specials')
+    .doc('all')
+    .update({
+      [randomSpecialsToDelete[0].id]: FieldValue.delete(),
+      [randomSpecialsToDelete[1].id]: FieldValue.delete(),
+      [randomSpecialsToDelete[2].id]: FieldValue.delete(),
+    })
+    .then(() =>
+      randomSpecialsToDelete.forEach((special) =>
+        console.log(`Deleted from DB: "${special.title}"`),
+      ),
+    );
+
+  // run update
+  const updatedSpecials = await getAllNewSpecialsAndUpdateDB();
+
+  // make sure updates returned from fn call match those deleted from the db above
+  const returnResults = updatedSpecials.map((update) => {
+    const specialTitle = update.specialRawData.title;
+    const deletedSpecialWasReturned = randomSpecialsToDelete.some(
+      (deletedSpecial) => deletedSpecial.title === update.specialRawData.title,
+    );
+    return deletedSpecialWasReturned
+      ? `SUCCESS: Returned from update function call "${specialTitle}"`
+      : `ERROR: Not returned from update function call "${specialTitle}"`;
+  });
+
+  // make sure the specials were re-added to the db
+  const allSpecialsInDbPostUpdate = await getFirebaseDoc('specials', 'all');
+  const allSpecialIdsInDbPostUpdate = Object.keys(allSpecialsInDbPostUpdate);
+
+  const specialsReAddedToDbResults = updatedSpecials.map((update) => {
+    const specialId = update.specialRawData.id;
+    const specialTitle = update.specialRawData.title;
+
+    return allSpecialIdsInDbPostUpdate.includes(specialId.toString())
+      ? `SUCCESS: Added back to Db: "${specialTitle}"`
+      : `ERROR: Missing from Db: "${specialTitle}"`;
+  });
+
+  [...returnResults, ...specialsReAddedToDbResults].forEach((update) => console.log(`${update}`));
+  console.log('--> TEST COMPLETE');
+};
+
+const getRandomInt = (maxVal) => Math.floor(Math.random() * (maxVal - 0) + 0);
