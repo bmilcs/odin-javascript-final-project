@@ -2,6 +2,32 @@
 
 ## TODO
 
+### Fix Appearances/Specials Overwriting One Another
+
+Some specials are incorrectly associated with a comedian from tmdb.
+
+Some specials have multiple comedians associated with them and their specialPages are overwritten with the last comedian to add the special page.
+
+**Updates will be affected by this.**
+
+- [ ] 1. convert `personalData: {}` to `personalData: []` on `/specialPages/{id}/`
+- [ ] 2. add comedianId to each `otherContent: {}`: allows us separate 'other content' by one of multiple comedians on a single specials/ page.
+- [ ] On creating specialPages, check if special page already exists
+  - [ ] If specialPage exists, check `personalData: []`
+    - [ ] If personalData only contains the comedian tied to creation of specialPages, overwrite the entire specialPage
+    - [ ] Else other comedians exist on it, leave other comedians alone and overwrite matching comedian obj
+    - [ ] otherContent: merge updated specials to it, instead of overwriting the entire `otherContent` object
+    - [ ] Create another function to update existing special pages?
+
+### Notifications
+
+- [ ] Fix standard notifications on new special added
+  - [ ] check release date
+    - [ ] if > today, email: "Coming soon!"
+    - [ ] if <= today, email: "New special released!"
+- [ ] Check upcoming releases daily
+  - [ ] if release date = today, issue notification
+
 ### **Backend**
 
 On a daily+ interval: run a scan on all comedians in the database
@@ -24,21 +50,6 @@ On a daily+ interval: run a scan on all comedians in the database
   - [x] If a new special by a favorite comedian is released:
   - [x] Add a db entry users/{id}/notifications: []
 
-Additional notifications:
-
-- [ ] Check release date of specials: if release date = today, send notification
-
-### Fix Appearances/Specials Overwriting One Another
-
-Some specials are incorrectly associated with a comedian from tmdb.
-
-Some specials have multiple comedians associated with them and their specialPages are overwritten with the last comedian to add the special page.
-
-- [ ] On creating specialPages, check if special page already exists
-  - [ ] If it does, add an additional comedian to it
-  - [ ] OR remove appearances altogether from the site
-    - [ ] Focus on main specials only
-
 ### Segment Favorites & Subscriptions
 
 - [ ] Clearly divide functionality between favorites/subscriptions
@@ -58,34 +69,6 @@ Some specials have multiple comedians associated with them and their specialPage
   - [x] Show notification badge
 
 - [x] Add email notifications
-
-### **GUI Improvements**
-
-- [ ] Search Page
-
-  - [ ] Move add new comedian to registered users only
-  - [ ] Fix responsiveness
-  - [ ] Fix modal size
-
-- [ ] Search Bar
-
-  - [ ] Show "missing comedian? add here" option
-
-- [ ] Global Improvements
-
-  - [ ] Add style variations for comedian & standup arrays
-    - [ ] Hero / carousel showcase
-    - [ ] Styled list w/ special images for bullet point
-    - [ ] Different card styles
-  - [ ] Add transitions & transformations
-  - [ ] Add subtle shadows
-
-- [ ] Special Pages
-
-  - [x] add Comedian info & other specials
-  - [ ] separate name (small) from special title (large)
-  - [ ] if date > today, show red banner
-  - [x] hide "Years Ago" if 0
 
 ## **Move from a static list of comedians to database entries**
 
