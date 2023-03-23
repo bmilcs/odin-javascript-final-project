@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { parseISO, isAfter } = require('date-fns');
+const { parseISO, isAfter, parse, isBefore, isSameDay } = require('date-fns');
 
 initializeApp();
 const db = getFirestore();
@@ -42,12 +42,14 @@ const getAllNewSpecialsAndUpdateDB = async () => {
   // promises allow us to execute all db updates before issuing notifications
   const updateDbWithNewSpecials = allComedianIds.reduce(async (accumulatorPromise, comedianId) => {
     return accumulatorPromise.then(() => {
-      return updateDbWithAComediansNewSpecials(comedianId, allExistingSpecialIds).then(
-        (newSpecials) => {
+      return updateDbWithAComediansNewSpecials(comedianId, allExistingSpecialIds)
+        .then((newSpecials) => {
           if (!newSpecials) return;
           newSpecials.forEach((newSpecial) => allNewSpecials.push(newSpecial));
-        },
-      );
+        })
+        .catch((e) => {
+          console.log(e);
+        });
     });
   }, Promise.resolve());
 
@@ -102,7 +104,7 @@ const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) =>
 
       return resolve(addedSpecials);
     } catch (e) {
-      console.log(`--> ERROR: ${comedianRawData.name}'s new specials NOT updated.`);
+      console.log(`--> ERROR: a comedian's specials were NOT updated.`);
       return reject(e);
     }
   });
@@ -124,15 +126,22 @@ const issueAllNotifications = async (allNewSpecials) => {
     if (!hasHadASubscriber) return;
 
     const comedianSubscribersData = await comedianSubscribersDocResponse.data();
-    const hasActiveSubscribers = comedianSubscribersData.length > 0;
+    const hasActiveSubscribers = Object.keys(comedianSubscribersData).length > 0;
     if (!hasActiveSubscribers) return;
+
+    const notificationType = getNotificationType(specialRawData);
 
     const subscriberEmailBccList = Object.keys(comedianSubscribersData).reduce((prev, id) => {
       return `${prev}${comedianSubscribersData[id].email},`;
     }, '');
 
     try {
-      await sendEmailNotifications(subscriberEmailBccList, specialRawData, comedianRawData);
+      await sendEmailNotifications(
+        subscriberEmailBccList,
+        notificationType,
+        specialRawData,
+        comedianRawData,
+      );
     } catch (e) {
       console.log(`--> ERROR: Email notification fail: ${e}`);
     }
@@ -176,24 +185,55 @@ const createFrontendNotifications = async (userId, comedianRawData, specialRawDa
     });
 };
 
-const sendEmailNotifications = async (subscriberEmailBccList, specialRawData, comedianRawData) => {
+const sendEmailNotifications = async (
+  subscriberEmailBccList,
+  notificationType,
+  specialRawData,
+  comedianRawData,
+) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
   });
 
+  const { id, title, poster_path } = specialRawData;
+  const { name } = comedianRawData;
+
+  const imgStyle = `max-width: 400px; max-height: 600px; border-radius: 8px;`;
+  const imgElement = `<img alt=${title} src=${getTMDBImageURL(
+    poster_path,
+  )} style="${imgStyle}"/></tr>`;
+  const headerElement = `<h1 style="margin-bottom: 0; line-height: 1; margin-inline: auto;">thecomedydb</h1>`;
+  const subtitleElement = `<p>A favorite comedian of yours has a new special! Check it out at the link below:</p>`;
+  const specialTitleElement = `<a href="https://comedy.bmilcs.com/specials/${id}"><h2>${title}</h2></a>`;
+  const bodyStyle = `color: #1a1b26; text-align: center;`;
+  const globalBodyContent = `${headerElement}${subtitleElement}${specialTitleElement}${imgElement}`;
+  const messageBody = `<body style="${bodyStyle}">${globalBodyContent}</body>`;
+
+  let subject;
+
+  if (notificationType === 'upcoming') {
+    subject = `${name}'s new comedy special is coming out soon!`;
+  } else if (notificationType === 'today') {
+    subject = `${name}'s new comedy special is available today!`;
+  } else {
+    subject = `${name}'s new comedy special is available!`;
+  }
+
   const message = {
     from: GMAIL_EMAIL,
     bcc: subscriberEmailBccList,
-    subject: `${comedianRawData.name} released a new comedy special!`,
-    html: `<a href="https://comedy.bmilcs.com/specials/${specialRawData.id}"><h1>${
-      specialRawData.title
-    }</h1></a><img alt=${specialRawData.title} src=${getTMDBImageURL(
-      specialRawData.poster_path,
-    )} />`,
+    subject: subject,
+    html: messageBody,
   };
 
   return await transporter.sendMail(message);
+};
+
+const getNotificationType = (specialRawData) => {
+  if (isSpecialNotReleasedYet(specialRawData)) return 'upcoming';
+  else if (isSpecialReleasedToday(specialRawData)) return 'today';
+  else return 'available';
 };
 
 // notifications are deleted when a user clicks on the notification dropdown link
@@ -489,7 +529,7 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
   // - if newer than one of the latest 10, add to /specials/latest
   for (const specialId in specials) {
     const specialData = specials[specialId];
-    const isNotReleasedYet = isSpecialNotOutYet(specialData);
+    const isNotReleasedYet = isSpecialNotReleasedYet(specialData);
 
     if (isNotReleasedYet) {
       upcoming = {
@@ -680,13 +720,6 @@ const isAppearance = (comedianName, title) => {
   return isAppearance ? true : false;
 };
 
-// returns true if special's release date is after today's date
-const isSpecialNotOutYet = (special) => {
-  const specialDate = parseISO(special.release_date);
-  const today = new Date();
-  return isAfter(specialDate, today) ? true : false;
-};
-
 // returns true if a special's date is after one of the latest specials dates
 const isSpecialALatestRelease = (special, latestSpecialsObj) => {
   const specialDate = parseISO(special.release_date);
@@ -791,7 +824,30 @@ const fetchData = async function (url) {
   }
 };
 
-// tests
+// date functions
+
+const isSpecialNotReleasedYet = (special) => {
+  const specialDate = special.release_date;
+  return isAFutureDate(specialDate);
+};
+
+const isSpecialReleasedToday = (special) => {
+  const specialDate = special.release_date;
+  return isToday(specialDate);
+};
+
+const getToday = () => new Date();
+const parseDate = (dateString) => parse(dateString, 'yyyy-MM-dd', new Date());
+
+const isAFutureDate = (dateString) => {
+  const date = parseDate(dateString);
+  return isBefore(getToday(), date);
+};
+
+const isToday = (dateString) => {
+  const date = parseDate(dateString);
+  return isSameDay(getToday(), date);
+};
 
 // this test deletes random specials from the database & runs an update.
 // it checks that the deleted specials are found & added back to the db
