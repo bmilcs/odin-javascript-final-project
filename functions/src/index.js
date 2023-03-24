@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { parseISO, isAfter, parse, isBefore, isSameDay } = require('date-fns');
+const { parseISO, isAfter, parse, isBefore, isSameDay, format, addDays } = require('date-fns');
 
 initializeApp();
 const db = getFirestore();
@@ -10,7 +10,9 @@ const db = getFirestore();
 const API_KEY = functions.config().tmdb.key;
 const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
+
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
+const TEST_MODE = 1;
 
 // maintenance
 
@@ -20,15 +22,31 @@ exports.updateDbAndIssueNotifications = functions.pubsub
     try {
       const allNewSpecials = await getAllNewSpecialsAndUpdateDB();
       await issueAllNotifications(allNewSpecials);
-      console.log('--> Update complete!');
     } catch (e) {
+      console.log(`--> ERROR: Updating Specials & Issuing Notifications FAILED!`);
       console.log(e);
     }
     return null;
   });
 
 exports.updateTopFavorites = functions.pubsub.schedule(MAINTENANCE_SCHEDULE).onRun(async () => {
-  await updateTopFavorites();
+  try {
+    await updateTopFavorites();
+  } catch (e) {
+    console.log(`--> ERROR: Top Favorites update FAILED!`);
+    console.log(e);
+  }
+  return null;
+});
+
+exports.processUpcomingSpecials = functions.pubsub.schedule('15 0 * * *').onRun(async () => {
+  try {
+    const specialsReleasedToday = await getTodaysReleasesAndMoveToLatestDoc();
+    await issueNotificationsForTodaysReleases(specialsReleasedToday);
+  } catch (e) {
+    console.log(`--> ERROR: Top Favorites update FAILED!`);
+    console.log(e);
+  }
   return null;
 });
 
@@ -85,7 +103,7 @@ const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) =>
 
       // add only new specials to .../upcoming and .../latest if applicable
       // existing specials in the db have already been checked
-      await addSpecialsToLatestOrUpcomingSpecialsDocs(missingSpecialsRawData);
+      await addSpecialsToLatestOrUpcomingSpecialsDocs(comedianRawData, missingSpecialsRawData);
 
       // update /comedianPages/{comedianId}/
       await addComedianPageDoc(comedianRawData, fetchedSpecialsRawData);
@@ -125,11 +143,12 @@ const issueAllNotifications = async (allNewSpecials) => {
     const hasHadASubscriber = comedianSubscribersDocResponse.exists;
     if (!hasHadASubscriber) return;
 
-    const comedianSubscribersData = await comedianSubscribersDocResponse.data();
+    const comedianSubscribersData = comedianSubscribersDocResponse.data();
     const hasActiveSubscribers = Object.keys(comedianSubscribersData).length > 0;
     if (!hasActiveSubscribers) return;
 
-    const notificationType = getNotificationType(specialRawData);
+    // "upcoming", "today", "available"
+    const releaseDateType = getReleaseDateType(specialRawData);
 
     const subscriberEmailBccList = Object.keys(comedianSubscribersData).reduce((prev, id) => {
       return `${prev}${comedianSubscribersData[id].email},`;
@@ -138,21 +157,23 @@ const issueAllNotifications = async (allNewSpecials) => {
     try {
       await sendEmailNotifications(
         subscriberEmailBccList,
-        notificationType,
+        releaseDateType,
         specialRawData,
         comedianRawData,
       );
     } catch (e) {
-      console.log(`--> ERROR: Email notification fail: ${e}`);
+      console.log(`--> ERROR: Email notification fail.`);
+      console.log(e);
     }
 
     const allSubscriberUserIds = Object.keys(comedianSubscribersData);
 
     for await (const userId of allSubscriberUserIds) {
       try {
-        await createFrontendNotifications(userId, comedianRawData, specialRawData);
+        await createFrontendUserNotification(userId, comedianRawData, specialRawData);
       } catch (e) {
-        console.error(`--> ERROR: Unable to create front end notification for ${userId}\n${e}`);
+        console.log(`--> ERROR: Unable to create front end notification for ${userId}\n${e}`);
+        console.log(e);
       }
     }
   });
@@ -161,7 +182,7 @@ const issueAllNotifications = async (allNewSpecials) => {
   return;
 };
 
-const createFrontendNotifications = async (userId, comedianRawData, specialRawData) => {
+const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
   const notification = {
     comedian: {
       name: comedianRawData.name,
@@ -191,11 +212,6 @@ const sendEmailNotifications = async (
   specialRawData,
   comedianRawData,
 ) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
-  });
-
   const { id, title, poster_path } = specialRawData;
   const { name } = comedianRawData;
 
@@ -204,10 +220,10 @@ const sendEmailNotifications = async (
     poster_path,
   )} style="${imgStyle}"/></tr>`;
   const headerElement = `<h1 style="margin-bottom: 0; line-height: 1; margin-inline: auto;">thecomedydb</h1>`;
-  const subtitleElement = `<p>A favorite comedian of yours has a new special! Check it out at the link below:</p>`;
+  const pElement = `<p>A favorite comedian of yours has a new special! Check it out at the link below:</p>`;
   const specialTitleElement = `<a href="https://comedy.bmilcs.com/specials/${id}"><h2>${title}</h2></a>`;
   const bodyStyle = `color: #1a1b26; text-align: center;`;
-  const globalBodyContent = `${headerElement}${subtitleElement}${specialTitleElement}${imgElement}`;
+  const globalBodyContent = `${headerElement}${pElement}${specialTitleElement}${imgElement}`;
   const messageBody = `<body style="${bodyStyle}">${globalBodyContent}</body>`;
 
   let subject;
@@ -217,7 +233,7 @@ const sendEmailNotifications = async (
   } else if (notificationType === 'today') {
     subject = `${name}'s new comedy special is available today!`;
   } else {
-    subject = `${name}'s new comedy special is available!`;
+    subject = `${name}'s comedy special is available!`;
   }
 
   const message = {
@@ -227,13 +243,90 @@ const sendEmailNotifications = async (
     html: messageBody,
   };
 
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: GMAIL_EMAIL, pass: GMAIL_PASSWORD },
+  });
+
   return await transporter.sendMail(message);
 };
 
-const getNotificationType = (specialRawData) => {
-  if (isSpecialNotReleasedYet(specialRawData)) return 'upcoming';
-  else if (isSpecialReleasedToday(specialRawData)) return 'today';
+const getReleaseDateType = (special) => {
+  if (isSpecialNotReleasedYet(special)) return 'upcoming';
+  else if (isSpecialReleasedToday(special)) return 'today';
   else return 'available';
+};
+
+// checks /specials/upcoming for specials released today.
+// if found, it moves the special to /specials/latest
+// and returns an array of specials released today (an array
+// is used in case multiple specials come out on the same day)
+
+const getTodaysReleasesAndMoveToLatestDoc = async () => {
+  try {
+    const upcomingSpecialsData = await getFirebaseDoc('specials', 'upcoming');
+    const upcomingSpecialIds = Object.keys(upcomingSpecialsData);
+
+    const noReleasesToday = upcomingSpecialIds.length === 0;
+    if (noReleasesToday) return;
+
+    const todaysReleasesDbData = upcomingSpecialIds
+      .filter((specialId) => {
+        const specialData = upcomingSpecialsData[specialId];
+        return isSpecialReleasedToday(specialData);
+      })
+      .map((specialId) => upcomingSpecialsData[specialId]);
+
+    for await (const specialData of todaysReleasesDbData) {
+      const specialId = specialData.id;
+      console.log(`--> ${specialData.name}'s new special is released today!`);
+
+      // delete special from /specials/upcoming
+      await db
+        .collection('specials')
+        .doc('upcoming')
+        .update({
+          [specialId]: FieldValue.delete(),
+        });
+
+      // add todays release to /specials/latest
+      const currentLatestSpecials = await getFirebaseDoc('specials', 'latest').catch(() => {
+        return {};
+      });
+      const newLatestSpecials = { ...currentLatestSpecials, [specialId]: specialData };
+      const latestTenSpecials = reduceLatestCountToNum(newLatestSpecials, 10, 'release_date');
+      await db.collection('specials').doc('latest').set(latestTenSpecials);
+
+      console.log(`--> SUCCESS: Moved ${specialData.name}'s special from /upcoming to /latest`);
+    }
+
+    return todaysReleasesDbData;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+// issueAllNotifications() expects an array of {comedianRawData, specialRawData}
+// and the special's data for this fn is pulled from /specials/upcoming
+const issueNotificationsForTodaysReleases = async (specialsDbData) => {
+  const todaysReleasesParsedForNotifications = [];
+
+  for await (const specialData of specialsDbData) {
+    const specialId = specialData.id;
+    const { comedianId } = specialData;
+
+    const comedianRawData = await fetchTmdbComedianData(comedianId);
+    const specialsRawData = await fetchTmdbSpecialsData(comedianId);
+
+    const specialRawData = specialsRawData.reduce((prev, curr) => {
+      if (Number(curr.id) !== Number(specialId)) return prev;
+      return { ...prev, ...curr };
+    }, {});
+
+    todaysReleasesParsedForNotifications.push({ comedianRawData, specialRawData });
+  }
+
+  return await issueAllNotifications(todaysReleasesParsedForNotifications);
 };
 
 // notifications are deleted when a user clicks on the notification dropdown link
@@ -241,7 +334,7 @@ const getNotificationType = (specialRawData) => {
 exports.deleteUserNotification = functions
   .runWith({ enforceAppCheck: true })
   .https.onCall(async (data, context) => {
-    // appcheck w/ recaptchav3
+    // appcheck w/ recaptcha v3
     if (context.app == undefined) {
       throw new functions.https.HttpsError(
         'failed-precondition',
@@ -306,7 +399,7 @@ exports.addComedianAndSpecials = functions
       .then(() => addComedianToAllComediansDoc(comedianRawData))
       .then(() => addComedianToLatestComediansDoc(comedianRawData))
       .then(() => addSpecialsToAllSpecialsDoc(specialsRawData))
-      .then(() => addSpecialsToLatestOrUpcomingSpecialsDocs(specialsRawData))
+      .then(() => addSpecialsToLatestOrUpcomingSpecialsDocs(comedianRawData, specialsRawData))
       .catch((error) => {
         console.log(error);
         throw new functions.https.HttpsError(
@@ -502,11 +595,13 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
 
 // firestore: /specials/latest & /specials/upcoming
 
-const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
+const addSpecialsToLatestOrUpcomingSpecialsDocs = async (comedianRawData, specialsRawData) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
       [special.id]: {
+        comedianId: comedianRawData.name,
+        name: comedianRawData.name,
         id: special.id,
         title: special.title,
         poster_path: special.poster_path,
@@ -519,7 +614,6 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (specialsRawData) => {
   let latest = await getLatestSpecialsData().catch(() => {
     return {};
   });
-
   let upcoming = await getUpcomingSpecialsData().catch(() => {
     return {};
   });
@@ -573,8 +667,11 @@ exports.toggleUserFavorite = functions
       );
     }
 
-    // testGetAllNewSpecialsAndUpdateDb();
-    // return;
+    if (TEST_MODE) {
+      // testProcessUpcomingSpecials();
+      testGetAllNewSpecialsAndUpdateDb();
+      return;
+    }
 
     const userId = context.auth.uid;
     const userEmail = context.auth.token.email;
@@ -826,6 +923,20 @@ const fetchData = async function (url) {
 
 // date functions
 
+const getTodayObj = () => new Date();
+const getDateObj = (dateString) => parse(dateString, 'yyyy-MM-dd', new Date());
+const formatDate = (dateObj) => format(dateObj, 'yyyy-MM-dd');
+
+const isAFutureDate = (dateString) => {
+  const date = getDateObj(dateString);
+  return isBefore(getTodayObj(), date);
+};
+
+const isToday = (dateString) => {
+  const date = getDateObj(dateString);
+  return isSameDay(getTodayObj(), date);
+};
+
 const isSpecialNotReleasedYet = (special) => {
   const specialDate = special.release_date;
   return isAFutureDate(specialDate);
@@ -834,19 +945,6 @@ const isSpecialNotReleasedYet = (special) => {
 const isSpecialReleasedToday = (special) => {
   const specialDate = special.release_date;
   return isToday(specialDate);
-};
-
-const getToday = () => new Date();
-const parseDate = (dateString) => parse(dateString, 'yyyy-MM-dd', new Date());
-
-const isAFutureDate = (dateString) => {
-  const date = parseDate(dateString);
-  return isBefore(getToday(), date);
-};
-
-const isToday = (dateString) => {
-  const date = parseDate(dateString);
-  return isSameDay(getToday(), date);
 };
 
 // this test deletes random specials from the database & runs an update.
@@ -883,6 +981,9 @@ const testGetAllNewSpecialsAndUpdateDb = async () => {
   // run update
   const updatedSpecials = await getAllNewSpecialsAndUpdateDB();
 
+  // test notifications
+  await issueAllNotifications(updatedSpecials);
+
   // make sure updates returned from fn call match those deleted from the db above
   const returnResults = updatedSpecials.map((update) => {
     const specialTitle = update.specialRawData.title;
@@ -912,3 +1013,53 @@ const testGetAllNewSpecialsAndUpdateDb = async () => {
 };
 
 const getRandomInt = (maxVal) => Math.floor(Math.random() * (maxVal - 0) + 0);
+
+const testProcessUpcomingSpecials = async () => {
+  const today = formatDate(getTodayObj());
+  const tomorrow = formatDate(addDays(getTodayObj(), 1));
+
+  const specialThatsReleasedToday = {
+    437752: {
+      comedianId: 109708,
+      name: 'Bill Burr',
+      backdrop_path: '/tWJpuxlBDoBnVyDM6dBh0NmuZ73.jpg',
+      id: 437752,
+      poster_path: '/voxVt0OOD7OxLQApHhmc7IZ4co2.jpg',
+      release_date: today,
+      title: 'TODAYS RELEASE TEST',
+    },
+  };
+
+  const specialThatsUpcoming = {
+    1068114: {
+      comedianId: 109708,
+      name: 'Bill Burr',
+      backdrop_path: '/tWJpuxlBDoBnVyDM6dBh0NmuZ73.jpg',
+      id: 1068114,
+      poster_path: '/voxVt0OOD7OxLQApHhmc7IZ4co2.jpg',
+      release_date: tomorrow,
+      title: 'UPCOMING RELEASE TEST',
+    },
+  };
+
+  const upcomingSpecialsMock = { ...specialThatsReleasedToday, ...specialThatsUpcoming };
+
+  try {
+    await db
+      .collection('specials')
+      .doc('upcoming')
+      .update({
+        ...upcomingSpecialsMock,
+      });
+
+    console.log('--> TEST Started');
+    console.log('--> Added Specials to /specials/upcoming with release date of today & tomorrow');
+
+    const todaysReleases = await getTodaysReleasesAndMoveToLatestDoc();
+    await issueNotificationsForTodaysReleases(todaysReleases);
+
+    console.log('--> SUCCESS: Completed process upcoming specials test');
+  } catch (e) {
+    console.log(`--> TEST ERROR: ${e.message}`);
+  }
+};
