@@ -12,7 +12,7 @@ const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
 
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
-const TEST_MODE = 1;
+const TEST_MODE = false;
 
 // maintenance
 
@@ -267,8 +267,8 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
     const upcomingSpecialsData = await getFirebaseDoc('specials', 'upcoming');
     const upcomingSpecialIds = Object.keys(upcomingSpecialsData);
 
-    const noReleasesToday = upcomingSpecialIds.length === 0;
-    if (noReleasesToday) return;
+    const noUpcomingReleasesToCheck = upcomingSpecialIds.length === 0;
+    if (noUpcomingReleasesToCheck) return;
 
     const todaysReleasesDbData = upcomingSpecialIds
       .filter((specialId) => {
@@ -276,6 +276,9 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
         return isSpecialReleasedToday(specialData);
       })
       .map((specialId) => upcomingSpecialsData[specialId]);
+
+    const noReleasesToday = todaysReleasesDbData.length === 0;
+    if (noReleasesToday) return;
 
     for await (const specialData of todaysReleasesDbData) {
       const specialId = specialData.id;
@@ -308,6 +311,8 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
 
 // issueAllNotifications() expects an array of {comedianRawData, specialRawData}
 // and the special's data for this fn is pulled from /specials/upcoming
+// therefore, todays releases need to be processed before passing them to
+// issueAllNotifications()
 const issueNotificationsForTodaysReleases = async (specialsDbData) => {
   const todaysReleasesParsedForNotifications = [];
 
@@ -581,15 +586,12 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
     },
   };
 
-  // if no latest comedians exist, return empty obj
-  let latestComedians = await getLatestComediansData().catch(() => {
+  // add comedian to latest comedians
+  const currentLatestComedians = await getLatestComediansData().catch(() => {
     return {};
   });
-
-  latestComedians = { ...latestComedians, ...comedian };
-
-  const latestTenComedians = reduceLatestCountToNum(latestComedians, 10, 'dateAdded');
-
+  const updatedLatestComedians = { ...currentLatestComedians, ...comedian };
+  const latestTenComedians = reduceLatestCountToNum(updatedLatestComedians, 10, 'dateAdded');
   return await db.collection('comedians').doc('latest').set(latestTenComedians);
 };
 
@@ -732,7 +734,7 @@ exports.toggleUserFavorite = functions
 const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
   // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
-  return comedianSubscribersDocRef.set(
+  return await comedianSubscribersDocRef.set(
     {
       [userId]: {
         id: userId,
@@ -746,7 +748,7 @@ const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
 const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
   // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
-  return comedianSubscribersDocRef.update({
+  return await comedianSubscribersDocRef.update({
     [userId]: FieldValue.delete(),
   });
 };
