@@ -94,7 +94,7 @@ function SearchBar() {
           }}
         />
 
-        <Button type='icon' className='search__button'>
+        <Button type='icon' ariaLabel='Submit Search' className='search__button'>
           <MdSearch size={28} />
         </Button>
 

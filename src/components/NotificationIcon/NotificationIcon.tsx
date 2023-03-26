@@ -42,15 +42,24 @@ function NotificationIcon() {
     <div className='notifications' ref={windowRef}>
       {hasNotifications ? (
         <>
-          <Button type='icon' onClick={() => handleNotificationIconClick()}>
+          <Button
+            type='icon'
+            ariaLabel={isWindowOpen ? 'Close Notification Menu' : 'Open Notification Menu'}
+            onClick={() => handleNotificationIconClick()}
+          >
             <MdNotificationsActive size={26} className='notification__icon-active' />
           </Button>
         </>
       ) : (
-        <Button type='icon' onClick={() => handleNotificationIconClick()}>
+        <Button
+          type='icon'
+          ariaLabel={isWindowOpen ? 'Close Notification Menu' : 'Open Notification Menu'}
+          onClick={() => handleNotificationIconClick()}
+        >
           <MdNotificationsNone size={26} />
         </Button>
       )}
+
       {isWindowOpen && (
         <div className='notifications__window'>
           <h5>{hasNotifications ? 'New Specials Available!' : 'No Notifications At This Time'}</h5>

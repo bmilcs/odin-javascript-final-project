@@ -43,7 +43,12 @@ function FavoriteIcon({ category, data }: Props) {
   };
 
   return (
-    <Button type='icon' className='heart' onClick={() => handleToggleFavorite()}>
+    <Button
+      type='icon'
+      ariaLabel={isFavorite ? 'Remove Favorite' : 'Add Favorite'}
+      className='heart'
+      onClick={() => handleToggleFavorite()}
+    >
       {isUserLoggedIn ? (
         isFavorite ? (
           <MdOutlineFavorite size={22} className='heart__full' />

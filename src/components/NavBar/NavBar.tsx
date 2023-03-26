@@ -43,7 +43,12 @@ function NavBar() {
         </li>
       </ul>
 
-      <Button type='icon' className='nav__button' onClick={() => setIsOpen(!isOpen)}>
+      <Button
+        type='icon'
+        ariaLabel={isOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+        className='nav__button'
+        onClick={() => setIsOpen(!isOpen)}
+      >
         {isOpen ? (
           <MdClose size={28} className='nav__icon nav__icon-open' />
         ) : (

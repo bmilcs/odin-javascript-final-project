@@ -131,7 +131,7 @@ function LoginSignUp({ initialView }: TProps) {
           </Button>
         </form>
 
-        <Button type='icon' onClick={() => googlePopUp()}>
+        <Button type='icon' ariaLabel='Sign In With Google' onClick={() => googlePopUp()}>
           <img src={GoogleImage} alt='Google Login' />
         </Button>
       </div>
@@ -195,7 +195,7 @@ function LoginSignUp({ initialView }: TProps) {
           </Button>
         </form>
 
-        <Button type='icon' onClick={() => googlePopUp()}>
+        <Button type='icon' ariaLabel='Sign In With Google' onClick={() => googlePopUp()}>
           <img src={GoogleImage} alt='Google Login' />
         </Button>
       </div>

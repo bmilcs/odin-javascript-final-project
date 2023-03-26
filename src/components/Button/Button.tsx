@@ -5,12 +5,14 @@ interface Props {
   className?: string;
   onClick?: () => void | Promise<void>;
   type?: 'icon' | 'standard' | 'outline' | 'text-only';
+  ariaLabel?: string;
 }
 
-function Button({ children, className, onClick, type = 'standard' }: Props) {
+function Button({ children, className, onClick, type = 'standard', ariaLabel }: Props) {
   return (
     <button
       onClick={onClick}
+      aria-label={ariaLabel}
       className={`button ${
         type === 'standard'
           ? 'button__standard'

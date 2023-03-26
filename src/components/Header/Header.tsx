@@ -36,12 +36,12 @@ function Header() {
           {isSignedIn ? (
             <>
               <NotificationIcon />
-              <Button type='icon' onClick={() => favorites()}>
+              <Button type='icon' ariaLabel='Favorites Page' onClick={() => favorites()}>
                 <MdPerson size={26} className='' />
               </Button>
             </>
           ) : (
-            <Button type='icon' onClick={() => signIn()}>
+            <Button type='icon' ariaLabel='Sign In' onClick={() => signIn()}>
               <MdOutlineLogin size={26} className='' />
             </Button>
           )}
