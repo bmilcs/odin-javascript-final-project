@@ -1,4 +1,9 @@
+import {
+  staggerUpContainerVariants,
+  staggerUpVariants,
+} from '@/animations/fadeInStaggerChildrenUp';
 import Button from '@/components/Button/Button';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './Hero.scss';
 
@@ -6,15 +11,24 @@ function Hero() {
   const navigate = useNavigate();
 
   return (
-    <section className='hero'>
+    <motion.section
+      className='hero'
+      initial='hidden'
+      animate='visible'
+      variants={staggerUpContainerVariants}
+    >
       <div className='hero__content'>
-        <h1>Never Miss a Laugh</h1>
-        <h4>Get Notified When Your Favorite Comedians Release a New Special</h4>
-        <Button className='hero__button' onClick={() => navigate('/signup')}>
-          Sign Up
-        </Button>
+        <motion.h1 variants={staggerUpVariants}>Never Miss a Laugh</motion.h1>
+        <motion.h4 variants={staggerUpVariants}>
+          Get Notified When Your Favorite Comedians Release a New Special
+        </motion.h4>
+        <motion.div variants={staggerUpVariants}>
+          <Button className='hero__button' onClick={() => navigate('/signup')}>
+            Sign Up
+          </Button>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
