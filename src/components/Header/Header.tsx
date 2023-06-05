@@ -4,6 +4,7 @@ import Button from '@/components/Button/Button';
 import NavBar from '@/components/NavBar/NavBar';
 import NotificationIcon from '@/components/NotificationIcon/NotificationIcon';
 import SearchBar from '@/components/SearchBar/SearchBar';
+import { motion } from 'framer-motion';
 import { MdOutlineLogin, MdPerson } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.scss';
@@ -21,7 +22,12 @@ function Header() {
   };
 
   return (
-    <header className='header'>
+    <motion.header
+      className='header'
+      initial={{ opacity: 0, y: -60 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.75, type: 'spring', stiffness: 30, mass: 0.2 }}
+    >
       <div className='column'>
         <Link to='/'>
           <div className='title'>
@@ -53,7 +59,7 @@ function Header() {
 
         <SearchBar />
       </div>
-    </header>
+    </motion.header>
   );
 }
 
