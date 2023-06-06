@@ -17,14 +17,18 @@ function Hero() {
       animate='visible'
       variants={staggerUpContainerVariants}
     >
-      <div className='hero__content'>
+      <div className='hero__content column'>
         <motion.h1 variants={staggerUpVariants}>Never Miss a Laugh</motion.h1>
-        <motion.h4 variants={staggerUpVariants}>
-          Get Notified When Your Favorite Comedians Release a New Special
-        </motion.h4>
+
+        <motion.p variants={staggerUpVariants}>
+          The Comedy DB is a platform for keeping you up to date with the latest standup specials
+          from all of your favorite comedians. Sign up, add comedians to your list and receive email
+          notifications any time they release new content!
+        </motion.p>
+
         <motion.div variants={staggerUpVariants}>
           <Button className='hero__button' onClick={() => navigate('/signup')}>
-            Sign Up
+            Sign Up Now
           </Button>
         </motion.div>
       </div>

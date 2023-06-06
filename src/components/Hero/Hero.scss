@@ -1,13 +1,8 @@
 .hero {
-  display: grid;
-  align-items: center;
-
-  min-height: 40vh;
-  margin-bottom: 3rem;
-  padding: 2rem;
+  padding-block: 10vh;
 
   color: var(--clr-primary-200);
-  // background: var(--clr-neutral-800);
+
   background: linear-gradient(
       var(--clr-neutral-900-transparent),
       var(--clr-neutral-700-transparent)
@@ -16,12 +11,10 @@
   background-size: cover;
   background-repeat: no-repeat;
 
-  border-radius: var(--border-radius-200);
-
-  &__button {
+  .hero__button {
     min-width: 20ch;
-    padding-block: 0.5rem;
-    font-weight: bolder;
+    padding-block: 0.65rem;
+
     font-family: var(--ff-accent);
 
     @media (max-width: 31.25rem) {
@@ -30,12 +23,13 @@
   }
 
   h1 {
-    // font-weight: bold;
     text-transform: uppercase;
   }
 
-  h4 {
+  p {
     color: var(--clr-neutral-200);
-    margin-bottom: 2rem;
+    margin-block: 1rem 2rem;
+    font-size: 1.1rem;
+    max-width: 600px;
   }
 }
