@@ -8,6 +8,7 @@ const useTopFavoriteComedians = (): IComedian[] => {
     const getTopFavoriteComedians = async () => {
       const comedians = await getTopFavoriteComediansFromDB();
       if (!comedians) return;
+
       const topFavoriteComedians = Object.keys(comedians)
         .map((string) => Number(string))
         .sort((a, b) => {
@@ -18,6 +19,7 @@ const useTopFavoriteComedians = (): IComedian[] => {
         .map((specialId) => {
           return comedians[specialId];
         });
+
       setTopFavoriteComedians(topFavoriteComedians);
     };
 

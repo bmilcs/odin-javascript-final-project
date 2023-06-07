@@ -9,6 +9,7 @@ const useTopFavoriteSpecials = (): ISpecial[] => {
     const getTopFavoriteSpecials = async () => {
       const specials = await getTopFavoriteSpecialsFromDB();
       if (!specials) return;
+
       const topFavoriteSpecials = Object.keys(specials)
         .map((string) => Number(string))
         .sort((a, b) => {
@@ -19,6 +20,7 @@ const useTopFavoriteSpecials = (): ISpecial[] => {
         .map((specialId) => {
           return specials[specialId];
         });
+
       setTopFavoriteSpecials(topFavoriteSpecials);
     };
 
