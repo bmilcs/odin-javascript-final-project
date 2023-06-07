@@ -3,14 +3,9 @@ import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
-import {
-  ISpecialPageComedianData,
-  ISpecialPageData,
-  ISpecialPageOtherContent,
-  getSpecialOrAppearancePageFromDB,
-} from '@/firebase/database';
-import { formatDateNumberOfYearsPassed, isAFutureDate, isDateOneBeforeDateTwo } from '@/utils/date';
-import { useEffect, useState } from 'react';
+import { ISpecialPageData } from '@/firebase/database';
+import useSpecialData from '@/hooks/useSpecialData';
+import { formatDateNumberOfYearsPassed, isAFutureDate } from '@/utils/date';
 import { useParams } from 'react-router-dom';
 import './Special.scss';
 
@@ -21,45 +16,14 @@ import './Special.scss';
 
 function Special() {
   const { specialId } = useParams();
-  const [specialData, setSpecialData] = useState<ISpecialPageData | null>(null);
-  const [otherContentData, setOtherContentData] = useState<ISpecialPageOtherContent[] | null>(null);
-  const [comedianData, setComedianData] = useState<ISpecialPageComedianData | null>(null);
-  const [mainImageOrientation, setMainImageOrientation] = useState<
-    'landscape' | 'portrait' | 'missing'
-  >();
-
-  useEffect(() => {
-    const getDataFromDB = async () => {
-      const pageRawData = await getSpecialOrAppearancePageFromDB(Number(specialId));
-      if (pageRawData) {
-        setSpecialData(pageRawData.data);
-        setComedianData(pageRawData.comedian);
-        if (pageRawData.otherContent.length > 0) {
-          pageRawData.otherContent.sort((a, b) => {
-            return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
-          });
-          setOtherContentData(pageRawData.otherContent);
-        }
-      }
-    };
-    getDataFromDB();
-  }, [specialId]);
-
-  useEffect(() => {
-    if (!specialData) return;
-    if (specialData.backdrop_path) {
-      setMainImageOrientation('landscape');
-    } else if (specialData.poster_path) {
-      setMainImageOrientation('portrait');
-    } else {
-      setMainImageOrientation('missing');
-    }
-  }, [specialData]);
+  const { comedian, special, otherContent, mainImageOrientation } = useSpecialData(
+    Number(specialId),
+  );
 
   return (
     <div className='column'>
       <>
-        {specialData && (
+        {special && (
           <>
             <div className='special'>
               <div
@@ -71,24 +35,22 @@ function Special() {
                     : 'missing'
                 }
               >
-                {specialData && <SpecialMainImage data={specialData} />}
-                {specialData && <SpecialInformation data={specialData} />}
+                {special && <SpecialMainImage data={special} />}
+                {special && <SpecialInformation data={special} />}
               </div>
             </div>
           </>
         )}
 
-        {comedianData && (
-          <h3 className='other__content__header'>Other Content From {comedianData.name}</h3>
-        )}
+        {comedian && <h3 className='other__content__header'>Other Content From {comedian.name}</h3>}
 
         <div className='other__content'>
-          {comedianData && <ComedianCard data={comedianData} />}
+          {comedian && <ComedianCard data={comedian} />}
 
-          {otherContentData && comedianData && (
+          {otherContent && comedian && (
             <SpecialsGrid
-              // title={`Other Content From ${comedianData.name}`}
-              data={otherContentData}
+              // title={`Other Content From ${comedian.name}`}
+              data={otherContent}
             />
           )}
         </div>
