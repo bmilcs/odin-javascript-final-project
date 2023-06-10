@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import './Card.scss';
 
 interface Props {
@@ -8,9 +9,17 @@ interface Props {
 
 function Card({ dataAttribute, children, className }: Props) {
   return (
-    <article data-tmdb-id={dataAttribute} className={`card ${className ? className : ''}`}>
+    <motion.article
+      data-tmdb-id={dataAttribute}
+      className={`card ${className ? className : ''}`}
+      whileHover={{
+        y: -5,
+        scale: 1.01,
+        zIndex: 2,
+      }}
+    >
       {children}
-    </article>
+    </motion.article>
   );
 }
 
