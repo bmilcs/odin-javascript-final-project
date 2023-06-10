@@ -78,13 +78,20 @@ h6 {
   --clr-accent-100: #9ece6a;
   --clr-accent-200: #73daca;
   --clr-accent-300: #da7373;
+
   --transition-100: all 0.2s ease-in-out;
   --transition-200: all 0.3s ease-in-out;
+
   --border-radius-100: 0.25rem;
   --border-radius-200: 0.5rem;
+
   --content-spacing: 3rem;
   --header-spacing: 3rem;
+  --header-spacing-small: 1.5rem;
+
   --card-gap: 2rem;
+
+  --box-shadow-100: 0px 0px 16px 0px rgba(0, 0, 0, 0.25);
 }
 
 body {
@@ -97,19 +104,27 @@ body {
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   min-height: 100vh;
+}
 
-  // wrapper for all content: centered with max width
-  .column {
-    position: relative;
-    max-width: 100rem;
-    margin-inline: auto;
+// wrapper for all content: centered with max width
+.column,
+.column-small {
+  position: relative;
+  margin-inline: auto;
 
-    padding-inline: clamp(1rem, 4.75vw, 5rem);
+  padding-inline: clamp(1rem, 4.75vw, 5rem);
 
-    &__fullheight {
-      min-height: 100%;
-    }
+  &__fullheight {
+    min-height: 100%;
   }
+}
+
+.column {
+  max-width: 100rem;
+}
+
+.column-small {
+  max-width: 92rem;
 }
 
 h1,
