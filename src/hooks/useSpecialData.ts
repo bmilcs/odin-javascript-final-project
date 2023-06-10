@@ -11,9 +11,6 @@ const useSpecialData = (specialId: number) => {
   const [special, setSpecial] = useState<ISpecialPageData | null>(null);
   const [otherContent, setOtherContent] = useState<ISpecialPageOtherContent[] | null>(null);
   const [comedian, setComedian] = useState<ISpecialPageComedianData | null>(null);
-  const [mainImageOrientation, setMainImageOrientation] = useState<
-    'landscape' | 'portrait' | 'missing'
-  >();
 
   useEffect(() => {
     const getSpecialPageDataFromDB = async () => {
@@ -36,19 +33,7 @@ const useSpecialData = (specialId: number) => {
     getSpecialPageDataFromDB();
   }, [specialId]);
 
-  useEffect(() => {
-    if (!special) return;
-
-    if (special.backdrop_path) {
-      setMainImageOrientation('landscape');
-    } else if (special.poster_path) {
-      setMainImageOrientation('portrait');
-    } else {
-      setMainImageOrientation('missing');
-    }
-  }, [special]);
-
-  return { comedian, special, otherContent, mainImageOrientation };
+  return { comedian, special, otherContent };
 };
 
 export default useSpecialData;

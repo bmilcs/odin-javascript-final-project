@@ -104,6 +104,7 @@ export interface ISpecialPageOtherContent {
   backdrop_path: string;
   poster_path: string;
   id: number;
+  type: 'special' | 'appearance';
 }
 
 export const getSpecialOrAppearancePageFromDB = async (specialId: number) => {

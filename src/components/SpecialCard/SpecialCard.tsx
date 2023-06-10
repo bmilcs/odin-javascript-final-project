@@ -52,7 +52,6 @@ function SpecialCard({ data }: TProps) {
         )}
         {release_date && <p className='special-card__year'>{formatDateYearOnly(release_date)}</p>}
       </Link>
-      {/* </div> */}
 
       {/* text details */}
       <div className='special-card__content'>

@@ -1,20 +1,20 @@
 .special {
-  > * {
-    margin-bottom: 2rem;
-  }
+  margin-block: var(--content-spacing);
 
-  &__portrait {
-    display: grid;
-    gap: 1rem;
-    @media (min-width: 48.4375rem) {
-      grid-template-columns: 1fr 1fr;
-    }
+  display: flex;
+  justify-content: space-between;
+  gap: var(--content-spacing);
+
+  &__image {
+    justify-self: end;
+    object-fit: cover;
+    border-radius: var(--border-radius-200);
+    box-shadow: var(--box-shadow-100);
   }
 
   &__image-portrait {
-    width: 100%;
-    max-height: 50vh;
-    aspect-ratio: 1/1.5;
+    max-width: 30rem;
+    max-height: 30rem;
   }
 
   &__landscape {
@@ -22,7 +22,19 @@
     gap: 2rem;
   }
 
-  &__comingsoon {
+  @media (max-width: 48.4375rem) {
+    flex-direction: column;
+    align-items: center;
+
+    &__image,
+    &__image-portrait {
+      order: -1;
+      width: 100%;
+      max-height: unset;
+    }
+  }
+
+  &__coming-soon {
     font-weight: bold;
     color: var(--clr-accent-100);
     font-size: 1.25rem;
@@ -31,34 +43,38 @@
   &__overview {
     line-height: 2;
     margin-block: 1rem;
+    max-width: 80ch;
   }
 
-  &__image {
+  &__title {
+    margin-bottom: var(--header-spacing-small);
+    color: var(--clr-primary-200);
+  }
+
+  &__years-ago {
+    color: var(--clr-primary-100);
+  }
+
+  &__release-date {
+    font-weight: bold;
+  }
+
+  &__comedian {
+    margin-top: var(--header-spacing-small);
+
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  &__comedian a:is(:active, :focus, :visited) {
+    color: var(--clr-primary-100);
+  }
+
+  &__comedian-portrait {
+    aspect-ratio: 1/1;
     object-fit: cover;
-    border-radius: var(--border-radius-200);
-  }
-}
-
-.other__content {
-  display: grid;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  > :nth-child(1) {
-    justify-self: center;
-  }
-  // justify-items: center;
-
-  &__header {
-    margin-block: 2rem;
-  }
-
-  @media (min-width: 48.475rem) {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-
-    .comedian-card {
-      height: fit-content;
-    }
+    max-width: 6rem;
+    border-radius: 100vh;
   }
 }
