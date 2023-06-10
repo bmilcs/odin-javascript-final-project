@@ -1,14 +1,16 @@
 .specials {
+  margin-block: var(--content-spacing);
+
   // defaults & larger screen sizes
   &__header {
     margin-bottom: var(--header-spacing);
+    color: var(--clr-neutral-200);
   }
 
   &__grid {
-    margin-bottom: var(--content-spacing);
-    gap: 1rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+    gap: var(--card-gap);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
     justify-content: baseline;
   }
 
@@ -23,6 +25,7 @@
         flex-grow: 1;
         max-width: 100%;
       }
+
       display: flex;
       flex-wrap: wrap;
       justify-content: center;

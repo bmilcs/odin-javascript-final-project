@@ -10,7 +10,7 @@ type Props = {
 function SpecialsGrid({ data, title }: Props) {
   return (
     data && (
-      <section className='specials'>
+      <section className='specials column'>
         {title && <h3 className='specials__header'>{title}</h3>}
         <div className='specials__grid'>
           {data.map((special) => (
