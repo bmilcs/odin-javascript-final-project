@@ -28,6 +28,10 @@ function LoginSignUp({ initialView }: TProps) {
     signUserInWithGooglePopup();
   };
 
+  return (
+    <div className='column__fullheight'>{initialView === 'login' ? <Login /> : <SignUp />}</div>
+  );
+
   function SignUp() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -201,9 +205,5 @@ function LoginSignUp({ initialView }: TProps) {
       </div>
     );
   }
-
-  return (
-    <div className='column__fullheight'>{initialView === 'login' ? <Login /> : <SignUp />}</div>
-  );
 }
 export default LoginSignUp;

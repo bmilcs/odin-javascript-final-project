@@ -11,30 +11,35 @@ import LoginSignUp from '@/pages/LoginSignUp/LoginSignUp';
 import SearchResults from '@/pages/SearchResults/SearchResults';
 import Special from '@/pages/Special/Special';
 import Specials from '@/pages/Specials/Specials';
-import { Route, Routes } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import './App.scss';
 
 function App() {
-  // allComedians data is used for search bar autocomplete & /comedians page
   const dispatch = useAppDispatch();
+  const location = useLocation();
+
+  // allComedians data is used for search bar autocomplete & /comedians page
   dispatch(fetchAllComedians());
 
   return (
     <div className='app'>
-      <ScrollToTop />
       <Header />
       <main>
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path={'/comedians'} element={<Comedians />} />
-          <Route path={'/comedians/:personId'} element={<Comedian />} />
-          <Route path={'/specials'} element={<Specials />} />
-          <Route path={'/specials/:specialId'} element={<Special />} />
-          <Route path={'/favorites'} element={<Favorites />} />
-          <Route path={'/search/:searchTerm'} element={<SearchResults />} />
-          <Route path={'/login'} element={<LoginSignUp initialView='login' />} />
-          <Route path={'/signup'} element={<LoginSignUp initialView='signup' />} />
-        </Routes>
+        <AnimatePresence>
+          <ScrollToTop />
+          <Routes location={location} key={location.key}>
+            <Route path='/' element={<Home />} />
+            <Route path={'/comedians'} element={<Comedians />} />
+            <Route path={'/specials'} element={<Specials />} />
+            <Route path={'/comedians/:personId'} element={<Comedian />} />
+            <Route path={'/specials/:specialId'} element={<Special />} />
+            <Route path={'/favorites'} element={<Favorites />} />
+            <Route path={'/search/:searchTerm'} element={<SearchResults />} />
+            <Route path={'/login'} element={<LoginSignUp initialView='login' />} />
+            <Route path={'/signup'} element={<LoginSignUp initialView='signup' />} />
+          </Routes>
+        </AnimatePresence>
       </main>
 
       <Footer />

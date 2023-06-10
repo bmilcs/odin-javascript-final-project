@@ -1,3 +1,4 @@
+import RevealChildren from '@/components/RevealChildren/RevealChildren';
 import { IComedianPageSpecialOrAppearance } from '@/firebase/database';
 import SpecialCard from '../SpecialCard/SpecialCard';
 import './SpecialsGrid.scss';
@@ -11,10 +12,16 @@ function SpecialsGrid({ data, title }: Props) {
   return (
     data && (
       <section className='specials column'>
-        {title && <h3 className='specials__header'>{title}</h3>}
+        {title && (
+          <RevealChildren>
+            <h3 className='specials__header'>{title}</h3>
+          </RevealChildren>
+        )}
         <div className='specials__grid'>
           {data.map((special) => (
-            <SpecialCard data={special} key={special.id} />
+            <RevealChildren key={special.id}>
+              <SpecialCard data={special} />
+            </RevealChildren>
           ))}
         </div>
       </section>

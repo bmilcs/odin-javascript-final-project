@@ -1,4 +1,5 @@
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
+import RevealChildren from '@/components/RevealChildren/RevealChildren';
 import { IComedian } from '@/firebase/database';
 import './ComedianGrid.scss';
 
@@ -11,10 +12,16 @@ function ComedianGrid({ data, title }: Props) {
   return (
     data && (
       <section className='comedians column'>
-        {title && <h3 className='comedians__header'>{title}</h3>}
+        {title && (
+          <RevealChildren>
+            <h3 className='comedians__header'>{title}</h3>
+          </RevealChildren>
+        )}
         <div className='comedians__grid'>
           {data.map((comedian: IComedian) => (
-            <ComedianCard data={comedian} key={comedian.id} />
+            <RevealChildren key={comedian.id}>
+              <ComedianCard data={comedian} />
+            </RevealChildren>
           ))}
         </div>
       </section>

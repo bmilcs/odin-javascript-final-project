@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { allSpecialsDataArr, fetchAllSpecials } from '@/app/store';
+import PageTransition from '@/components/PageTransition/PageTransition';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import { ISpecial } from '@/firebase/database';
 import useTopFavoriteSpecials from '@/hooks/useTopFavoriteSpecials';
@@ -26,19 +27,21 @@ function Specials() {
   }, [allSpecials]);
 
   return (
-    <>
-      {upcomingSpecials && upcomingSpecials.length !== 0 && (
-        <SpecialsGrid title='Coming Soon' data={upcomingSpecials} />
-      )}
+    <PageTransition>
+      <>
+        {upcomingSpecials && upcomingSpecials.length !== 0 && (
+          <SpecialsGrid title='Coming Soon' data={upcomingSpecials} />
+        )}
 
-      {topFavoriteSpecials && topFavoriteSpecials.length !== 0 && (
-        <SpecialsGrid title='Most Popular Specials' data={topFavoriteSpecials} />
-      )}
+        {topFavoriteSpecials && topFavoriteSpecials.length !== 0 && (
+          <SpecialsGrid title='Most Popular Specials' data={topFavoriteSpecials} />
+        )}
 
-      {sortedSpecials && sortedSpecials.length !== 0 && (
-        <SpecialsGrid title='All Specials' data={sortedSpecials} />
-      )}
-    </>
+        {sortedSpecials && sortedSpecials.length !== 0 && (
+          <SpecialsGrid title='All Specials' data={sortedSpecials} />
+        )}
+      </>
+    </PageTransition>
   );
 }
 

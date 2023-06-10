@@ -5,6 +5,10 @@
   justify-content: space-between;
   gap: var(--content-spacing);
 
+  &__data {
+    min-height: 100%;
+  }
+
   &__image {
     justify-self: end;
     object-fit: cover;
@@ -60,7 +64,7 @@
   }
 
   &__comedian {
-    margin-top: var(--header-spacing-small);
+    margin-top: var(--header-spacing);
 
     display: flex;
     gap: 2rem;

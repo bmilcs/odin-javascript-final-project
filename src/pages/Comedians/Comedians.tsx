@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { allComediansDataArr, fetchAllComedians } from '@/app/store';
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
+import PageTransition from '@/components/PageTransition/PageTransition';
 import { IComedian } from '@/firebase/database';
 import useLatestComedians from '@/hooks/useLatestComedians';
 import { useEffect, useState } from 'react';
@@ -24,13 +25,15 @@ function Comedians() {
   }, [allComediansData]);
 
   return (
-    <>
-      {latestComedians && latestComedians.length !== 0 && (
-        <ComedianGrid title='Recently Added Comedians' data={latestComedians} />
-      )}
+    <PageTransition>
+      <>
+        {latestComedians && latestComedians.length !== 0 && (
+          <ComedianGrid title='Recently Added Comedians' data={latestComedians} />
+        )}
 
-      {allComedians.length !== 0 && <ComedianGrid title='All Comedians' data={allComedians} />}
-    </>
+        {allComedians.length !== 0 && <ComedianGrid title='All Comedians' data={allComedians} />}
+      </>
+    </PageTransition>
   );
 }
 
