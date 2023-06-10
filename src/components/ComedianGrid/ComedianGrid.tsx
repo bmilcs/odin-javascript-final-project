@@ -10,7 +10,7 @@ type Props = {
 function ComedianGrid({ data, title }: Props) {
   return (
     data && (
-      <section className='comedians'>
+      <section className='comedians column'>
         {title && <h3 className='comedians__header'>{title}</h3>}
         <div className='comedians__grid'>
           {data.map((comedian: IComedian) => (

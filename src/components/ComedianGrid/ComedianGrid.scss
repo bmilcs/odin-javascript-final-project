@@ -1,12 +1,14 @@
 .comedians {
+  margin-block: var(--content-spacing);
+
   // defaults & larger screen sizes
   &__header {
     margin-bottom: var(--header-spacing);
+    color: var(--clr-primary-100);
   }
 
   &__grid {
-    margin-bottom: var(--content-spacing);
-    gap: 1rem;
+    gap: var(--card-gap);
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
     justify-content: baseline;
