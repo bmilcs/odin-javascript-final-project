@@ -1,13 +1,13 @@
 .comedian {
   display: grid;
   justify-items: center;
-  gap: 2rem;
+  gap: var(--content-spacing);
+
+  margin-block: var(--content-spacing);
 
   @media (min-width: 53.125rem) {
     grid-template-columns: min-content 1fr;
   }
-
-  margin-bottom: 2rem;
 
   &__headshot {
     max-width: 37.5rem;

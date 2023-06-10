@@ -14,8 +14,8 @@ function Comedian() {
   const { comedian, specials, appearances } = useComedianData(Number(personId));
 
   return (
-    <div className='column'>
-      <div className='comedian'>
+    <>
+      <section className='comedian column'>
         {comedian && (
           <>
             {comedian.profile_path ? (
@@ -58,14 +58,14 @@ function Comedian() {
             </div>
           </>
         )}
-      </div>
+      </section>
 
       {specials && specials.length > 0 && <SpecialsGrid data={specials} title='Specials' />}
 
       {appearances && appearances.length > 0 && (
         <SpecialsGrid data={appearances} title='Appearances' />
       )}
-    </div>
+    </>
   );
 }
 
