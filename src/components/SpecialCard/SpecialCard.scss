@@ -1,49 +1,57 @@
 .special-card {
-  max-width: 18.75rem;
   position: relative;
   display: grid;
-  grid-template-rows: min-content 1fr;
-
-  a {
-    height: 10rem;
-  }
+  grid-template-rows: 1fr min-content;
 
   &__image {
-    height: 100%;
     width: 100%;
+    height: 100%;
     object-fit: cover;
+  }
+
+  .missing-image {
+    opacity: 30%;
+    filter: saturate(0);
   }
 
   &__year {
     position: absolute;
-    top: 0.75rem;
-    left: 0;
-    padding: 0.2rem 0.6rem;
+    top: 0rem;
+    right: 0rem;
+    padding: 0.2rem 0.5rem;
+    z-index: 2;
 
-    font-size: 0.9rem;
-    font-weight: bold;
+    font-size: 0.85rem;
 
-    border-radius: 0 var(--border-radius-100) var(--border-radius-100) 0;
+    border-radius: 0 0 0 var(--border-radius-200);
 
-    background: var(--clr-neutral-700);
+    background: var(--clr-neutral-800-transparent);
     color: var(--clr-primary-100);
   }
 
   // missing image placeholder
   &__svg {
-    padding: 1rem;
+    padding: 10%;
+    height: 100%;
   }
 
   &__content {
-    display: grid;
-    grid-template-columns: 1fr max-content;
-    align-items: center;
-    gap: 0.5rem;
+    margin-top: auto;
+    padding: 1rem 1rem;
+    display: flex;
+  }
 
+  &__content-text {
+    width: 100%;
     font-size: 0.9rem;
+  }
 
-    padding: 0.75rem 1rem;
+  &__special-name {
+    font-weight: bold;
+    color: var(--clr-primary-200);
+  }
 
-    height: 100%;
+  &__comedian-name {
+    color: var(--clr-primary-100);
   }
 }
