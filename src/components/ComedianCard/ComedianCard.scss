@@ -1,9 +1,7 @@
 .comedian-card {
-  max-width: 18.75rem;
-  display: grid;
-  grid-template-rows: 1fr max-content;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+
+  max-width: 15rem;
 
   a {
     height: 100%;
@@ -13,6 +11,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    padding: 0.25rem;
+    border-radius: var(--border-radius-200);
   }
 
   // missing image placeholder
@@ -21,10 +21,23 @@
   }
 
   &__details {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+
+    padding: 0.5rem;
+    background: var(--clr-neutral-800-transparent);
+  }
+
+  &__name {
+    color: var(--clr-primary-100);
+
+    font-size: 0.9rem;
+    font-weight: bold;
   }
 
   &__icons {
