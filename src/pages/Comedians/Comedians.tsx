@@ -2,13 +2,15 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { allComediansDataArr, fetchAllComedians } from '@/app/store';
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
 import { IComedian } from '@/firebase/database';
+import useLatestComedians from '@/hooks/useLatestComedians';
 import { useEffect, useState } from 'react';
 import './Comedians.scss';
 
 function Comedians() {
   const dispatch = useAppDispatch();
   const allComediansData = useAppSelector(allComediansDataArr);
-  const [alphabetizedComedians, setAlphabetizedComedians] = useState<IComedian[]>([]);
+  const [allComedians, setAllComedians] = useState<IComedian[]>([]);
+  const latestComedians = useLatestComedians();
 
   useEffect(() => {
     if (allComediansData.length === 0) {
@@ -18,13 +20,17 @@ function Comedians() {
 
     const comediansCopy = [...allComediansData];
     comediansCopy.sort((a, b) => (a.name > b.name ? 1 : -1));
-    setAlphabetizedComedians(comediansCopy);
+    setAllComedians(comediansCopy);
   }, [allComediansData]);
 
   return (
-    <div className='column'>
-      {alphabetizedComedians.length !== 0 && <ComedianGrid data={alphabetizedComedians} />}
-    </div>
+    <>
+      {latestComedians && latestComedians.length !== 0 && (
+        <ComedianGrid title='Recently Added Comedians' data={latestComedians} />
+      )}
+
+      {allComedians.length !== 0 && <ComedianGrid title='All Comedians' data={allComedians} />}
+    </>
   );
 }
 
