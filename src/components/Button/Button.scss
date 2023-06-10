@@ -33,7 +33,7 @@
     background: var(--clr-primary-200);
 
     &:hover {
-      background: var(--clr-accent-100);
+      background: var(--clr-accent-200);
     }
   }
 
@@ -52,7 +52,7 @@
   &__icon {
     background: none;
     color: var(--clr-primary-100);
-    padding: 0.25rem;
+    // padding: 0.25rem;
 
     &:hover {
       color: var(--clr-accent-200);
