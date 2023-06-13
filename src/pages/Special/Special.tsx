@@ -30,7 +30,7 @@ function Special() {
   return (
     <PageTransition>
       <>
-        {special && (
+        {special && (yearsAgo || isNotReleasedYet) && (
           <>
             <section className='special column'>
               <div className='special__data'>
@@ -45,7 +45,7 @@ function Special() {
                       <p className='special__years-ago'>
                         {yearsAgo === 0
                           ? 'Less than a year old'
-                          : `${yearsAgo} Year${yearsAgo > 1 && 's'} Old`}
+                          : `${yearsAgo} Year${yearsAgo > 1 ? 's' : ''} Old`}
                       </p>
                     )}
                   </>
