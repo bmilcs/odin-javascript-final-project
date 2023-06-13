@@ -75,7 +75,7 @@ function SearchResults() {
       .catch((error) => {
         setAddComedianPending(false);
         setShowError(true);
-        console.log('error: unable to add comedian.');
+        console.log({ error });
         console.log(error.message);
       });
   };

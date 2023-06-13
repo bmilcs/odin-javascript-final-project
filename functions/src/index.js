@@ -1,26 +1,18 @@
-// fix "Cannot redeclare block scoped variable" error across modules
-export {};
-
 const nodemailer = require('nodemailer');
 const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { parseISO, isAfter, parse, isBefore, isSameDay, format, addDays } = require('date-fns');
 
-exports.functions = functions;
-
 initializeApp();
 const db = getFirestore();
 
+const API_KEY = functions.config().tmdb.key;
 const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
 
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
 const TEST_MODE = false;
-
-// exports.API_KEY = API_KEY;
-
-const { fetchTmdbComedianData, fetchTmdbSpecialsData } = require('./tmdb.js');
 
 // maintenance
 
@@ -61,9 +53,9 @@ exports.processUpcomingSpecials = functions.pubsub.schedule('15 0 * * *').onRun(
 const getAllNewSpecialsAndUpdateDB = async () => {
   const allComediansDocData = await getFirebaseDoc('comedians', 'all');
   const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
-  const allComedianIds = Object.keys(allComediansDocData).map((id) => Number(id));
-  const allExistingSpecialIds = Object.keys(allSpecialsDocData).map((id) => Number(id));
-  const allNewSpecials = <IRawComedySpecialArray>[];
+  const allComedianIds = Object.keys(allComediansDocData);
+  const allExistingSpecialIds = Object.keys(allSpecialsDocData);
+  const allNewSpecials = [];
 
   // promises allow us to execute all db updates before issuing notifications
   const updateDbWithNewSpecials = allComedianIds.reduce(async (accumulatorPromise, comedianId) => {
@@ -88,17 +80,15 @@ const getAllNewSpecialsAndUpdateDB = async () => {
 
 // resolves with null if no new specials are present OR an array
 // of { comedianData, specialData } for each new special found
-const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecialIds: number[]) => {
+const updateDbWithAComediansNewSpecials = (comedianId, allExistingSpecialIds) => {
   return new Promise(async (resolve, reject) => {
     const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
 
-    const missingSpecialsRawData = fetchedSpecialsRawData.filter(
-      (fetchedSpecial: IRawComedySpecial) => {
-        return !allExistingSpecialIds.some(
-          (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
-        );
-      },
-    );
+    const missingSpecialsRawData = fetchedSpecialsRawData.filter((fetchedSpecial) => {
+      return !allExistingSpecialIds.some(
+        (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
+      );
+    });
 
     const hasNewSpecials = missingSpecialsRawData.length > 0;
     if (!hasNewSpecials) return resolve(null);
@@ -126,7 +116,7 @@ const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecia
       );
 
       // used to issue notifications from the parent function call
-      const addedSpecials = missingSpecialsRawData.map((special: IRawComedySpecial) => {
+      const addedSpecials = missingSpecialsRawData.map((special) => {
         return { specialRawData: special, comedianRawData };
       });
 
@@ -397,8 +387,6 @@ exports.addComedianAndSpecials = functions
 
     const specialsRawData = await fetchTmdbSpecialsData(id);
     const comedianRawData = await fetchTmdbComedianData(id);
-
-    console.log(comedianRawData);
 
     if (
       !comedianRawData.id ||
@@ -840,6 +828,7 @@ const isSpecialALatestRelease = (special, latestSpecialsObj) => {
     const existingDate = parseISO(latestSpecialsObj[existingSpecial].release_date);
     const isMoreRecent = isAfter(specialDate, existingDate);
     if (isMoreRecent) {
+      isALatestSpecial = true;
       return true;
     }
   }
@@ -896,6 +885,42 @@ const getUpcomingSpecialsData = async () => {
 // retrieve "/comedians/latest" doc
 const getLatestComediansData = async () => {
   return getFirebaseDoc('comedians', 'latest');
+};
+
+// tmdb-related functions
+
+const fetchTmdbComedianData = async (comedianId) => {
+  const comedianUrl = getPersonDetailsURL(comedianId);
+  const comedianData = await fetchData(comedianUrl);
+  return comedianData;
+};
+
+const fetchTmdbSpecialsData = async (comedianId) => {
+  const specialsUrl = getAllSpecialsForPersonURL(comedianId);
+  const { results: specialsData } = await fetchData(specialsUrl);
+  return specialsData;
+};
+
+const getTMDBImageURL = (path) => {
+  return `https://image.tmdb.org/t/p/original/${path}`;
+};
+
+const getAllSpecialsForPersonURL = function (personId) {
+  return `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_keywords=9716&with_cast=${personId}`;
+};
+
+const getPersonDetailsURL = function (personId) {
+  return `https://api.themoviedb.org/3/person/${personId}?api_key=${API_KEY}`;
+};
+
+const fetchData = async function (url) {
+  try {
+    const response = await fetch(url);
+    const json = await response.json();
+    return json;
+  } catch (err) {
+    return err;
+  }
 };
 
 // date functions
