@@ -7,7 +7,7 @@ export const getTMDBImageURL = (path: string) => {
   return `https://image.tmdb.org/t/p/original/${path}`;
 };
 
-export const getIMDBPersonURL = (id: string) => {
+export const getIMDBPersonURL = (id: number) => {
   return `https://www.imdb.com/name/${id}`;
 };
 
