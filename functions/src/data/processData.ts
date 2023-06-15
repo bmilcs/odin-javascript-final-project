@@ -77,16 +77,15 @@ interface ISpecialPage {
 interface ISpecialPageComedian {
   id: number;
   name: string;
-  profile_path?: string;
+  profile_path: string;
 }
 
 interface ISpecialPageSpecial {
   id: number;
   title: string;
-  type: string;
+  release_date: string;
   poster_path?: string;
   backdrop_path?: string;
-  release_date?: string;
   overview?: string;
   runtime?: string;
   status?: string;
@@ -111,9 +110,9 @@ exports.processSpecialPages = (
       id: +page.id,
       title: page.title,
       type: isSpecial(comedianRawData.name, page.title) ? 'special' : 'appearance',
+      release_date: page.release_date,
       ...(page.poster_path && { poster_path: page.poster_path }),
       ...(page.backdrop_path && { backdrop_path: page.backdrop_path }),
-      ...(page.release_date && { release_date: page.release_date }),
       ...(page.overview && { overview: page.overview }),
       ...(page.runtime && { runtime: page.runtime }),
       ...(page.status && { status: page.status }),
