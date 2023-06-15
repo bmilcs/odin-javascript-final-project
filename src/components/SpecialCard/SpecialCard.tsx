@@ -1,14 +1,14 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import Card from '@/components/Card/Card';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
-import { IComedianPageSpecialOrAppearance, ISpecial } from '@/firebase/database';
+import { IComedianPageRelease, ISpecial } from '@/firebase/database';
 import { formatDateYearOnly } from '@/utils/date';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import emptyStageImg from '../../assets/empty-stage.jpg';
 import './SpecialCard.scss';
 
-type TProps = { data: IComedianPageSpecialOrAppearance | ISpecial };
+type TProps = { data: IComedianPageRelease | ISpecial };
 
 function SpecialCard({ data }: TProps) {
   const { id, title, backdrop_path, poster_path, release_date } = data;

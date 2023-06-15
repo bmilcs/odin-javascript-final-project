@@ -3,9 +3,9 @@ import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/app/store';
 import Button from '@/components/Button/Button';
 import {
   IComedian,
-  IComedianPageSpecialOrAppearance,
+  IComedianPageRelease,
   ISpecial,
-  ISpecialPageComedianData,
+  ISpecialPageComedian,
 } from '@/firebase/database';
 import { toggleUserFavoriteInDB } from '@/firebase/functions';
 import { useState } from 'react';
@@ -14,7 +14,7 @@ import './FavoriteIcon.scss';
 
 type Props = {
   category: string;
-  data: ISpecial | IComedian | IComedianPageSpecialOrAppearance | ISpecialPageComedianData;
+  data: ISpecial | IComedian | IComedianPageRelease | ISpecialPageComedian;
 };
 
 function FavoriteIcon({ category, data }: Props) {

@@ -1,10 +1,10 @@
 import RevealChildren from '@/components/RevealChildren/RevealChildren';
-import { IComedianPageSpecialOrAppearance } from '@/firebase/database';
+import { IReleaseCard } from '@/firebase/database';
 import SpecialCard from '../SpecialCard/SpecialCard';
 import './SpecialsGrid.scss';
 
 type Props = {
-  data: IComedianPageSpecialOrAppearance[];
+  data: IReleaseCard[];
   title?: string;
 };
 

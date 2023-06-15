@@ -35,12 +35,13 @@ if (mode === 'dev') {
 // comedian pages
 //
 
-interface IComedianPageResponse {
-  personalData: IComedianPagePersonalData;
-  specials: IComedianPageSpecialOrAppearance[];
-  appearances: IComedianPageSpecialOrAppearance[];
+export interface IComedianPage {
+  comedian: IComedianPageComedian;
+  specials: IReleaseCard[];
+  appearances: IReleaseCard[];
 }
-export interface IComedianPagePersonalData {
+
+export interface IComedianPageComedian {
   name: string;
   id: number;
   profile_path: string;
@@ -49,21 +50,20 @@ export interface IComedianPagePersonalData {
   imdb_id?: string;
 }
 
-export interface IComedianPageSpecialOrAppearance {
+export interface IReleaseCard {
   id: number;
   title: string;
-  poster_path: string;
-  backdrop_path: string;
   release_date: string;
+  poster_path?: string;
+  backdrop_path?: string;
 }
 
-export type TComedianPageSpecialAppearanceArray = IComedianPageSpecialOrAppearance[];
-
+// TODO Add error handling
 export const getComedianPageFromDB = async (id: number) => {
   const pageRef = doc(db, 'comedianPages', id.toString());
   const pageResponse = await getDoc(pageRef);
   if (pageResponse.exists()) {
-    return pageResponse.data() as IComedianPageResponse;
+    return pageResponse.data() as IComedianPage;
   }
 };
 
@@ -71,48 +71,36 @@ export const getComedianPageFromDB = async (id: number) => {
 // specials pages
 //
 
-export interface ISpecialPageResponse {
-  comedian: ISpecialPageComedianData;
-  data: ISpecialPageData;
-  otherSpecials: ISpecialPageOtherContent[];
-  otherAppearances: ISpecialPageOtherContent[];
+export interface ISpecialPage {
+  comedian: ISpecialPageComedian;
+  special: ISpecialPageSpecial;
+  otherSpecials: IReleaseCard[];
+  otherAppearances: IReleaseCard[];
 }
 
-export interface ISpecialPageComedianData {
+export interface ISpecialPageComedian {
   id: number;
   name: string;
   profile_path: string;
 }
-export interface ISpecialPageData {
-  comedian: string;
-  comedianId: number;
-  profile_path: string;
-  id: number;
-  title: string;
-  poster_path: string;
-  backdrop_path: string;
-  runtime: string;
-  status: string;
-  overview: string;
-  homepage: string;
-  release_date: string;
-  type: 'special' | 'appearance';
-}
 
-export interface ISpecialPageOtherContent {
+export interface ISpecialPageSpecial {
+  id: number;
   title: string;
   release_date: string;
-  backdrop_path: string;
-  poster_path: string;
-  id: number;
-  type: 'special' | 'appearance';
+  poster_path?: string;
+  backdrop_path?: string;
+  overview?: string;
+  runtime?: string;
+  status?: string;
+  homepage?: string;
 }
 
 export const getSpecialOrAppearancePageFromDB = async (specialId: number) => {
   const pageRef = doc(db, 'specialPages', specialId.toString());
   const pageResponse = await getDoc(pageRef);
   if (pageResponse.exists()) {
-    return pageResponse.data() as ISpecialPageResponse;
+    return pageResponse.data() as ISpecialPage;
   }
 };
 

@@ -16,7 +16,7 @@ import './Special.scss';
 
 function Special() {
   const { specialId } = useParams();
-  const { comedian, special, otherContent } = useSpecialData(Number(specialId));
+  const { comedian, special, otherSpecials, otherAppearances } = useSpecialData(Number(specialId));
   const [yearsAgo, setYearsAgo] = useState<number | null>(null);
   const [isNotReleasedYet, setIsNotReleasedYet] = useState<boolean | null>(null);
 
@@ -25,12 +25,12 @@ function Special() {
 
     setYearsAgo(formatDateNumberOfYearsPassed(special.release_date));
     setIsNotReleasedYet(isAFutureDate(special.release_date));
-  }, [special]);
+  }, [special, isNotReleasedYet, yearsAgo]);
 
   return (
     <PageTransition>
       <>
-        {special && (yearsAgo || isNotReleasedYet) && (
+        {special && (yearsAgo !== null || isNotReleasedYet !== null) && (
           <>
             <section className='special column'>
               <div className='special__data'>
@@ -98,8 +98,12 @@ function Special() {
           </>
         )}
 
-        {otherContent && comedian && (
-          <SpecialsGrid title={`Other Content From ${comedian.name}`} data={otherContent} />
+        {otherSpecials && comedian && (
+          <SpecialsGrid title={`${comedian.name}'s Specials`} data={otherSpecials} />
+        )}
+
+        {otherAppearances && comedian && (
+          <SpecialsGrid title={`${comedian.name}'s Appearances`} data={otherAppearances} />
         )}
       </>
     </PageTransition>
