@@ -37,16 +37,16 @@ if (mode === 'dev') {
 
 interface IComedianPageResponse {
   personalData: IComedianPagePersonalData;
-  specials: { [key: string]: IComedianPageSpecialOrAppearance };
-  appearances: { [key: string]: IComedianPageSpecialOrAppearance };
+  specials: IComedianPageSpecialOrAppearance[];
+  appearances: IComedianPageSpecialOrAppearance[];
 }
 export interface IComedianPagePersonalData {
   name: string;
   id: number;
   profile_path: string;
-  biography: string;
-  birthday: string;
-  imdb_id: string;
+  biography?: string;
+  birthday?: string;
+  imdb_id?: string;
 }
 
 export interface IComedianPageSpecialOrAppearance {
@@ -74,7 +74,8 @@ export const getComedianPageFromDB = async (id: number) => {
 export interface ISpecialPageResponse {
   comedian: ISpecialPageComedianData;
   data: ISpecialPageData;
-  otherContent: ISpecialPageOtherContent[];
+  otherSpecials: ISpecialPageOtherContent[];
+  otherAppearances: ISpecialPageOtherContent[];
 }
 
 export interface ISpecialPageComedianData {

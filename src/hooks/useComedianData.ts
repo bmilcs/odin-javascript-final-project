@@ -18,25 +18,17 @@ const useComedianData = (comedianId: number) => {
 
       const personalData = pageRawData.personalData;
 
-      const specials = Object.keys(pageRawData.specials)
-        .map((specialId) => {
-          return pageRawData.specials[specialId];
-        })
-        .sort((a, b) => {
-          return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
-        });
+      const specialsArray = pageRawData.specials.sort((a, b) => {
+        return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
+      });
 
-      const appearances = Object.keys(pageRawData.appearances)
-        .map((appearanceId) => {
-          return pageRawData.appearances[appearanceId];
-        })
-        .sort((a, b) => {
-          return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
-        });
+      const appearancesArray = pageRawData.appearances.sort((a, b) => {
+        return isDateOneBeforeDateTwo(a.release_date, b.release_date) ? 1 : -1;
+      });
 
       setComedian(personalData);
-      if (specials) setSpecials(specials);
-      if (appearances) setAppearances(appearances);
+      if (specialsArray.length > 0) setSpecials(specialsArray);
+      if (appearancesArray.length > 0) setAppearances(appearancesArray);
     };
 
     getDataFromDB();
