@@ -1,13 +1,26 @@
-// fix "Cannot redeclare block scoped variable" error across modules
+// fixes "Cannot redeclare block scoped variable" error across modules
 export {};
 
-const nodemailer = require('nodemailer');
 const functions = require('firebase-functions');
+exports.functions = functions;
+
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { parseISO, isAfter, parse, isBefore, isSameDay, format, addDays } = require('date-fns');
-
-exports.functions = functions;
+const nodemailer = require('nodemailer');
+const { fetchTmdbComedianData, fetchTmdbSpecialsData, getTMDBImageURL } = require('./api/tmdb.js');
+const {
+  isSpecialNotReleasedYet,
+  isSpecialReleasedToday,
+  parseISO,
+  isAfter,
+  getReleaseDateType,
+} = require('./utils/dates.js');
+const {
+  processComedianPage,
+  processSpecialPages,
+  processAllComediansField,
+  processAllSpecialsFields,
+} = require('./data/processData.js');
 
 initializeApp();
 const db = getFirestore();
@@ -17,10 +30,6 @@ const GMAIL_PASSWORD = functions.config().gmail.password;
 
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
 const TEST_MODE = false;
-
-// exports.API_KEY = API_KEY;
-
-const { fetchTmdbComedianData, fetchTmdbSpecialsData } = require('./tmdb.js');
 
 // maintenance
 
@@ -58,12 +67,17 @@ exports.processUpcomingSpecials = functions.pubsub.schedule('15 0 * * *').onRun(
   return null;
 });
 
+interface INewSpecialsAdded {
+  specialRawData: IRawSpecial;
+  comedianRawData: IRawComedian;
+}
+
 const getAllNewSpecialsAndUpdateDB = async () => {
   const allComediansDocData = await getFirebaseDoc('comedians', 'all');
   const allSpecialsDocData = await getFirebaseDoc('specials', 'all');
   const allComedianIds = Object.keys(allComediansDocData).map((id) => Number(id));
   const allExistingSpecialIds = Object.keys(allSpecialsDocData).map((id) => Number(id));
-  const allNewSpecials = <IRawComedySpecialArray>[];
+  const allNewSpecials = <INewSpecialsAdded[]>[];
 
   // promises allow us to execute all db updates before issuing notifications
   const updateDbWithNewSpecials = allComedianIds.reduce(async (accumulatorPromise, comedianId) => {
@@ -71,7 +85,9 @@ const getAllNewSpecialsAndUpdateDB = async () => {
       return updateDbWithAComediansNewSpecials(comedianId, allExistingSpecialIds)
         .then((newSpecials) => {
           if (!newSpecials) return;
-          newSpecials.forEach((newSpecial) => allNewSpecials.push(newSpecial));
+          (newSpecials as INewSpecialsAdded[]).forEach((newSpecial) =>
+            allNewSpecials.push(newSpecial),
+          );
         })
         .catch((e) => {
           console.log(e);
@@ -88,17 +104,15 @@ const getAllNewSpecialsAndUpdateDB = async () => {
 
 // resolves with null if no new specials are present OR an array
 // of { comedianData, specialData } for each new special found
-const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecialIds: number[]) => {
+const updateDbWithAComediansNewSpecials = (comedianId: string, allExistingSpecialIds: number[]) => {
   return new Promise(async (resolve, reject) => {
     const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
 
-    const missingSpecialsRawData = fetchedSpecialsRawData.filter(
-      (fetchedSpecial: IRawComedySpecial) => {
-        return !allExistingSpecialIds.some(
-          (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
-        );
-      },
-    );
+    const missingSpecialsRawData = fetchedSpecialsRawData.filter((fetchedSpecial: IRawSpecial) => {
+      return !allExistingSpecialIds.some(
+        (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
+      );
+    });
 
     const hasNewSpecials = missingSpecialsRawData.length > 0;
     if (!hasNewSpecials) return resolve(null);
@@ -126,9 +140,11 @@ const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecia
       );
 
       // used to issue notifications from the parent function call
-      const addedSpecials = missingSpecialsRawData.map((special: IRawComedySpecial) => {
-        return { specialRawData: special, comedianRawData };
-      });
+      const addedSpecials = <INewSpecialsAdded[]>missingSpecialsRawData.map(
+        (special: IRawSpecial) => {
+          return { specialRawData: special, comedianRawData };
+        },
+      );
 
       return resolve(addedSpecials);
     } catch (e) {
@@ -141,7 +157,7 @@ const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecia
 // notifications are created after new specials are found during updates
 // - stored in: /users/{uid}/notifications: []
 
-const issueAllNotifications = async (allNewSpecials) => {
+const issueAllNotifications = async (allNewSpecials: INewSpecialsAdded[]) => {
   await allNewSpecials.forEach(async ({ comedianRawData, specialRawData }) => {
     const comedianId = comedianRawData.id;
 
@@ -192,7 +208,11 @@ const issueAllNotifications = async (allNewSpecials) => {
   return;
 };
 
-const createFrontendUserNotification = async (userId, comedianRawData, specialRawData) => {
+const createFrontendUserNotification = async (
+  userId: string,
+  comedianRawData: IRawComedian,
+  specialRawData: IRawSpecial,
+) => {
   const notification = {
     comedian: {
       name: comedianRawData.name,
@@ -217,18 +237,18 @@ const createFrontendUserNotification = async (userId, comedianRawData, specialRa
 };
 
 const sendEmailNotifications = async (
-  subscriberEmailBccList,
-  notificationType,
-  specialRawData,
-  comedianRawData,
+  subscriberEmailBccList: string,
+  releaseDateType: 'upcoming' | 'today' | 'available',
+  specialRawData: IRawSpecial,
+  comedianRawData: IRawComedian,
 ) => {
   const { id, title, poster_path } = specialRawData;
   const { name } = comedianRawData;
 
   const imgStyle = `max-width: 400px; max-height: 600px; border-radius: 8px;`;
-  const imgElement = `<img alt=${title} src=${getTMDBImageURL(
-    poster_path,
-  )} style="${imgStyle}"/></tr>`;
+  const imgElement = poster_path
+    ? `<img alt=${title} src=${getTMDBImageURL(poster_path)} style="${imgStyle}"/></tr>`
+    : '';
   const headerElement = `<h1 style="margin-bottom: 0; line-height: 1; margin-inline: auto;">thecomedydb</h1>`;
   const pElement = `<p>A favorite comedian of yours has a new special! Check it out at the link below:</p>`;
   const specialTitleElement = `<a href="https://comedy.bmilcs.com/specials/${id}"><h2>${title}</h2></a>`;
@@ -238,9 +258,9 @@ const sendEmailNotifications = async (
 
   let subject;
 
-  if (notificationType === 'upcoming') {
+  if (releaseDateType === 'upcoming') {
     subject = `${name}'s new comedy special is coming out soon!`;
-  } else if (notificationType === 'today') {
+  } else if (releaseDateType === 'today') {
     subject = `${name}'s new comedy special is available today!`;
   } else {
     subject = `${name}'s comedy special is available!`;
@@ -261,12 +281,6 @@ const sendEmailNotifications = async (
   return await transporter.sendMail(message);
 };
 
-const getReleaseDateType = (special) => {
-  if (isSpecialNotReleasedYet(special)) return 'upcoming';
-  else if (isSpecialReleasedToday(special)) return 'today';
-  else return 'available';
-};
-
 // checks /specials/upcoming for specials released today.
 // if found, it moves the special to /specials/latest
 // and returns an array of specials released today (an array
@@ -277,8 +291,8 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
     const upcomingSpecialsData = await getFirebaseDoc('specials', 'upcoming');
     const upcomingSpecialIds = Object.keys(upcomingSpecialsData);
 
-    const noUpcomingReleasesToCheck = upcomingSpecialIds.length === 0;
-    if (noUpcomingReleasesToCheck) return;
+    const noUpcomingReleases = upcomingSpecialIds.length === 0;
+    if (noUpcomingReleases) return;
 
     const todaysReleasesDbData = upcomingSpecialIds
       .filter((specialId) => {
@@ -316,6 +330,7 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
     return todaysReleasesDbData;
   } catch (e) {
     console.log(e);
+    throw e;
   }
 };
 
@@ -323,7 +338,7 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
 // and the special's data for this fn is pulled from /specials/upcoming
 // therefore, todays releases need to be processed before passing them to
 // issueAllNotifications()
-const issueNotificationsForTodaysReleases = async (specialsDbData) => {
+const issueNotificationsForTodaysReleases = async (specialsDbData: IUpcomingLatestSpecials) => {
   const todaysReleasesParsedForNotifications = [];
 
   for await (const specialData of specialsDbData) {
@@ -398,8 +413,6 @@ exports.addComedianAndSpecials = functions
     const specialsRawData = await fetchTmdbSpecialsData(id);
     const comedianRawData = await fetchTmdbComedianData(id);
 
-    console.log(comedianRawData);
-
     if (
       !comedianRawData.id ||
       comedianRawData.success === false ||
@@ -430,113 +443,19 @@ exports.addComedianAndSpecials = functions
 
 // firestore: /comedianPages/{comedianId}/
 
-const addComedianPageDoc = (comedianRawData, specialsRawData) => {
-  const comedian = {
-    name: comedianRawData.name,
-    id: comedianRawData.id,
-    profile_path: comedianRawData.profile_path,
-    biography: comedianRawData.biography,
-    birthday: comedianRawData.birthday,
-    imdb_id: comedianRawData.imdb_id,
-  };
-
-  // content is categorized by "special" and "appearance"
-  const categorizedContent = specialsRawData.reduce(
-    (prev, special) => {
-      if (isSpecial(comedianRawData.name, special.title)) {
-        return {
-          ...prev,
-          specials: {
-            ...prev.specials,
-            [special.id]: {
-              id: special.id,
-              title: special.title,
-              poster_path: special.poster_path,
-              backdrop_path: special.backdrop_path,
-              release_date: special.release_date,
-            },
-          },
-        };
-      } else if (isAppearance(comedianRawData.name, special.title)) {
-        return {
-          ...prev,
-          appearances: {
-            ...prev.appearances,
-            [special.id]: {
-              id: special.id,
-              title: special.title,
-              poster_path: special.poster_path,
-              backdrop_path: special.backdrop_path,
-              release_date: special.release_date,
-            },
-          },
-        };
-      } else {
-        return prev;
-      }
-    },
-    { specials: {}, appearances: {} },
-  );
-
-  const pageData = {
-    personalData: { ...comedian },
-    ...categorizedContent,
-  };
-
-  const comedianId = comedianRawData.id;
-  return db.collection('comedianPages').doc(comedianId.toString()).set(pageData);
+const addComedianPageDoc = (comedianRawData: IRawComedian, specialsRawData: IRawSpecial[]) => {
+  const pageData = processComedianPage(comedianRawData, specialsRawData);
+  const comedianId = comedianRawData.id.toString();
+  return db.collection('comedianPages').doc(comedianId).set(pageData);
 };
 
 // firestore: /specialPages/{id}
 
-const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
-  const comedian = {
-    comedian: comedianRawData.name,
-    comedianId: comedianRawData.id,
-    profile_path: comedianRawData.profile_path,
-  };
-
-  const specials = specialsRawData.reduce((prev, special, index) => {
-    // each special page features the details of the targeted special
-    // and provides links to the comedian & other content by the same comedian
-
-    const otherContentByComedian = specialsRawData
-      .filter((x, i) => i !== index)
-      .map((other) => {
-        return {
-          id: other.id,
-          title: other.title,
-          release_date: other.release_date,
-          poster_path: other.poster_path,
-          backdrop_path: other.backdrop_path,
-        };
-      });
-
-    return {
-      ...prev,
-      [special.id]: {
-        comedian: {
-          name: comedianRawData.name,
-          id: comedianRawData.id,
-          profile_path: comedianRawData.profile_path,
-        },
-        data: {
-          id: special.id,
-          title: special.title,
-          ...(special.poster_path && { poster_path: special.poster_path }),
-          ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
-          ...(special.runtime && { runtime: special.runtime }),
-          ...(special.status && { status: special.status }),
-          ...(special.overview && { overview: special.overview }),
-          ...(special.homepage && { homepage: special.homepage }),
-          ...(special.release_date && { release_date: special.release_date }),
-          ...(isSpecial(comedianRawData.name, special.title) && { type: 'special' }),
-          ...(isAppearance(comedianRawData.name, special.title) && { type: 'appearance' }),
-        },
-        otherContent: otherContentByComedian,
-      },
-    };
-  }, {});
+const addSpecialsPageDocs = async (
+  comedianRawData: IRawComedian,
+  specialsRawData: IRawSpecial[],
+) => {
+  const { specials, comedian } = processSpecialPages(comedianRawData, specialsRawData);
 
   const batch = db.batch();
   for (const special in specials) {
@@ -553,42 +472,21 @@ const addSpecialsPageDocs = async (comedianRawData, specialsRawData) => {
 
 // firestore: /comedians/all
 
-const addComedianToAllComediansDoc = async (comedianRawData) => {
-  const comedian = {
-    [comedianRawData.id]: {
-      name: comedianRawData.name,
-      id: comedianRawData.id,
-      profile_path: comedianRawData.profile_path,
-      favorites: 0,
-    },
-  };
-
+const addComedianToAllComediansDoc = async (comedianRawData: IRawComedian) => {
+  const comedian = processAllComediansField(comedianRawData);
   return await db.collection('comedians').doc('all').set(comedian, { merge: true });
 };
 
 // firestore: /specials/all
 
-const addSpecialsToAllSpecialsDoc = async (specialsRawData) => {
-  const specials = specialsRawData.reduce((prev, special) => {
-    return {
-      ...prev,
-      [special.id]: {
-        id: special.id,
-        title: special.title,
-        poster_path: special.poster_path,
-        backdrop_path: special.backdrop_path,
-        release_date: special.release_date,
-        favorites: 0,
-      },
-    };
-  }, {});
-
+const addSpecialsToAllSpecialsDoc = async (specialsRawData: IRawSpecial[]) => {
+  const specials = processAllSpecialsFields(specialsRawData);
   return await db.collection('specials').doc('all').set(specials, { merge: true });
 };
 
 // firestore: /comedians/latest
 
-const addComedianToLatestComediansDoc = async (comedianRawData) => {
+const addComedianToLatestComediansDoc = async (comedianRawData: IRawComedian) => {
   const comedian = {
     [comedianRawData.id]: {
       name: comedianRawData.name,
@@ -607,9 +505,24 @@ const addComedianToLatestComediansDoc = async (comedianRawData) => {
   return await db.collection('comedians').doc('latest').set(latestTenComedians);
 };
 
+interface IUpcomingLatestSpecials {
+  [id: string]: {
+    comedianId: string;
+    name: string;
+    id: string;
+    title: string;
+    poster_path: string;
+    backdrop_path: string;
+    release_date: string;
+  };
+}
+
 // firestore: /specials/latest & /specials/upcoming
 
-const addSpecialsToLatestOrUpcomingSpecialsDocs = async (comedianRawData, specialsRawData) => {
+const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
+  comedianRawData: IRawComedian,
+  specialsRawData: IRawSpecial[],
+) => {
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -668,11 +581,26 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (comedianRawData, specia
 // - updates personal favorites: /users/{userId}/favorites: [] array
 // - updates content favorite count: /comedians/all/{comedianId} (or /specials/all): favorites: +/-1;
 
+interface IComedianOrSpecial {
+  backdrop_path: string;
+  comedianId: string;
+  release_date: string;
+  name: string;
+  id: string;
+  title: string;
+  poster_path: string;
+}
+
+interface IToggleUserFavoriteData {
+  favoriteId: string;
+  data: IComedianOrSpecial;
+}
+
 exports.toggleUserFavorite = functions
   .runWith({
     enforceAppCheck: true,
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (data: IToggleUserFavoriteData, context) => {
     // app check w/ recaptcha v3
     if (context.app == undefined) {
       throw new functions.https.HttpsError(
@@ -743,7 +671,7 @@ exports.toggleUserFavorite = functions
     };
   });
 
-const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
+const subscribeUserToComedian = async (userId: string, userEmail: string, comedianId: string) => {
   // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   return await comedianSubscribersDocRef.set(
@@ -757,7 +685,7 @@ const subscribeUserToComedian = async (userId, userEmail, comedianId) => {
   );
 };
 
-const unsubscribeUserToComedian = async (userId, userEmail, comedianId) => {
+const unsubscribeUserToComedian = async (userId: string, userEmail: string, comedianId: string) => {
   // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   return await comedianSubscribersDocRef.update({
@@ -814,25 +742,11 @@ const getNewTopFavorites = (allComediansOrAllSpecialsDocData, favoriteCountLimit
     }, {});
 };
 
-const isSpecial = (comedianName, title) => {
-  const [firstName, lastName] = comedianName.split(' ');
-  const titlePrefix = title.split(':')[0];
-  const isSpecial = title.includes(firstName) && title.includes(lastName);
-  const isAppearance = titlePrefix.includes('Presents');
-  return isSpecial && !isAppearance ? true : false;
-};
-
-const isAppearance = (comedianName, title) => {
-  const [firstName, lastName] = comedianName.split(' ');
-  const titlePrefix = title.split(':')[0];
-  const isAppearance =
-    titlePrefix.includes('Presents') ||
-    !(titlePrefix.includes(firstName) && titlePrefix.includes(lastName));
-  return isAppearance ? true : false;
-};
-
 // returns true if a special's date is after one of the latest specials dates
-const isSpecialALatestRelease = (special, latestSpecialsObj) => {
+const isSpecialALatestRelease = (
+  special: IRawSpecial,
+  latestSpecialsObj: IUpcomingLatestSpecials,
+) => {
   const specialDate = parseISO(special.release_date);
   // when /specials/latest is empty, accept any special as a latest release
   if (!latestSpecialsObj || Object.keys(latestSpecialsObj).length === 0) return true;
@@ -898,32 +812,6 @@ const getLatestComediansData = async () => {
   return getFirebaseDoc('comedians', 'latest');
 };
 
-// date functions
-
-const getTodayObj = () => new Date();
-const getDateObj = (dateString) => parse(dateString, 'yyyy-MM-dd', new Date());
-const formatDate = (dateObj) => format(dateObj, 'yyyy-MM-dd');
-
-const isAFutureDate = (dateString) => {
-  const date = getDateObj(dateString);
-  return isBefore(getTodayObj(), date);
-};
-
-const isToday = (dateString) => {
-  const date = getDateObj(dateString);
-  return isSameDay(getTodayObj(), date);
-};
-
-const isSpecialNotReleasedYet = (special) => {
-  const specialDate = special.release_date;
-  return isAFutureDate(specialDate);
-};
-
-const isSpecialReleasedToday = (special) => {
-  const specialDate = special.release_date;
-  return isToday(specialDate);
-};
-
 // this test deletes random specials from the database & runs an update.
 // it checks that the deleted specials are found & added back to the db
 const testGetAllNewSpecialsAndUpdateDb = async () => {
@@ -931,7 +819,7 @@ const testGetAllNewSpecialsAndUpdateDb = async () => {
 
   const allSpecialsInDb = await getFirebaseDoc('specials', 'all');
   const allSpecialIdsInDb = Object.keys(allSpecialsInDb);
-  const randomSpecialsToDelete = [];
+  const randomSpecialsToDelete = <{ id: string; title: string }[]>[];
 
   // delete 3 random specials from the db
   for (let x = 0; x < 3; x++) {
@@ -989,7 +877,7 @@ const testGetAllNewSpecialsAndUpdateDb = async () => {
   console.log('--> TEST COMPLETE');
 };
 
-const getRandomInt = (maxVal) => Math.floor(Math.random() * (maxVal - 0) + 0);
+const getRandomInt = (maxVal: number) => Math.floor(Math.random() * (maxVal - 0) + 0);
 
 const testProcessUpcomingSpecials = async () => {
   const today = formatDate(getTodayObj());
@@ -1036,7 +924,7 @@ const testProcessUpcomingSpecials = async () => {
     await issueNotificationsForTodaysReleases(todaysReleases);
 
     console.log('--> SUCCESS: Completed process upcoming specials test');
-  } catch (e) {
+  } catch (e: any) {
     console.log(`--> TEST ERROR: ${e.message}`);
   }
 };
