@@ -1,5 +1,24 @@
-interface IComedianPageContent {
-  id: string;
+//
+// Comedian Pages
+//
+
+interface IComedianPage {
+  comedian: IComedianPageComedian;
+  specials: IReleaseCard[];
+  appearances: IReleaseCard[];
+}
+
+interface IComedianPageComedian {
+  name: string;
+  id: number;
+  profile_path: string;
+  biography?: string;
+  birthday?: string;
+  imdb_id?: string;
+}
+
+interface IReleaseCard {
+  id: number;
   title: string;
   release_date: string;
   poster_path?: string;
@@ -16,12 +35,12 @@ exports.processComedianPage = (comedianRawData: IRawComedian, specialsRawData: I
     ...(comedianRawData.imdb_id && { imdb_id: comedianRawData.imdb_id }),
   };
 
-  const specials = <IComedianPageContent[]>[];
-  const appearances = <IComedianPageContent[]>[];
+  const specials = <IReleaseCard[]>[];
+  const appearances = <IReleaseCard[]>[];
 
   specialsRawData.forEach((special: IRawSpecial) => {
     const contentData = {
-      id: special.id,
+      id: +special.id,
       title: special.title,
       release_date: special.release_date,
       ...(special.poster_path && { poster_path: special.poster_path }),
@@ -36,7 +55,7 @@ exports.processComedianPage = (comedianRawData: IRawComedian, specialsRawData: I
   });
 
   const pageData = {
-    personalData: { ...comedian },
+    comedian,
     specials,
     appearances,
   };
@@ -44,84 +63,99 @@ exports.processComedianPage = (comedianRawData: IRawComedian, specialsRawData: I
   return pageData;
 };
 
-exports.processSpecialPages = (comedianRawData: IRawComedian, specialsRawData: IRawSpecial[]) => {
+//
+// Special Pages
+//
+
+interface ISpecialPage {
+  comedian: ISpecialPageComedian;
+  special: ISpecialPageSpecial;
+  otherSpecials: IReleaseCard[];
+  otherAppearances: IReleaseCard[];
+}
+
+interface ISpecialPageComedian {
+  id: number;
+  name: string;
+  profile_path?: string;
+}
+
+interface ISpecialPageSpecial {
+  id: number;
+  title: string;
+  type: string;
+  poster_path?: string;
+  backdrop_path?: string;
+  release_date?: string;
+  overview?: string;
+  runtime?: string;
+  status?: string;
+  homepage?: string;
+}
+
+exports.processSpecialPages = (
+  comedianRawData: IRawComedian,
+  specialsRawData: IRawSpecial[],
+): ISpecialPage[] => {
+  // needed for each special page
   const comedian = {
-    comedian: comedianRawData.name,
-    comedianId: comedianRawData.id,
+    name: comedianRawData.name,
+    id: comedianRawData.id,
     profile_path: comedianRawData.profile_path,
   };
 
   // each special page features the details of the targeted special
-  // and provides links to the comedian & other content by the same comedian
-  const specials = specialsRawData.reduce((prev, special, index) => {
-    const categorizedOtherContent = specialsRawData.reduce(
-      (prev, special, i) => {
-        // skip the current special
-        if (index === i) return prev;
+  // and provides links to other content by the same comedian
+  const specialPages = specialsRawData.map((page) => {
+    const special = {
+      id: +page.id,
+      title: page.title,
+      type: isSpecial(comedianRawData.name, page.title) ? 'special' : 'appearance',
+      ...(page.poster_path && { poster_path: page.poster_path }),
+      ...(page.backdrop_path && { backdrop_path: page.backdrop_path }),
+      ...(page.release_date && { release_date: page.release_date }),
+      ...(page.overview && { overview: page.overview }),
+      ...(page.runtime && { runtime: page.runtime }),
+      ...(page.status && { status: page.status }),
+      ...(page.homepage && { homepage: page.homepage }),
+    };
 
-        if (isSpecial(comedianRawData.name, special.title)) {
-          return {
-            ...prev,
-            specials: {
-              ...prev.specials,
-              [special.id]: {
-                id: special.id,
-                title: special.title,
-                release_date: special.release_date,
-                ...(special.poster_path && { poster_path: special.poster_path }),
-                ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
-              },
-            },
-          };
-        } else if (isAppearance(comedianRawData.name, special.title)) {
-          return {
-            ...prev,
-            appearances: {
-              ...prev.appearances,
-              [special.id]: {
-                id: special.id,
-                title: special.title,
-                release_date: special.release_date,
-                ...(special.poster_path && { poster_path: special.poster_path }),
-                ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
-              },
-            },
-          };
-        } else {
-          return prev;
-        }
-      },
-      { specials: {}, appearances: {} },
-    );
+    const otherSpecials = <IReleaseCard[]>[];
+    const otherAppearances = <IReleaseCard[]>[];
+
+    specialsRawData.forEach((otherContent) => {
+      // skip the current special
+      if (page.id === otherContent.id) return;
+
+      const otherContentData = {
+        id: otherContent.id,
+        title: otherContent.title,
+        release_date: otherContent.release_date,
+        ...(otherContent.poster_path && { poster_path: otherContent.poster_path }),
+        ...(otherContent.backdrop_path && { backdrop_path: otherContent.backdrop_path }),
+      };
+
+      if (isSpecial(comedianRawData.name, otherContent.title)) {
+        otherSpecials.push(otherContentData);
+      } else if (isAppearance(comedianRawData.name, otherContent.title)) {
+        otherAppearances.push(otherContentData);
+      }
+    });
 
     return {
-      ...prev,
-      [special.id]: {
-        comedian: {
-          name: comedianRawData.name,
-          id: comedianRawData.id,
-          ...(comedianRawData && { profile_path: comedianRawData.profile_path }),
-        },
-        data: {
-          id: special.id,
-          title: special.title,
-          type: isSpecial(comedianRawData.name, special.title) ? 'special' : 'appearance',
-          ...(special.poster_path && { poster_path: special.poster_path }),
-          ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
-          ...(special.release_date && { release_date: special.release_date }),
-          ...(special.overview && { overview: special.overview }),
-          ...(special.runtime && { runtime: special.runtime }),
-          ...(special.status && { status: special.status }),
-          ...(special.homepage && { homepage: special.homepage }),
-        },
-        otherSpecials: categorizedOtherContent.specials,
-        otherAppearances: categorizedOtherContent.appearances,
-      },
+      comedian,
+      special,
+      otherSpecials,
+      otherAppearances,
     };
-  }, {});
+  });
 
-  return { comedian, specials };
+  return specialPages;
 };
+
+//
+// /comedians/all/{fields}
+//
 
 exports.processAllComediansField = (comedianRawData: IRawComedian) => {
   const comedian = {
@@ -135,6 +169,10 @@ exports.processAllComediansField = (comedianRawData: IRawComedian) => {
 
   return comedian;
 };
+
+//
+// /specials/all/{fields}
+//
 
 exports.processAllSpecialsFields = (specialsRawData: IRawSpecial[]) => {
   const specials = specialsRawData.reduce((prev, special) => {
@@ -153,6 +191,48 @@ exports.processAllSpecialsFields = (specialsRawData: IRawSpecial[]) => {
 
   return specials;
 };
+
+//
+//
+//
+
+exports.processUserNotification = (comedianRawData: IRawComedian, specialRawData: IRawSpecial) => {
+  const notification = {
+    comedian: {
+      name: comedianRawData.name,
+      id: comedianRawData.id,
+      profile_path: comedianRawData.profile_path,
+    },
+    data: {
+      id: specialRawData.id,
+      title: specialRawData.title,
+      poster_path: specialRawData.poster_path,
+      backdrop_path: specialRawData.backdrop_path,
+      release_date: specialRawData.release_date,
+    },
+  };
+
+  return notification;
+};
+
+//
+// Latest Comedians Field
+//
+
+exports.processLatestComediansField = (comedianRawData: IRawComedian, date: string) => {
+  return {
+    [comedianRawData.id]: {
+      name: comedianRawData.name,
+      id: comedianRawData.id,
+      profile_path: comedianRawData.profile_path,
+      dateAdded: date,
+    },
+  };
+};
+
+//
+// Latest / Upcoming Fields
+//
 
 const isSpecial = (comedianName: string, title: string) => {
   const [firstName, lastName] = comedianName.split(' ');

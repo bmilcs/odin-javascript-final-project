@@ -20,6 +20,8 @@ const {
   processSpecialPages,
   processAllComediansField,
   processAllSpecialsFields,
+  processUserNotification,
+  processLatestComediansField,
 } = require('./data/processData.js');
 
 initializeApp();
@@ -104,7 +106,7 @@ const getAllNewSpecialsAndUpdateDB = async () => {
 
 // resolves with null if no new specials are present OR an array
 // of { comedianData, specialData } for each new special found
-const updateDbWithAComediansNewSpecials = (comedianId: string, allExistingSpecialIds: number[]) => {
+const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecialIds: number[]) => {
   return new Promise(async (resolve, reject) => {
     const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
 
@@ -196,7 +198,7 @@ const issueAllNotifications = async (allNewSpecials: INewSpecialsAdded[]) => {
 
     for await (const userId of allSubscriberUserIds) {
       try {
-        await createFrontendUserNotification(userId, comedianRawData, specialRawData);
+        await createFrontendUserNotification(+userId, comedianRawData, specialRawData);
       } catch (e) {
         console.log(`--> ERROR: Unable to create front end notification for ${userId}\n${e}`);
         console.log(e);
@@ -209,24 +211,11 @@ const issueAllNotifications = async (allNewSpecials: INewSpecialsAdded[]) => {
 };
 
 const createFrontendUserNotification = async (
-  userId: string,
+  userId: number,
   comedianRawData: IRawComedian,
   specialRawData: IRawSpecial,
 ) => {
-  const notification = {
-    comedian: {
-      name: comedianRawData.name,
-      id: comedianRawData.id,
-      profile_path: comedianRawData.profile_path,
-    },
-    data: {
-      id: specialRawData.id,
-      title: specialRawData.title,
-      poster_path: specialRawData.poster_path,
-      backdrop_path: specialRawData.backdrop_path,
-      release_date: specialRawData.release_date,
-    },
-  };
+  const notification = processUserNotification(comedianRawData, specialRawData);
 
   return await db
     .collection('users')
@@ -455,18 +444,12 @@ const addSpecialsPageDocs = async (
   comedianRawData: IRawComedian,
   specialsRawData: IRawSpecial[],
 ) => {
-  const { specials, comedian } = processSpecialPages(comedianRawData, specialsRawData);
-
+  const specialPagesData = processSpecialPages(comedianRawData, specialsRawData);
   const batch = db.batch();
-  for (const special in specials) {
-    const pageData = {
-      comedian,
-      ...specials[special],
-    };
-    const docRef = db.collection('specialPages').doc(special);
-    batch.set(docRef, pageData);
-  }
-
+  specialPagesData.forEach((specialPage: ISpecialPage) => {
+    const docRef = db.collection('specialPages').doc(specialPage.special.id.toString());
+    batch.set(docRef, specialPage);
+  });
   return await batch.commit();
 };
 
@@ -487,29 +470,23 @@ const addSpecialsToAllSpecialsDoc = async (specialsRawData: IRawSpecial[]) => {
 // firestore: /comedians/latest
 
 const addComedianToLatestComediansDoc = async (comedianRawData: IRawComedian) => {
-  const comedian = {
-    [comedianRawData.id]: {
-      name: comedianRawData.name,
-      id: comedianRawData.id,
-      profile_path: comedianRawData.profile_path,
-      dateAdded: FieldValue.serverTimestamp(),
-    },
-  };
+  const date = FieldValue.serverTimestamp();
+  const comedian = processLatestComediansField(comedianRawData, date);
 
-  // add comedian to latest comedians
-  const currentLatestComedians = await getLatestComediansData().catch(() => {
+  const latestComedians = await getLatestComediansData().catch(() => {
     return {};
   });
-  const updatedLatestComedians = { ...currentLatestComedians, ...comedian };
+
+  const updatedLatestComedians = { ...latestComedians, ...comedian };
   const latestTenComedians = reduceLatestCountToNum(updatedLatestComedians, 10, 'dateAdded');
   return await db.collection('comedians').doc('latest').set(latestTenComedians);
 };
 
 interface IUpcomingLatestSpecials {
-  [id: string]: {
-    comedianId: string;
+  [id: number]: {
+    comedianId: number;
     name: string;
-    id: string;
+    id: number;
     title: string;
     poster_path: string;
     backdrop_path: string;
@@ -523,6 +500,14 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
   comedianRawData: IRawComedian,
   specialsRawData: IRawSpecial[],
 ) => {
+  // TODO Error handling, wrap in try catch
+  let latest = await getLatestSpecialsData().catch(() => {
+    return {};
+  });
+  let upcoming = await getUpcomingSpecialsData().catch(() => {
+    return {};
+  });
+
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
@@ -537,13 +522,6 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
       },
     };
   }, {});
-
-  let latest = await getLatestSpecialsData().catch(() => {
-    return {};
-  });
-  let upcoming = await getUpcomingSpecialsData().catch(() => {
-    return {};
-  });
 
   // for each special, check the dateField
   // - if not released yet, add to /specials/upcoming
@@ -583,16 +561,16 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
 
 interface IComedianOrSpecial {
   backdrop_path: string;
-  comedianId: string;
+  comedianId: number;
   release_date: string;
   name: string;
-  id: string;
+  id: number;
   title: string;
   poster_path: string;
 }
 
 interface IToggleUserFavoriteData {
-  favoriteId: string;
+  favoriteId: number;
   data: IComedianOrSpecial;
 }
 
@@ -671,7 +649,7 @@ exports.toggleUserFavorite = functions
     };
   });
 
-const subscribeUserToComedian = async (userId: string, userEmail: string, comedianId: string) => {
+const subscribeUserToComedian = async (userId: number, userEmail: string, comedianId: number) => {
   // console.log(`Subscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   return await comedianSubscribersDocRef.set(
@@ -685,7 +663,7 @@ const subscribeUserToComedian = async (userId: string, userEmail: string, comedi
   );
 };
 
-const unsubscribeUserToComedian = async (userId: string, userEmail: string, comedianId: string) => {
+const unsubscribeUserToComedian = async (userId: number, userEmail: string, comedianId: number) => {
   // console.log(`Unsubscribing: ${userEmail} (${userId}) to ${comedianId}`);
   const comedianSubscribersDocRef = db.collection('comedianSubscribers').doc(comedianId);
   return await comedianSubscribersDocRef.update({
@@ -819,14 +797,14 @@ const testGetAllNewSpecialsAndUpdateDb = async () => {
 
   const allSpecialsInDb = await getFirebaseDoc('specials', 'all');
   const allSpecialIdsInDb = Object.keys(allSpecialsInDb);
-  const randomSpecialsToDelete = <{ id: string; title: string }[]>[];
+  const randomSpecialsToDelete = <{ id: number; title: string }[]>[];
 
   // delete 3 random specials from the db
   for (let x = 0; x < 3; x++) {
     const randomIndex = getRandomInt(allSpecialIdsInDb.length);
     const specialId = allSpecialIdsInDb[randomIndex];
     const specialTitle = allSpecialsInDb[specialId].title;
-    randomSpecialsToDelete.push({ id: specialId, title: specialTitle });
+    randomSpecialsToDelete.push({ id: +specialId, title: specialTitle });
   }
 
   await db
