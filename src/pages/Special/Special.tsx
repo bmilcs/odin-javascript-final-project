@@ -68,14 +68,16 @@ function Special() {
                 {special.id && <FavoriteIcon category='specials' data={special} />}
 
                 {comedian?.name && comedian?.id && (
-                  <div className='special__comedian'>
-                    <img
-                      className='special__comedian-portrait'
-                      src={getTMDBImageURL(comedian.profile_path)}
-                      alt={comedian.name}
-                    />
-                    <Link to={`/comedians/${comedian.id}`}>Performed by {comedian.name}</Link>
-                  </div>
+                  <Link to={`/comedians/${comedian.id}`}>
+                    <div className='special__comedian'>
+                      <img
+                        className='special__comedian-portrait'
+                        src={getTMDBImageURL(comedian.profile_path)}
+                        alt={comedian.name}
+                      />
+                      Performed by {comedian.name}
+                    </div>
+                  </Link>
                 )}
               </div>
 
