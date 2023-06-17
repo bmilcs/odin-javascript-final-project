@@ -5,7 +5,6 @@ import {
   fetchAllSpecials,
   isUserSignedIn,
   userFavorites,
-  userName,
 } from '@/app/store';
 import Button from '@/components/Button/Button';
 import ComedianGrid from '@/components/ComedianGrid/ComedianGrid';
@@ -26,7 +25,6 @@ function Favorites() {
   const allSpecials = useAppSelector(allSpecialsDataArr);
   const allComedians = useAppSelector(allComediansDataArr);
   const favorites = useAppSelector(userFavorites);
-  const name = useAppSelector(userName);
 
   useEffect(() => {
     if (isUserLoggedIn) return;
