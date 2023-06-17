@@ -1,12 +1,7 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { isUserSignedIn, toggleUserFavorite, userFavorites } from '@/app/store';
 import Button from '@/components/Button/Button';
-import {
-  IComedian,
-  IComedianPageRelease,
-  ISpecial,
-  ISpecialPageComedian,
-} from '@/firebase/database';
+import { IComedian, IReleaseCard, ISpecial, ISpecialPageComedian } from '@/firebase/database';
 import { toggleUserFavoriteInDB } from '@/firebase/functions';
 import { useState } from 'react';
 import { MdOutlineFavorite, MdOutlineFavoriteBorder } from 'react-icons/md';
@@ -14,7 +9,7 @@ import './FavoriteIcon.scss';
 
 type Props = {
   category: string;
-  data: ISpecial | IComedian | IComedianPageRelease | ISpecialPageComedian;
+  data: ISpecial | IComedian | IReleaseCard | ISpecialPageComedian;
 };
 
 function FavoriteIcon({ category, data }: Props) {
