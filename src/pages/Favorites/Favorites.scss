@@ -1,13 +1,14 @@
-.favorites__header {
-  margin-bottom: 3vh;
+.favorites {
+  margin-block: var(--content-spacing);
 
   > * {
-    margin-bottom: 1rem;
+    margin-bottom: var(--header-spacing-small);
   }
 
   .link__button {
     display: block;
     color: var(--clr-accent-200);
     font-weight: bold;
+    margin-bottom: var(--header-spacing-small);
   }
 }

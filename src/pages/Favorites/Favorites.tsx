@@ -14,7 +14,7 @@ import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import { signUserOutFromFirebase } from '@/firebase/authentication';
 import { IComedian, ISpecial } from '@/firebase/database';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Favorites.scss';
 
 // const userFavorites = useAppSelector((state) => state.user.favorites);
@@ -67,47 +67,50 @@ function Favorites() {
 
   return (
     <PageTransition>
-      <div className='column'>
-        <div className='favorites__header'>
-          <h3>{name}&apos;s Favorites</h3>
+      <>
+        <div className='favorites column'>
+          <h3>Your Favorites</h3>
+
           <p>
             To add comedians & their work to your favorites, browse the site and click on the heart
             icons associated with the content you like. That&apos;s it! You can access your
             favorites later by clicking on the &quot;Favorites&quot;.
           </p>
+
           <p>
             Any time a favorite comedian releases a new special, you will receive an e-mail
-            notification.
+            notification with the details.
           </p>
+
+          {sortedComedians.length === 0 && (
+            <Link to='/comedians'>
+              <Button type='text-only' className='link__button'>
+                Find your favorite comedians here.
+              </Button>
+            </Link>
+          )}
+
+          {sortedSpecials.length === 0 && (
+            <Link to='/specials'>
+              <Button type='text-only' className='link__button'>
+                Find your favorite specials here.
+              </Button>
+            </Link>
+          )}
 
           <Button type='standard' onClick={() => signUserOutFromFirebase()}>
             Log Out
           </Button>
-
-          {sortedComedians.length === 0 && (
-            <Button
-              type='text-only'
-              className='link__button'
-              onClick={() => navigate('/comedians')}
-            >
-              Find your favorite comedians here.
-            </Button>
-          )}
-
-          {sortedSpecials.length === 0 && (
-            <Button type='text-only' className='link__button' onClick={() => navigate('/specials')}>
-              Find your favorite specials here.
-            </Button>
-          )}
         </div>
 
         {sortedComedians.length !== 0 && (
           <ComedianGrid title='Favorite Comedians' data={sortedComedians} />
         )}
+
         {sortedSpecials.length !== 0 && (
           <SpecialsGrid title='Favorite Specials' data={sortedSpecials} />
         )}
-      </div>
+      </>
     </PageTransition>
   );
 }

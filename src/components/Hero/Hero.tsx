@@ -4,7 +4,7 @@ import {
 } from '@/animations/fadeInStaggerChildrenUp';
 import Button from '@/components/Button/Button';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Hero.scss';
 
 function Hero() {
@@ -27,9 +27,9 @@ function Hero() {
         </motion.p>
 
         <motion.div variants={staggerUpVariants}>
-          <Button className='hero__button' onClick={() => navigate('/signup')}>
-            Sign Up Now
-          </Button>
+          <Link to='/signup'>
+            <Button className='hero__button'>Sign Up Now</Button>
+          </Link>
         </motion.div>
       </div>
     </motion.section>
