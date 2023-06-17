@@ -2,13 +2,16 @@ import {
   staggerUpContainerVariants,
   staggerUpVariants,
 } from '@/animations/fadeInStaggerChildrenUp';
+import { useAppSelector } from '@/app/hooks';
+import { isUserSignedIn } from '@/app/store';
 import Button from '@/components/Button/Button';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Hero.scss';
 
 function Hero() {
-  const navigate = useNavigate();
+  const isUserLoggedIn = useAppSelector(isUserSignedIn);
+  console.log(isUserLoggedIn);
 
   return (
     <motion.section
@@ -27,9 +30,15 @@ function Hero() {
         </motion.p>
 
         <motion.div variants={staggerUpVariants}>
-          <Link to='/signup'>
-            <Button className='hero__button'>Sign Up Now</Button>
-          </Link>
+          {isUserLoggedIn ? (
+            <Link to='/favorites'>
+              <Button className='hero__button'>View Your Favorites</Button>
+            </Link>
+          ) : (
+            <Link to='/signup'>
+              <Button className='hero__button'>Sign Up Now</Button>
+            </Link>
+          )}
         </motion.div>
       </div>
     </motion.section>
