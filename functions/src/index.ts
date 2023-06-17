@@ -508,6 +508,7 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
     return {};
   });
 
+  // TODO refactor to use arrays
   const specials = specialsRawData.reduce((prev, special) => {
     return {
       ...prev,
