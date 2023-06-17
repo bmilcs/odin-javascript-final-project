@@ -1,14 +1,14 @@
 import { getTMDBImageURL } from '@/api/TMDB';
 import Card from '@/components/Card/Card';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
-import { IComedianPageRelease, ISpecial } from '@/firebase/database';
+import MissingImg from '@/components/MissingImg/MissingImg';
+import { IReleaseCard, ISpecial } from '@/firebase/database';
 import { formatDateYearOnly } from '@/utils/date';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import emptyStageImg from '../../assets/empty-stage.jpg';
 import './SpecialCard.scss';
 
-type TProps = { data: IComedianPageRelease | ISpecial };
+type TProps = { data: IReleaseCard | ISpecial };
 
 function SpecialCard({ data }: TProps) {
   const { id, title, backdrop_path, poster_path, release_date } = data;
@@ -48,7 +48,7 @@ function SpecialCard({ data }: TProps) {
             alt={`${title}`}
           />
         ) : (
-          <img src={emptyStageImg} className='special-card__image missing-image' alt={title} />
+          <MissingImg className='special-card__image' alt={title} />
         )}
         {release_date && <p className='special-card__year'>{formatDateYearOnly(release_date)}</p>}
       </Link>

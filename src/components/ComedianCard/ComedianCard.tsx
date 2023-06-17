@@ -1,7 +1,7 @@
 import { getTMDBImageURL } from '@/api/TMDB';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import Card from '@/components/Card/Card';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
+import MissingImg from '@/components/MissingImg/MissingImg';
 import { IComedian, ISpecialPageComedian } from '@/firebase/database';
 import { Link } from 'react-router-dom';
 import './ComedianCard.scss';
@@ -24,7 +24,10 @@ function ComedianCard({ data }: Props) {
                 className='comedian-card__image'
               />
             ) : (
-              <MicrophoneSVG className='comedian-card__image comedian-card__svg' />
+              <MissingImg
+                className='comedian-card__image comedian-card__svg'
+                alt={`${data.name} Headshot`}
+              />
             )}
           </Link>
 

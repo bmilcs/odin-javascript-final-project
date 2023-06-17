@@ -1,9 +1,8 @@
 import { getIMDBPersonURL, getTMDBImageURL } from '@/api/TMDB';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
-import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
-
+import MissingImg from '@/components/MissingImg/MissingImg';
 import PageTransition from '@/components/PageTransition/PageTransition';
+import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import useComedianData from '@/hooks/useComedianData';
 import { formatDateNumberOfYearsPassed } from '@/utils/date';
 import { FaImdb } from 'react-icons/fa';
@@ -24,10 +23,10 @@ function Comedian() {
                 <img
                   className='comedian__headshot'
                   src={getTMDBImageURL(comedian.profile_path)}
-                  alt=''
-                ></img>
+                  alt={`${comedian.name} Headshot`}
+                />
               ) : (
-                <MicrophoneSVG className='comedian__headshot comedian__svg' />
+                <MissingImg className='comedian__headshot' alt={`${comedian.name} Headshot`} />
               )}
 
               <div className='comedian__details'>

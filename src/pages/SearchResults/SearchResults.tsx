@@ -7,9 +7,9 @@ import {
 } from '@/api/TMDB';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { allComedianIdsArr, allComediansDataArr, fetchAllComedians } from '@/app/store';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import AddComedianModal from '@/components/AddComedianModal/AddComedianModal';
 import ComedianCard from '@/components/ComedianCard/ComedianCard';
+import MissingImg from '@/components/MissingImg/MissingImg';
 import PageTransition from '@/components/PageTransition/PageTransition';
 import { IComedian } from '@/firebase/database';
 import { addComedianToDB } from '@/firebase/functions';
@@ -149,6 +149,7 @@ function SearchResults() {
                     The following results are potential comedians that you can add to the site.
                   </p>
                 </div>
+
                 <div className='searchpage__grid'>
                   {missingComedians
                     // sort by popularity
@@ -174,7 +175,10 @@ function SearchResults() {
                             className='searchpage__headshot'
                           />
                         ) : (
-                          <MicrophoneSVG className='comedian-card__image comedian-card__svg' />
+                          <MissingImg
+                            className='searchpage__headshot'
+                            alt={`${person.name} Headshot`}
+                          />
                         )}
                         <h4 className='searchpage__name'>{person.name}</h4>
                       </div>

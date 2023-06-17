@@ -1,9 +1,11 @@
 .searchpage {
+  margin-block: var(--content-spacing);
+
   &__header {
     display: grid;
     justify-content: center;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--header-spacing);
   }
 
   &__title {
@@ -34,6 +36,7 @@
 
   &__headshot {
     max-height: 30vh;
+    object-fit: cover;
     cursor: pointer;
     border-radius: var(--border-radius-200);
     margin-bottom: 0.25rem;

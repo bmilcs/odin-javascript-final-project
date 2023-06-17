@@ -1,6 +1,6 @@
 import { getTMDBImageURL } from '@/api/TMDB';
-import MicrophoneSVG from '@/assets/MicrophoneSVG';
 import FavoriteIcon from '@/components/FavoriteIcon/FavoriteIcon';
+import MissingImg from '@/components/MissingImg/MissingImg';
 import PageTransition from '@/components/PageTransition/PageTransition';
 import SpecialsGrid from '@/components/SpecialsGrid/SpecialsGrid';
 import useSpecialData from '@/hooks/useSpecialData';
@@ -92,7 +92,7 @@ function Special() {
                   alt={`${special.title}`}
                 />
               ) : (
-                <MicrophoneSVG className='special__image special__image-svg' />
+                <MissingImg className='special__image' alt={`${special.title}`} />
               )}
             </section>
           </>

@@ -9,11 +9,6 @@
     object-fit: cover;
   }
 
-  .missing-image {
-    opacity: 30%;
-    filter: saturate(0);
-  }
-
   &__year {
     position: absolute;
     top: 0rem;
