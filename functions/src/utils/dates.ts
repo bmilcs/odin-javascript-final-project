@@ -47,4 +47,5 @@ module.exports = {
   isAfter,
   getReleaseDateType,
   sortByReleaseDate,
+  addDays,
 };

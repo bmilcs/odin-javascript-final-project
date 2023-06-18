@@ -180,10 +180,10 @@ exports.processAllSpecialsFields = (specialsRawData: IRawSpecial[]) => {
       [special.id]: {
         id: special.id,
         title: special.title,
-        poster_path: special.poster_path,
-        backdrop_path: special.backdrop_path,
         release_date: special.release_date,
         favorites: 0,
+        ...(special.poster_path && { poster_path: special.poster_path }),
+        ...(special.backdrop_path && { backdrop_path: special.backdrop_path }),
       },
     };
   }, {});
@@ -192,22 +192,37 @@ exports.processAllSpecialsFields = (specialsRawData: IRawSpecial[]) => {
 };
 
 //
+// /users/{id}/notifications
 //
-//
+
+interface IUserNotification {
+  comedian: {
+    name: string;
+    id: number;
+    profile_path?: string;
+  };
+  special: {
+    id: number;
+    title: string;
+    release_date: string;
+    poster_path?: string;
+    backdrop_path?: string;
+  };
+}
 
 exports.processUserNotification = (comedianRawData: IRawComedian, specialRawData: IRawSpecial) => {
   const notification = {
     comedian: {
       name: comedianRawData.name,
       id: comedianRawData.id,
-      profile_path: comedianRawData.profile_path,
+      ...(comedianRawData.profile_path && { profile_path: comedianRawData.profile_path }),
     },
-    data: {
+    special: {
       id: specialRawData.id,
       title: specialRawData.title,
-      poster_path: specialRawData.poster_path,
-      backdrop_path: specialRawData.backdrop_path,
       release_date: specialRawData.release_date,
+      ...(specialRawData.poster_path && { poster_path: specialRawData.poster_path }),
+      ...(specialRawData.backdrop_path && { backdrop_path: specialRawData.backdrop_path }),
     },
   };
 
@@ -223,15 +238,44 @@ exports.processLatestComediansField = (comedianRawData: IRawComedian, date: stri
     [comedianRawData.id]: {
       name: comedianRawData.name,
       id: comedianRawData.id,
-      profile_path: comedianRawData.profile_path,
       dateAdded: date,
+      ...(comedianRawData.profile_path && { profile_path: comedianRawData.profile_path }),
     },
   };
 };
 
 //
-// Latest / Upcoming Fields
+// Latest / Upcoming Special Fields
 //
+
+interface IUpcomingLatestSpecials {
+  [id: string]: {
+    comedianId: number;
+    name: string;
+    id: number;
+    title: string;
+    release_date: string;
+    poster_path?: string;
+    backdrop_path?: string;
+  };
+}
+
+exports.processLatestUpcomingSpecialsField = (
+  comedianRawData: IRawComedian,
+  specialRawData: IRawSpecial,
+) => {
+  return {
+    [specialRawData.id]: {
+      comedianId: comedianRawData.name,
+      name: comedianRawData.name,
+      id: specialRawData.id,
+      title: specialRawData.title,
+      release_date: specialRawData.release_date,
+      ...(specialRawData.poster_path && { poster_path: specialRawData.poster_path }),
+      ...(specialRawData.backdrop_path && { backdrop_path: specialRawData.backdrop_path }),
+    },
+  };
+};
 
 const isSpecial = (comedianName: string, title: string) => {
   const [firstName, lastName] = comedianName.split(' ');

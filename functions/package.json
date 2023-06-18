@@ -9,7 +9,7 @@
     "logs": "firebase functions:log",
     "build": "npm run lint && tsc",
     "dev": "tsc -w",
-    "test": "jest --watchAll --coverage"
+    "test": "jest --watchAll --verbose"
   },
   "jest": {
     "transform": {
