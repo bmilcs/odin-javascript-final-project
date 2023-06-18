@@ -51,7 +51,7 @@ function Comedian() {
                 <div className='comedian__icons'>
                   <FavoriteIcon data={comedian} category='comedians' />
                   {comedian.imdb_id && (
-                    <a href={getIMDBPersonURL(+comedian.imdb_id)} target='_blank' rel='noreferrer'>
+                    <a href={getIMDBPersonURL(comedian.imdb_id)} target='_blank' rel='noreferrer'>
                       <FaImdb size={26} />
                     </a>
                   )}
