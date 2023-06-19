@@ -109,7 +109,6 @@ exports.processSpecialPages = (
     const special = {
       id: +page.id,
       title: page.title,
-      type: isSpecial(comedianRawData.name, page.title) ? 'special' : 'appearance',
       release_date: page.release_date,
       ...(page.poster_path && { poster_path: page.poster_path }),
       ...(page.backdrop_path && { backdrop_path: page.backdrop_path }),
@@ -233,6 +232,15 @@ exports.processUserNotification = (comedianRawData: IRawComedian, specialRawData
 // Latest Comedians Field
 //
 
+interface ILatestComedians {
+  [id: string]: {
+    name: string;
+    id: number;
+    dateAdded: string;
+    profile_path?: string;
+  };
+}
+
 exports.processLatestComediansField = (comedianRawData: IRawComedian, date: string) => {
   return {
     [comedianRawData.id]: {
@@ -266,7 +274,7 @@ exports.processLatestUpcomingSpecialsField = (
 ) => {
   return {
     [specialRawData.id]: {
-      comedianId: comedianRawData.name,
+      comedianId: comedianRawData.id,
       name: comedianRawData.name,
       id: specialRawData.id,
       title: specialRawData.title,

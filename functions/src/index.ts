@@ -39,7 +39,12 @@ const GMAIL_EMAIL = functions.config().gmail.email;
 const GMAIL_PASSWORD = functions.config().gmail.password;
 
 const MAINTENANCE_SCHEDULE = 'every 12 hours';
-const TEST_MODE = true;
+const TEST_MODE = false;
+
+const TOP_COMEDIANS_LIMIT = 10;
+const TOP_SPECIALS_LIMIT = 10;
+const LATEST_COMEDIANS_LIMIT = 5;
+const LATEST_SPECIALS_LIMIT = 10;
 
 // maintenance
 
@@ -177,9 +182,26 @@ const addComedianToLatestComediansDoc = async (comedianRawData: IRawComedian) =>
   const latestComedians = await getLatestComediansData().catch(() => {
     return {};
   });
-  const updatedLatestComedians = { ...latestComedians, ...comedian };
-  const latestTenComedians = reduceLatestCountToNum(updatedLatestComedians, 10);
+  const newLatestComedians = { ...latestComedians, ...comedian };
+  const latestTenComedians = reduceLatestComediansCount(newLatestComedians, LATEST_COMEDIANS_LIMIT);
   return await db.collection('comedians').doc('latest').set(latestTenComedians);
+};
+
+const reduceLatestComediansCount = (comedians: ILatestComedians, num: number) => {
+  const array = [];
+  for (const data in comedians) {
+    array.push(comedians[data]);
+  }
+  return array
+    .sort((a, b) => {
+      const aDate = parseISO(a.dateAdded);
+      const bDate = parseISO(b.dateAdded);
+      return isAfter(aDate, bDate) ? -1 : 1;
+    })
+    .splice(0, num)
+    .reduce((prev, curr) => {
+      return { ...prev, [curr.id]: { ...curr } };
+    }, {});
 };
 
 // firestore: /specials/latest & /specials/upcoming
@@ -202,47 +224,41 @@ const addSpecialsToLatestOrUpcomingSpecialsDocs = async (
         ...processLatestUpcomingSpecialsField(comedianRawData, special),
       };
     } else {
-      if (isSpecialALatestRelease(special, latest)) {
-        latest = {
-          ...latest,
-          ...processLatestUpcomingSpecialsField(comedianRawData, special),
-        };
-      }
+      if (!isSpecialALatestRelease(special, latest)) return;
+
+      latest = {
+        ...latest,
+        ...processLatestUpcomingSpecialsField(comedianRawData, special),
+      };
     }
   });
 
-  console.log(latest);
-
-  // for each special, check the dateField
-  // - if not released yet, add to /specials/upcoming
-  // - if newer than one of the latest 10, add to /specials/latest
-  // Object.entries(specials).forEach(([specialId, specialData]) => {
-  //   const isNotReleasedYet = isSpecialNotReleasedYet(specialData);
-
-  //   if (isNotReleasedYet) {
-  //     currentUpcoming = {
-  //       ...currentUpcoming,
-  //       [specialId]: specialData,
-  //     };
-  //   } else {
-  //     const isALatestRelease = isSpecialALatestRelease(specialData, currentLatest);
-
-  //     if (isALatestRelease) {
-  //       currentLatest = {
-  //         ...currentLatest,
-  //         [specialId]: specialData,
-  //       };
-  //     }
-  //   }
-  // });
-
-  const latestTenSpecials = reduceLatestCountToNum(latest, 10);
+  const finalLatestSpecials = reduceLatestSpecialsCount(latest, LATEST_SPECIALS_LIMIT);
 
   return await db
     .collection('specials')
     .doc('latest')
-    .set(latestTenSpecials)
+    .set(finalLatestSpecials)
     .then(() => db.collection('specials').doc('upcoming').set(upcoming));
+};
+
+// given a object of specials, sort by "dateField" & limit the results to "num"
+
+const reduceLatestSpecialsCount = (specials: IUpcomingLatestSpecials, num: number) => {
+  const array = [];
+  for (const data in specials) {
+    array.push(specials[data]);
+  }
+  return array
+    .sort((a, b) => {
+      const aDate = parseISO(a.release_date);
+      const bDate = parseISO(b.release_date);
+      return isAfter(aDate, bDate) ? -1 : 1;
+    })
+    .splice(0, num)
+    .reduce((prev, curr) => {
+      return { ...prev, [curr.id]: { ...curr } };
+    }, {});
 };
 
 interface INewSpecialsAdded {
@@ -285,7 +301,6 @@ const getAllNewSpecialsAndUpdateDB = async () => {
 const updateDbWithAComediansNewSpecials = (comedianId: number, allExistingSpecialIds: number[]) => {
   return new Promise(async (resolve, reject) => {
     const fetchedSpecialsRawData = await fetchTmdbSpecialsData(comedianId);
-
     const missingSpecialsRawData = fetchedSpecialsRawData.filter((fetchedSpecial: IRawSpecial) => {
       return !allExistingSpecialIds.some(
         (existingSpecialId) => Number(fetchedSpecial.id) === Number(existingSpecialId),
@@ -486,8 +501,11 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
       });
 
       const newLatestSpecials = { ...currentLatestSpecials, [specialId]: specialData };
-      const latestTenSpecials = reduceLatestCountToNum(newLatestSpecials, 10);
-      await db.collection('specials').doc('latest').set(latestTenSpecials);
+      const finalLatestSpecials = reduceLatestSpecialsCount(
+        newLatestSpecials,
+        LATEST_SPECIALS_LIMIT,
+      );
+      await db.collection('specials').doc('latest').set(finalLatestSpecials);
 
       console.log(`--> SUCCESS: Moved ${specialData.name}'s special from /upcoming to /latest`);
     }
@@ -503,6 +521,7 @@ const getTodaysReleasesAndMoveToLatestDoc = async () => {
 // and the special's data for this fn is pulled from /specials/upcoming
 // therefore, todays releases need to be processed before passing them to
 // issueAllNotifications()
+
 const issueNotificationsForTodaysReleases = async (specialsDbData: IUpcomingLatestSpecials) => {
   const todaysReleasesParsedForNotifications = [];
 
@@ -684,14 +703,11 @@ const unsubscribeUserToComedian = async (userId: number, userEmail: string, come
 // update top favorite comedians & specials on a schedule
 
 const updateTopFavorites = async () => {
-  const topComediansLimit = 10;
-  const topSpecialsLimit = 10;
-
   const comediansAllDocData = await getFirebaseDoc('comedians', 'all');
   const specialsAllDocData = await getFirebaseDoc('specials', 'all');
 
-  const updatedTopComediansData = getNewTopFavorites(comediansAllDocData, topComediansLimit);
-  const updatedTopSpecialsData = getNewTopFavorites(specialsAllDocData, topSpecialsLimit);
+  const updatedTopComediansData = getNewTopFavorites(comediansAllDocData, TOP_COMEDIANS_LIMIT);
+  const updatedTopSpecialsData = getNewTopFavorites(specialsAllDocData, TOP_SPECIALS_LIMIT);
 
   const updateTopComedians = db
     .collection('comedians')
@@ -762,7 +778,7 @@ const isSpecialALatestRelease = (
 ) => {
   const specialDate = parseISO(special.release_date);
   // when /specials/latest is empty, accept any special as a latest release
-  if (!latestSpecialsObj || Object.keys(latestSpecialsObj).length === 0) return true;
+  if (Object.keys(latestSpecialsObj).length < LATEST_SPECIALS_LIMIT) return true;
   for (const existingSpecial in latestSpecialsObj) {
     const existingDate = parseISO(latestSpecialsObj[existingSpecial].release_date);
     const isMoreRecent = isAfter(specialDate, existingDate);
@@ -771,29 +787,6 @@ const isSpecialALatestRelease = (
     }
   }
   return false;
-};
-
-// given a object of comedians or specials, sort by "dateField" & limit the results to "num"
-
-const reduceLatestCountToNum = (dataObj: IUpcomingLatestSpecials, num: number) => {
-  const array = [];
-
-  console.log({ dataObj });
-
-  for (const data in dataObj) {
-    array.push(dataObj[data]);
-  }
-
-  return array
-    .sort((a, b) => {
-      const aDate = parseISO(a.release_date);
-      const bDate = parseISO(b.release_date);
-      return isAfter(aDate, bDate) ? -1 : 1;
-    })
-    .splice(0, num)
-    .reduce((prev, curr) => {
-      return { ...prev, [curr.id]: { ...curr } };
-    }, {});
 };
 
 // db retrieval functions
